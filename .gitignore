@@ -3,6 +3,9 @@
 .env.prod
 .env.local
 
+# Pre-built Linux binaries (built locally with build-prod.sh)
+dist/
+
 # Go build artifacts
 services/*/auth-service
 services/*/content-service

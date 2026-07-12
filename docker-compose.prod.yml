@@ -23,7 +23,9 @@ services:
 
   # ── API Gateway ──────────────────────────────────────────────────────────────
   gateway:
-    build: ./services/gateway
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
     environment:
       - AUTH_SERVICE_URL=http://auth:8081
       - CONTENT_SERVICE_URL=http://content:8082
@@ -42,7 +44,9 @@ services:
 
   # ── Microservices ─────────────────────────────────────────────────────────────
   auth:
-    build: ./services/auth
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
     environment:
       - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
       - JWT_SECRET=${JWT_SECRET}
@@ -55,7 +59,9 @@ services:
     restart: unless-stopped
 
   content:
-    build: ./services/content
+    build:
+      context: .
+      dockerfile: services/content/Dockerfile
     environment:
       - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
       - PORT=8082
@@ -66,7 +72,9 @@ services:
     restart: unless-stopped
 
   ai:
-    build: ./services/ai
+    build:
+      context: .
+      dockerfile: services/ai/Dockerfile
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - PORT=8083
@@ -74,7 +82,9 @@ services:
     restart: unless-stopped
 
   exam:
-    build: ./services/exam
+    build:
+      context: .
+      dockerfile: services/exam/Dockerfile
     environment:
       - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
       - REDIS_URL=redis:6379
@@ -89,7 +99,9 @@ services:
     restart: unless-stopped
 
   progress:
-    build: ./services/progress
+    build:
+      context: .
+      dockerfile: services/progress/Dockerfile
     environment:
       - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
       - JWT_SECRET=${JWT_SECRET}
