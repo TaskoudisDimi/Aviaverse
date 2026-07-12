@@ -1,0 +1,134 @@
+version: "3.9"
+
+# ─── Production Compose ────────────────────────────────────────────────────────
+# Usage: docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+services:
+
+  # ── Entry point ──────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - gateway
+      - frontend
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+
+  # ── API Gateway ──────────────────────────────────────────────────────────────
+  gateway:
+    build: ./services/gateway
+    environment:
+      - AUTH_SERVICE_URL=http://auth:8081
+      - CONTENT_SERVICE_URL=http://content:8082
+      - AI_SERVICE_URL=http://ai:8083
+      - EXAM_SERVICE_URL=http://exam:8084
+      - PROGRESS_SERVICE_URL=http://progress:8085
+      - JWT_SECRET=${JWT_SECRET}
+      - GIN_MODE=release
+    depends_on:
+      - auth
+      - content
+      - ai
+      - exam
+      - progress
+    restart: unless-stopped
+
+  # ── Microservices ─────────────────────────────────────────────────────────────
+  auth:
+    build: ./services/auth
+    environment:
+      - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRY=24h
+      - PORT=8081
+      - GIN_MODE=release
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  content:
+    build: ./services/content
+    environment:
+      - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
+      - PORT=8082
+      - GIN_MODE=release
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ai:
+    build: ./services/ai
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PORT=8083
+      - GIN_MODE=release
+    restart: unless-stopped
+
+  exam:
+    build: ./services/exam
+    environment:
+      - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
+      - REDIS_URL=redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=8084
+      - GIN_MODE=release
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  progress:
+    build: ./services/progress
+    environment:
+      - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=8085
+      - GIN_MODE=release
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Data stores ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: vyron
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: vyron
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vyron"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

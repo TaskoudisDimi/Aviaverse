@@ -1,0 +1,26 @@
+# Environment files — NEVER commit these
+.env
+.env.prod
+.env.local
+
+# Go build artifacts
+services/*/auth-service
+services/*/content-service
+services/*/ai-service
+services/*/exam-service
+services/*/progress-service
+services/*/gateway-service
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Logs
+logs/
+*.log
+
+# macOS
+.DS_Store
+
+# Temp
+/tmp/vyron-pids
