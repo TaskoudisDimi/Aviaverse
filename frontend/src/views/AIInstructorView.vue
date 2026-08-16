@@ -83,11 +83,11 @@ interface Message {
 }
 
 const modes = [
-  { value: 'beginner_explain', label: 'Beginner' },
+  { value: 'beginner',         label: 'Beginner' },
   { value: 'technical',        label: 'Technical' },
   { value: 'practical',        label: 'Practical Example' },
   { value: 'compare',          label: 'Compare Systems' },
-  { value: 'oral_exam',        label: 'Oral Exam' },
+  { value: 'oral',             label: 'Oral Exam' },
   { value: 'explain_mistake',  label: 'Explain My Mistake' },
   { value: 'weak_points',      label: 'Review Weak Points' },
 ]
@@ -161,6 +161,8 @@ async function send() {
             assistantMsg.content += data.token
             await nextTick()
             scrollBottom()
+          } else if (data.error) {
+            assistantMsg.content = `⚠️ AI error: ${data.error}`
           }
         } catch { /* skip malformed */ }
       }
