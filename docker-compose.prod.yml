@@ -64,6 +64,7 @@ services:
       dockerfile: services/content/Dockerfile
     environment:
       - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
+      - JWT_SECRET=${JWT_SECRET}
       - PORT=8082
       - GIN_MODE=release
     depends_on:
@@ -91,6 +92,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - PORT=8084
       - GIN_MODE=release
+
     depends_on:
       postgres:
         condition: service_healthy
@@ -107,6 +109,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - PORT=8085
       - GIN_MODE=release
+
     depends_on:
       postgres:
         condition: service_healthy
