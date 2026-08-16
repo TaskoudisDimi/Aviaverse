@@ -43,10 +43,13 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('token')
   }
 
-  // Restore session on app load
-  if (token.value) {
-    fetchMe().catch(() => logout())
-  }
+  // Restore session on app load — expose a promise so the router can await it
+  const ready: Promise<void> = token.value
+    ? fetchMe().catch((err) => {
+        // Only clear session on explicit 401, not on network errors
+        if (err?.response?.status === 401) logout()
+      })
+    : Promise.resolve()
 
-  return { token, user, isAuthenticated, login, register, logout, fetchMe }
+  return { token, user, isAuthenticated, login, register, logout, fetchMe, ready }
 })
