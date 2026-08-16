@@ -4,9 +4,17 @@ set -euo pipefail
 
 SERVER="${SERVER:-root@188.245.64.189}"
 REMOTE_DIR="/opt/aviaverse"
-SSH_OPTS="-o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30"
+CTRL="/tmp/aviaverse-ssh-ctl"
+
+# Reuse a single TCP connection for all SSH/SCP operations
+SSH_OPTS="-o ControlMaster=auto -o ControlPath=$CTRL -o ControlPersist=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=30"
 SSH="ssh $SSH_OPTS $SERVER"
 SCP="scp $SSH_OPTS"
+
+# Open the master connection once
+echo "→ Opening SSH connection ..."
+rm -f "$CTRL"
+ssh $SSH_OPTS -MNf $SERVER
 
 if [ ! -d "dist/bin" ]; then
     echo "ERROR: Run 'bash build-prod.sh' first."
@@ -60,3 +68,7 @@ echo ""
 $SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml ps"
 echo ""
 echo "✓ Done! → http://188.245.64.189:3000"
+
+# Close the master connection
+ssh -O exit -o ControlPath=$CTRL $SERVER 2>/dev/null || true
+rm -f "$CTRL"
