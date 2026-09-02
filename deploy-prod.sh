@@ -34,6 +34,8 @@ cp db/migrations/001_init.sql          "$STAGE/db/migrations/"
 cp db/migrations/002_module01_seed.sql "$STAGE/db/migrations/"
 cp db/migrations/003_module02_seed.sql "$STAGE/db/migrations/"
 cp db/migrations/004_module02_wave_sound.sql "$STAGE/db/migrations/"
+cp db/migrations/005_module01_diagrams.sql  "$STAGE/db/migrations/"
+cp db/migrations/006_module02_enrich.sql    "$STAGE/db/migrations/"
 cp frontend/Dockerfile             "$STAGE/frontend/"
 cp frontend/nginx.conf             "$STAGE/frontend/"
 
@@ -48,6 +50,8 @@ $SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .en
 echo "→ Running new DB migrations ..."
 $SSH "docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/003_module02_seed.sql 2>&1 || true"
 $SSH "docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/004_module02_wave_sound.sql 2>&1 || true"
+$SSH "docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/005_module01_diagrams.sql 2>&1 || true"
+$SSH "docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/006_module02_enrich.sql 2>&1 || true"
 
 echo "→ Restarting nginx (refresh upstream IPs) ..."
 $SSH "docker restart aviaverse-nginx-1 2>/dev/null || true"

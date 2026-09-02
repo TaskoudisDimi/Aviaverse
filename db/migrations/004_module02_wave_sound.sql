@@ -115,8 +115,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
     -- ── Questions for M02.5 ───────────────────────────────────────
 
     -- Q1
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'What type of wave is sound?',
         '[{"id":"a","text":"Transverse mechanical wave","correct":false},
           {"id":"b","text":"Longitudinal mechanical wave","correct":true},
@@ -125,8 +125,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q2
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'What is the approximate speed of sound in air at 20°C?',
         '[{"id":"a","text":"200 m/s","correct":false},
           {"id":"b","text":"343 m/s","correct":true},
@@ -135,8 +135,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q3
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'A wave has a frequency of 200 Hz and a wavelength of 1.5 m. What is its speed?',
         '[{"id":"a","text":"133 m/s","correct":false},
           {"id":"b","text":"200 m/s","correct":false},
@@ -145,8 +145,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q4
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'A sound wave has a frequency of 50 Hz. What is its period?',
         '[{"id":"a","text":"50 s","correct":false},
           {"id":"b","text":"5 s","correct":false},
@@ -155,8 +155,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q5
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'In which medium does sound travel fastest?',
         '[{"id":"a","text":"Air","correct":false},
           {"id":"b","text":"Water","correct":false},
@@ -165,8 +165,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q6
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'What is resonance?',
         '[{"id":"a","text":"When sound bounces off a hard surface","correct":false},
           {"id":"b","text":"When two sound waves cancel each other out","correct":false},
@@ -175,8 +175,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q7
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'In a standing wave, what are the points of zero displacement called?',
         '[{"id":"a","text":"Antinodes","correct":false},
           {"id":"b","text":"Nodes","correct":true},
@@ -185,8 +185,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q8
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'An ambulance siren is approaching you. Compared to the emitted frequency, the frequency you hear is:',
         '[{"id":"a","text":"Lower","correct":false},
           {"id":"b","text":"The same","correct":false},
@@ -195,8 +195,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q9
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'What is the frequency range of audible sound for humans?',
         '[{"id":"a","text":"0 – 20 Hz","correct":false},
           {"id":"b","text":"20 Hz – 20 kHz","correct":true},
@@ -205,8 +205,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q10
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'In a transverse wave, the motion of the particles is:',
         '[{"id":"a","text":"Parallel to the direction of wave propagation","correct":false},
           {"id":"b","text":"Perpendicular to the direction of wave propagation","correct":true},
@@ -215,8 +215,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q11
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'When two sound waves of equal amplitude arrive 180° out of phase, the result is:',
         '[{"id":"a","text":"Constructive interference — double amplitude","correct":false},
           {"id":"b","text":"Resonance","correct":false},
@@ -225,8 +225,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q12
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'What NDT technique uses high-frequency sound waves to detect internal cracks?',
         '[{"id":"a","text":"Magnetic particle inspection","correct":false},
           {"id":"b","text":"Dye penetrant inspection","correct":false},
@@ -235,8 +235,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q13
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'If the frequency of a wave is doubled while the wave speed remains constant, the wavelength will:',
         '[{"id":"a","text":"Double","correct":false},
           {"id":"b","text":"Remain the same","correct":false},
@@ -245,8 +245,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q14
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'Sound cannot travel through:',
         '[{"id":"a","text":"Air","correct":false},
           {"id":"b","text":"Water","correct":false},
@@ -255,8 +255,8 @@ Aviation application: Doppler radar and altimeters use the Doppler effect to mea
         '{"B1.1","B1.3","B2"}');
 
     -- Q15
-    INSERT INTO easa_questions (module_id, subject_id, question_text, options, licence_types)
-    VALUES (m02_id, s5_id,
+    INSERT INTO questions (subject_id, text, options, licence_types)
+    VALUES (s5_id,
         'Active Noise Reduction (ANR) headsets work on the principle of:',
         '[{"id":"a","text":"Resonance","correct":false},
           {"id":"b","text":"Destructive interference","correct":true},

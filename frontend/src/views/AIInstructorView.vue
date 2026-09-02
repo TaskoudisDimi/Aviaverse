@@ -92,7 +92,7 @@ const modes = [
   { value: 'weak_points',      label: 'Review Weak Points' },
 ]
 
-const mode = ref('beginner_explain')
+const mode = ref('beginner')
 const subject = ref('')
 const input = ref('')
 const messages = ref<Message[]>([])
