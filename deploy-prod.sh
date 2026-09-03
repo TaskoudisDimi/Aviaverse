@@ -45,7 +45,7 @@ tar czf - --no-xattrs -C "$STAGE" . | \
 rm -rf "$STAGE"
 
 echo "→ Starting containers ..."
-$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build 2>&1"
+$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod build --no-cache frontend && docker compose -f docker-compose.prod.yml --env-file .env.prod up -d 2>&1"
 
 echo "→ Running new DB migrations ..."
 $SSH "docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/003_module02_seed.sql 2>&1 || true"
