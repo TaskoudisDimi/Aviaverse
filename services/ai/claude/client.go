@@ -24,7 +24,7 @@ func NewClient() *Client {
 	if err != nil {
 		panic(fmt.Sprintf("gemini client: %v", err))
 	}
-	return &Client{gc: gc, model: "gemini-2.5-flash"}
+	return &Client{gc: gc, model: "gemini-3.6-flash"}
 }
 
 type Message struct {
