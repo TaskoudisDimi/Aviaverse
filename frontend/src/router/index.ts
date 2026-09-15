@@ -25,6 +25,7 @@ const router = createRouter({
         { path: 'exam',     name: 'exam-setup', component: () => import('@/views/ExamSetupView.vue') },
         { path: 'exam/:id', name: 'exam',      component: () => import('@/views/ExamView.vue') },
         { path: 'results/:id', name: 'results', component: () => import('@/views/ResultsView.vue') },
+        { path: 'sessions', name: 'sessions', component: () => import('@/views/OnlineSessionsView.vue') },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

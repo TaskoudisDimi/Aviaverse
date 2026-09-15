@@ -2,29 +2,54 @@ package claude
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"log"
 	"os"
 
-	"github.com/google/generative-ai-go/genai"
-	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
+	"google.golang.org/genai"
 )
 
 type Client struct {
 	gc    *genai.Client
 	model string
+	db    *sql.DB
 }
 
-func NewClient() *Client {
+func NewClient(db *sql.DB) *Client {
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
 		panic("GEMINI_API_KEY not set")
 	}
-	gc, err := genai.NewClient(context.Background(), option.WithAPIKey(apiKey))
+	gc, err := genai.NewClient(context.Background(), &genai.ClientConfig{
+		APIKey:  apiKey,
+		Backend: genai.BackendGeminiAPI,
+	})
 	if err != nil {
 		panic(fmt.Sprintf("gemini client: %v", err))
 	}
-	return &Client{gc: gc, model: "gemini-3.6-flash"}
+	return &Client{gc: gc, model: "gemini-3.6-flash", db: db}
+}
+
+// subjectContent looks up the stored lesson markdown for a subject code
+// (eg. "M03.1") so the AI Instructor can ground its answers in the actual
+// course material instead of relying only on the model's general knowledge.
+// Returns "" (no error surfaced to the caller) if the subject code doesn't
+// match anything or the lookup fails — the chat should still work using just
+// the subject label in that case.
+func (c *Client) subjectContent(ctx context.Context, code string) string {
+	if c.db == nil || code == "" {
+		return ""
+	}
+	var content string
+	err := c.db.QueryRowContext(ctx, `SELECT content FROM easa_subjects WHERE code = $1`, code).Scan(&content)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Printf("subjectContent lookup failed for %q: %v", code, err)
+		}
+		return ""
+	}
+	return content
 }
 
 type Message struct {
@@ -39,12 +64,27 @@ type InstructorRequest struct {
 	History []Message `json:"history"`
 }
 
-func systemPromptForMode(mode, subject string) string {
-	base := `You are an expert AI Instructor specializing in EASA (European Union Aviation Safety Agency) regulations and aircraft maintenance training. Your knowledge covers all EASA Part-66 modules for B1.1 (turbine aircraft), B1.3 (helicopter turbine), and B2 (avionics) licences.`
+func systemPromptForMode(mode, subject, courseContent string) string {
+	base := `You are an expert AI Instructor specializing in EASA (European Union Aviation Safety Agency) regulations and aircraft maintenance training. Your knowledge covers all EASA Part-66 modules for B1.1 (turbine aircraft), B1.3 (helicopter turbine), and B2 (avionics) licences.
+
+Output rules (always follow these, in every mode):
+- Answer the student's actual question directly and in detail. Stay strictly on topic — do not wander into unrelated territory.
+- Never invent hypothetical personal anecdotes, fictional stories, or made-up scenarios to illustrate a point (e.g. imagined situations about cars, people, or events that have nothing to do with the question). If you give an example, it must be a real, concrete, technically accurate aviation maintenance example that directly supports the answer — not a tangent, and never one you contradict or retract later in the same answer.
+- Never use LaTeX or math markup of any kind — no $...$, no $$...$$, no backslash commands like \times, \frac, \sqrt. Write every formula and calculation in plain text using ordinary keyboard characters and Unicode symbols only (e.g. V = I × R, R = ρl/a, X = 2πfL, √, Ω, °, ², ³, ±, Δ). The chat display renders plain markdown, not math notation, so LaTeX syntax shows up as broken symbols to the student.`
 
 	subjectCtx := ""
 	if subject != "" {
 		subjectCtx = fmt.Sprintf(" The current topic is: %s.", subject)
+	}
+
+	if courseContent != "" {
+		subjectCtx += fmt.Sprintf(`
+
+Below is the official course material for this subject, from this platform's own curriculum. Ground your answer in it: prefer its terminology, figures, and explanations over general knowledge whenever it covers the student's question. Only fall back to your broader EASA knowledge for things this material doesn't address. Do not mention that you were given this material — just teach from it naturally.
+
+--- COURSE MATERIAL START ---
+%s
+--- COURSE MATERIAL END ---`, courseContent)
 	}
 
 	modeInstructions := map[string]string{
@@ -68,41 +108,34 @@ func systemPromptForMode(mode, subject string) string {
 func (c *Client) Chat(ctx context.Context, req InstructorRequest, tokenCh chan<- string) error {
 	defer close(tokenCh)
 
-	m := c.gc.GenerativeModel(c.model)
-	m.SystemInstruction = &genai.Content{
-		Parts: []genai.Part{genai.Text(systemPromptForMode(req.Mode, req.Subject))},
+	courseContent := c.subjectContent(ctx, req.Subject)
+
+	config := &genai.GenerateContentConfig{
+		SystemInstruction: genai.NewContentFromText(
+			systemPromptForMode(req.Mode, req.Subject, courseContent), genai.RoleUser),
 	}
 
-	session := m.StartChat()
+	var history []*genai.Content
 	for _, h := range req.History {
-		role := h.Role
+		role := genai.Role(h.Role)
 		if role == "assistant" {
-			role = "model"
+			role = genai.RoleModel
 		}
-		session.History = append(session.History, &genai.Content{
-			Role:  role,
-			Parts: []genai.Part{genai.Text(h.Content)},
-		})
+		history = append(history, genai.NewContentFromText(h.Content, role))
 	}
 
-	iter := session.SendMessageStream(ctx, genai.Text(req.Message))
-	for {
-		resp, err := iter.Next()
-		if err == iterator.Done {
-			return nil
-		}
+	chat, err := c.gc.Chats.Create(ctx, c.model, config, history)
+	if err != nil {
+		return err
+	}
+
+	for resp, err := range chat.SendMessageStream(ctx, genai.Part{Text: req.Message}) {
 		if err != nil {
 			return err
 		}
-		for _, cand := range resp.Candidates {
-			if cand.Content == nil {
-				continue
-			}
-			for _, part := range cand.Content.Parts {
-				if t, ok := part.(genai.Text); ok {
-					tokenCh <- string(t)
-				}
-			}
+		if t := resp.Text(); t != "" {
+			tokenCh <- t
 		}
 	}
+	return nil
 }

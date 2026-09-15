@@ -9,11 +9,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Aviaverse Academy',
-        short_name: 'Aviaverse',
+        name: 'VJet-Academy',
+        short_name: 'VJet',
         description: 'EASA Part-66 Aviation Maintenance Training',
-        theme_color: '#1e3a5f',
-        background_color: '#0f172a',
+        theme_color: '#3366ff',
+        background_color: '#f8fafc',
         icons: [
           { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -33,7 +33,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://188.245.64.189:3000',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
     },

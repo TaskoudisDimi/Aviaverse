@@ -1,19 +1,19 @@
 <template>
-  <div class="p-6 max-w-2xl mx-auto space-y-6">
+  <div class="p-4 sm:p-6 max-w-2xl mx-auto space-y-6">
     <div>
-      <h1 class="text-2xl font-bold text-white">Exam Simulator</h1>
-      <p class="text-slate-400 text-sm mt-1">Configure and start a practice exam</p>
+      <h1 class="text-2xl font-bold text-slate-900">Exam Simulator</h1>
+      <p class="text-slate-500 text-sm mt-1">Configure and start a practice exam</p>
     </div>
 
-    <div v-if="error" class="bg-red-900/30 border border-red-500/50 rounded-lg px-4 py-3 text-red-300 text-sm">
+    <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-600 text-sm">
       {{ error }}
     </div>
 
-    <form @submit.prevent="startExam" class="bg-navy-800 rounded-2xl p-6 border border-slate-700/50 space-y-5">
+    <form @submit.prevent="startExam" class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 space-y-5">
       <div>
-        <label class="block text-sm font-medium text-slate-300 mb-1.5">Module</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Module</label>
         <select v-model="form.module_id" required
-          class="w-full bg-navy-900 border border-slate-600 rounded-xl px-4 py-2.5 text-white
+          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
                  focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
           <option value="" disabled>Select a module…</option>
           <option v-for="m in modules" :key="m.id" :value="m.id">{{ m.code }} – {{ m.title }}</option>
@@ -21,22 +21,21 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-300 mb-1.5">Licence type</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Licence type</label>
         <select v-model="form.licence_type" required
-          class="w-full bg-navy-900 border border-slate-600 rounded-xl px-4 py-2.5 text-white
+          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
                  focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
           <option value="" disabled>Select licence…</option>
-          <option value="B1.1">B1.1</option>
-          <option value="B1.3">B1.3</option>
+          <option value="B1">B1</option>
           <option value="B2">B2</option>
         </select>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-1.5">Questions</label>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Questions</label>
           <select v-model.number="form.num_questions"
-            class="w-full bg-navy-900 border border-slate-600 rounded-xl px-4 py-2.5 text-white
+            class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
                    focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
             <option :value="10">10</option>
             <option :value="20">20</option>
@@ -45,9 +44,9 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-1.5">Time limit</label>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Time limit</label>
           <select v-model.number="form.time_limit_min"
-            class="w-full bg-navy-900 border border-slate-600 rounded-xl px-4 py-2.5 text-white
+            class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
                    focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
             <option :value="15">15 min</option>
             <option :value="30">30 min</option>
@@ -58,7 +57,7 @@
       </div>
 
       <button type="submit" :disabled="loading"
-        class="w-full bg-aviation-600 hover:bg-aviation-500 disabled:opacity-50
+        class="w-full bg-aviation-500 hover:bg-aviation-600 disabled:opacity-50
                text-white font-medium py-3 rounded-xl transition-colors">
         {{ loading ? 'Preparing exam…' : 'Start Exam' }}
       </button>

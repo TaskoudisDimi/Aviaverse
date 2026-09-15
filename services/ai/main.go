@@ -1,17 +1,28 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 	"github.com/vyron/ai/claude"
 	"github.com/vyron/ai/handlers"
 	"github.com/vyron/ai/middleware"
 )
 
 func main() {
-	claudeClient := claude.NewClient()
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatalf("db open: %v", err)
+	}
+	if err := db.Ping(); err != nil {
+		log.Fatalf("db ping: %v", err)
+	}
+	defer db.Close()
+
+	claudeClient := claude.NewClient(db)
 
 	r := gin.Default()
 	r.Use(middleware.CORS())

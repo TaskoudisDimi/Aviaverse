@@ -1,29 +1,29 @@
 <template>
   <div class="flex flex-col h-full">
     <!-- Exam header with countdown -->
-    <div class="bg-navy-800 border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
-      <div>
-        <p class="text-sm font-medium text-white">Question {{ current + 1 }} / {{ questions.length }}</p>
-        <div class="w-48 bg-slate-700 rounded-full h-1.5 mt-2">
+    <div class="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-slate-900">Question {{ current + 1 }} / {{ questions.length }}</p>
+        <div class="w-28 sm:w-48 bg-slate-200 rounded-full h-1.5 mt-2">
           <div class="h-1.5 bg-aviation-500 rounded-full transition-all" :style="{ width: progressPct + '%' }" />
         </div>
       </div>
-      <div class="text-right">
+      <div class="text-right flex-shrink-0">
         <p class="text-xs text-slate-400">Time remaining</p>
         <p class="text-xl font-bold font-mono" :class="timeColor">{{ timeDisplay }}</p>
       </div>
     </div>
 
     <!-- Question area -->
-    <div class="flex-1 overflow-y-auto px-6 py-8 max-w-3xl mx-auto w-full">
+    <div class="flex-1 overflow-y-auto px-4 sm:px-6 py-6 sm:py-8 max-w-3xl mx-auto w-full">
       <div v-if="!session" class="text-center text-slate-400 py-12">
         No active exam session.
-        <RouterLink to="/exam" class="text-aviation-400 ml-1">Start one</RouterLink>
+        <RouterLink to="/exam" class="text-aviation-600 ml-1">Start one</RouterLink>
       </div>
 
       <template v-else>
-        <div class="bg-navy-800 rounded-2xl p-6 border border-slate-700/50 mb-6">
-          <p class="text-base font-medium text-white leading-relaxed">{{ q.text }}</p>
+        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 mb-6">
+          <p class="text-base font-medium text-slate-900 leading-relaxed">{{ q.text }}</p>
         </div>
 
         <div class="space-y-3">
@@ -31,8 +31,8 @@
             @click="answers[q.id] = opt.id"
             class="w-full text-left px-5 py-4 rounded-xl border transition-all"
             :class="answers[q.id] === opt.id
-              ? 'bg-aviation-600/20 border-aviation-500 text-white'
-              : 'bg-navy-800 border-slate-700/50 text-slate-300 hover:border-slate-500'">
+              ? 'bg-aviation-50 border-aviation-400 text-slate-900'
+              : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'">
             {{ opt.text }}
           </button>
         </div>
@@ -40,14 +40,14 @@
         <!-- Navigation -->
         <div class="flex justify-between mt-8">
           <button @click="current--" :disabled="current === 0"
-            class="px-5 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700
+            class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100
                    disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium transition-colors">
             Previous
           </button>
 
           <button v-if="current < questions.length - 1"
             @click="current++"
-            class="px-5 py-2.5 rounded-xl bg-aviation-600 hover:bg-aviation-500 text-white text-sm font-medium transition-colors">
+            class="px-5 py-2.5 rounded-xl bg-aviation-500 hover:bg-aviation-600 text-white text-sm font-medium transition-colors">
             Next
           </button>
 
@@ -65,7 +65,7 @@
             class="w-8 h-8 rounded-lg text-xs font-bold transition-colors"
             :class="[
               i === current ? 'ring-2 ring-aviation-400' : '',
-              answers[questions[i].id] ? 'bg-aviation-600 text-white' : 'bg-slate-700 text-slate-400'
+              answers[questions[i].id] ? 'bg-aviation-500 text-white' : 'bg-slate-100 text-slate-400'
             ]">
             {{ i + 1 }}
           </button>
@@ -118,9 +118,9 @@ const timeDisplay = computed(() => {
 })
 
 const timeColor = computed(() => {
-  if (secondsLeft.value > 300) return 'text-white'
-  if (secondsLeft.value > 60) return 'text-yellow-400'
-  return 'text-red-400 animate-pulse'
+  if (secondsLeft.value > 300) return 'text-slate-900'
+  if (secondsLeft.value > 60) return 'text-amber-500'
+  return 'text-red-500 animate-pulse'
 })
 
 async function submit() {

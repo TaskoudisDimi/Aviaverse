@@ -78,8 +78,12 @@ services:
       dockerfile: services/ai/Dockerfile
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DATABASE_URL=postgres://vyron:${POSTGRES_PASSWORD}@postgres:5432/vyron?sslmode=disable
       - PORT=8083
       - GIN_MODE=release
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   exam:

@@ -1,40 +1,40 @@
 <template>
   <form @submit.prevent="submit" class="space-y-5">
     <div>
-      <h1 class="text-xl font-semibold text-white">Create account</h1>
-      <p class="text-sm text-slate-400 mt-1">Start your EASA Part-66 training</p>
+      <h1 class="text-xl font-semibold text-slate-900">Create account</h1>
+      <p class="text-sm text-slate-500 mt-1">Start your EASA Part-66 training</p>
     </div>
 
-    <div v-if="error" class="bg-red-900/30 border border-red-500/50 rounded-lg px-4 py-3 text-red-300 text-sm">
+    <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-600 text-sm">
       {{ error }}
     </div>
 
     <div class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-slate-300 mb-1.5">Full name</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Full name</label>
         <input v-model="name" type="text" required
-          class="w-full bg-navy-900 border border-slate-600 rounded-xl px-4 py-2.5 text-white placeholder-slate-500
+          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 placeholder-slate-400
                  focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent text-sm"
           placeholder="Alex Rodriguez" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
         <input v-model="email" type="email" required autocomplete="email"
-          class="w-full bg-navy-900 border border-slate-600 rounded-xl px-4 py-2.5 text-white placeholder-slate-500
+          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 placeholder-slate-400
                  focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent text-sm"
           placeholder="you@example.com" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
         <input v-model="password" type="password" required minlength="8" autocomplete="new-password"
-          class="w-full bg-navy-900 border border-slate-600 rounded-xl px-4 py-2.5 text-white placeholder-slate-500
+          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 placeholder-slate-400
                  focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent text-sm"
           placeholder="Min. 8 characters" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-300 mb-1.5">Licence type</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Licence type</label>
         <select v-model="licenceType" required
-          class="w-full bg-navy-900 border border-slate-600 rounded-xl px-4 py-2.5 text-white
+          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
                  focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent text-sm">
           <option value="" disabled>Select your licence…</option>
           <option value="B1.1">B1.1 – Turbine-powered aeroplanes</option>
@@ -46,14 +46,14 @@
     </div>
 
     <button type="submit" :disabled="loading"
-      class="w-full bg-aviation-600 hover:bg-aviation-500 disabled:opacity-50 disabled:cursor-not-allowed
+      class="w-full bg-aviation-500 hover:bg-aviation-600 disabled:opacity-50 disabled:cursor-not-allowed
              text-white font-medium py-2.5 rounded-xl transition-colors text-sm">
       {{ loading ? 'Creating account…' : 'Create account' }}
     </button>
 
-    <p class="text-center text-sm text-slate-400">
+    <p class="text-center text-sm text-slate-500">
       Already have an account?
-      <RouterLink to="/auth/login" class="text-aviation-400 hover:text-aviation-300 font-medium">Sign in</RouterLink>
+      <RouterLink to="/auth/login" class="text-aviation-600 hover:text-aviation-700 font-medium">Sign in</RouterLink>
     </p>
   </form>
 </template>
