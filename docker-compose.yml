@@ -54,6 +54,9 @@ services:
       - DATABASE_URL=postgres://vyron:vyron_secret@postgres:5432/vyron?sslmode=disable
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRY=24h
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
       - PORT=8081
     depends_on:
       postgres:

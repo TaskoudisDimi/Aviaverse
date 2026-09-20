@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 	"github.com/vyron/auth/handlers"
+	"github.com/vyron/auth/mailer"
 	"github.com/vyron/auth/middleware"
 )
 
@@ -30,12 +31,19 @@ func main() {
 	r := gin.Default()
 	r.Use(middleware.CORS())
 
-	h := handlers.New(db, jwtSecret)
+	mail := mailer.NewClient()
+	if !mail.Enabled() {
+		log.Println("WARNING: RESEND_API_KEY / EMAIL_FROM not set — password reset emails will not be sent")
+	}
+
+	h := handlers.New(db, jwtSecret, mail)
 
 	v1 := r.Group("/api/v1/auth")
 	{
 		v1.POST("/register", h.Register)
 		v1.POST("/login", h.Login)
+		v1.POST("/forgot-password", h.ForgotPassword)
+		v1.POST("/reset-password", h.ResetPassword)
 		v1.GET("/me", middleware.Auth(jwtSecret), h.Me)
 	}
 

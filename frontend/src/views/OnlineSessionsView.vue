@@ -58,11 +58,10 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 
-// ── Configure your Cal.com username here ──────────────────────────────────
-// Sign up at https://cal.com and set your username below.
-// Create event types matching the slugs used in `services[].calSlug`.
-const CAL_USERNAME = 'aviaverse'
-// ─────────────────────────────────────────────────────────────────────────
+// Cal.com username, set via VITE_CAL_USERNAME in frontend/.env (see .env.example).
+// Sign up at https://cal.com and create event types matching the slugs used
+// in `services[].calSlug` below.
+const CAL_USERNAME = import.meta.env.VITE_CAL_USERNAME || 'aviaverse'
 
 const calContainer = ref<HTMLElement | null>(null)
 const selected = ref('consultation')

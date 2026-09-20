@@ -1,0 +1,7 @@
+.git
+Library/
+frontend/node_modules
+frontend/dist
+dist/
+*.log
+.DS_Store

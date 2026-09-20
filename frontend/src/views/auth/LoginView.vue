@@ -18,7 +18,10 @@
           placeholder="you@example.com" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-sm font-medium text-slate-700">Password</label>
+          <RouterLink to="/auth/forgot-password" class="text-xs text-aviation-600 hover:text-aviation-700 font-medium">Forgot password?</RouterLink>
+        </div>
         <input v-model="password" type="password" required autocomplete="current-password"
           class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 placeholder-slate-400
                  focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent text-sm"

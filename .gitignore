@@ -22,6 +22,11 @@ frontend/dist/
 logs/
 *.log
 
+# Reference material (source PDFs/textbooks for authoring exam content) —
+# large binary files, some copyrighted/third-party. Kept locally only, never
+# committed. See db/migrations/ for the actual content derived from these.
+Library/
+
 # macOS
 .DS_Store
 

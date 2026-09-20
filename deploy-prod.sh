@@ -63,6 +63,8 @@ cp db/migrations/011_module03_electrical_fundamentals_part1.sql "$STAGE/db/migra
 cp db/migrations/012_module03_electrical_fundamentals_part2.sql "$STAGE/db/migrations/"
 cp db/migrations/013_module03_electrical_fundamentals_part3.sql "$STAGE/db/migrations/"
 cp db/migrations/014_module03_electrical_fundamentals_part4.sql "$STAGE/db/migrations/"
+cp db/migrations/015_password_reset_tokens.sql "$STAGE/db/migrations/"
+cp db/migrations/016_module02_content_audit_fix.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -79,10 +81,10 @@ tar czf - -C "$STAGE" . | $SSH "mkdir -p $REMOTE_DIR && tar xzf - -C $REMOTE_DIR
 
 # ── Build & start ─────────────────────────────────────────────────────────────
 echo "→ Building containers ..."
-$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod build --no-cache frontend ai 2>&1"
+$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod build --no-cache frontend ai auth exam 2>&1"
 
 echo "→ Starting containers ..."
-$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --force-recreate frontend ai 2>&1"
+$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --force-recreate frontend ai auth exam 2>&1"
 
 # ── DB migrations ─────────────────────────────────────────────────────────────
 echo "→ Running DB migrations ..."
@@ -99,6 +101,8 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/012_module03_electrical_fundamentals_part2.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/013_module03_electrical_fundamentals_part3.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/014_module03_electrical_fundamentals_part4.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/015_password_reset_tokens.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/016_module02_content_audit_fix.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────

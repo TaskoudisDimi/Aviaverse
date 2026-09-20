@@ -125,34 +125,39 @@ func (h *Handler) StartExam(c *gin.Context) {
 		return
 	}
 
-	// Cache question correct answers in Redis for submission validation
+	// Cache full question data (text, options incl. correct flag) in Redis so
+	// submission can both validate answers and return a complete review payload
+	// without needing to re-query the DB per question.
+	type cachedOption struct {
+		ID      string `json:"id"`
+		Text    string `json:"text"`
+		Correct bool   `json:"correct"`
+	}
 	type cachedQuestion struct {
-		CorrectID string `json:"correct_id"`
-		SubjectID int    `json:"subject_id"`
+		Text      string         `json:"text"`
+		Options   []cachedOption `json:"options"`
+		CorrectID string         `json:"correct_id"`
+		SubjectID int            `json:"subject_id"`
 	}
 	cache := map[string]cachedQuestion{}
 	for _, q := range questions {
-		// Re-query to get correct answer (not sent to client)
+		// Re-query to get correct answer (not sent to client until after submission)
 		var optionsJSON []byte
 		var subjectID int
 		h.db.QueryRowContext(c.Request.Context(),
 			`SELECT options, subject_id FROM questions WHERE id=$1`, q.ID,
 		).Scan(&optionsJSON, &subjectID)
 
-		type rawOpt struct {
-			ID      string `json:"id"`
-			Correct bool   `json:"correct"`
-		}
-		var raw []rawOpt
-		json.Unmarshal(optionsJSON, &raw)
+		var opts []cachedOption
+		json.Unmarshal(optionsJSON, &opts)
 		correctID := ""
-		for _, o := range raw {
+		for _, o := range opts {
 			if o.Correct {
 				correctID = o.ID
 				break
 			}
 		}
-		cache[q.ID] = cachedQuestion{CorrectID: correctID, SubjectID: subjectID}
+		cache[q.ID] = cachedQuestion{Text: q.Text, Options: opts, CorrectID: correctID, SubjectID: subjectID}
 	}
 	cacheBytes, _ := json.Marshal(cache)
 	h.redis.Set(context.Background(), "exam:"+examID, cacheBytes, time.Duration(timeLimitMin+5)*time.Minute)
@@ -179,11 +184,19 @@ type examResult struct {
 	Details       []answerDetail  `json:"details"`
 }
 
+type resultOption struct {
+	ID      string `json:"id"`
+	Text    string `json:"text"`
+	Correct bool   `json:"correct"`
+}
+
 type answerDetail struct {
-	QuestionID string `json:"question_id"`
-	SelectedID string `json:"selected_id"`
-	CorrectID  string `json:"correct_id"`
-	IsCorrect  bool   `json:"is_correct"`
+	QuestionID   string         `json:"question_id"`
+	QuestionText string         `json:"question_text"`
+	Options      []resultOption `json:"options"`
+	SelectedID   string         `json:"selected_id"`
+	CorrectID    string         `json:"correct_id"`
+	IsCorrect    bool           `json:"is_correct"`
 }
 
 // SubmitExam grades the submitted answers and stores results.
@@ -225,9 +238,16 @@ func (h *Handler) SubmitExam(c *gin.Context) {
 		c.JSON(http.StatusGone, gin.H{"error": "exam session expired"})
 		return
 	}
+	type cachedOption struct {
+		ID      string `json:"id"`
+		Text    string `json:"text"`
+		Correct bool   `json:"correct"`
+	}
 	type cachedQuestion struct {
-		CorrectID string `json:"correct_id"`
-		SubjectID int    `json:"subject_id"`
+		Text      string         `json:"text"`
+		Options   []cachedOption `json:"options"`
+		CorrectID string         `json:"correct_id"`
+		SubjectID int            `json:"subject_id"`
 	}
 	cache := map[string]cachedQuestion{}
 	json.Unmarshal(cacheBytes, &cache)
@@ -242,11 +262,17 @@ func (h *Handler) SubmitExam(c *gin.Context) {
 		if isCorrect {
 			score++
 		}
+		options := make([]resultOption, len(cached.Options))
+		for i, o := range cached.Options {
+			options[i] = resultOption{ID: o.ID, Text: o.Text, Correct: o.Correct}
+		}
 		details = append(details, answerDetail{
-			QuestionID: qID,
-			SelectedID: selectedID,
-			CorrectID:  cached.CorrectID,
-			IsCorrect:  isCorrect,
+			QuestionID:   qID,
+			QuestionText: cached.Text,
+			Options:      options,
+			SelectedID:   selectedID,
+			CorrectID:    cached.CorrectID,
+			IsCorrect:    isCorrect,
 		})
 		prev := subjectScores[cached.SubjectID]
 		correct := prev[0]
@@ -353,7 +379,10 @@ func (h *Handler) GetExamResult(c *gin.Context) {
 	}
 
 	rows, err := h.db.QueryContext(c.Request.Context(),
-		`SELECT question_id, selected_option_id, is_correct FROM exam_answers WHERE exam_id=$1`, examID)
+		`SELECT ea.question_id, q.text, q.options, ea.selected_option_id, ea.is_correct
+		 FROM exam_answers ea
+		 JOIN questions q ON q.id = ea.question_id
+		 WHERE ea.exam_id=$1`, examID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -363,7 +392,20 @@ func (h *Handler) GetExamResult(c *gin.Context) {
 	details := []answerDetail{}
 	for rows.Next() {
 		var d answerDetail
-		rows.Scan(&d.QuestionID, &d.SelectedID, &d.IsCorrect)
+		var optionsJSON []byte
+		if err := rows.Scan(&d.QuestionID, &d.QuestionText, &optionsJSON, &d.SelectedID, &d.IsCorrect); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		var opts []resultOption
+		json.Unmarshal(optionsJSON, &opts)
+		d.Options = opts
+		for _, o := range opts {
+			if o.Correct {
+				d.CorrectID = o.ID
+				break
+			}
+		}
 		details = append(details, d)
 	}
 
