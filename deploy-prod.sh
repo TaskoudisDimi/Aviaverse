@@ -65,6 +65,21 @@ cp db/migrations/013_module03_electrical_fundamentals_part3.sql "$STAGE/db/migra
 cp db/migrations/014_module03_electrical_fundamentals_part4.sql "$STAGE/db/migrations/"
 cp db/migrations/015_password_reset_tokens.sql "$STAGE/db/migrations/"
 cp db/migrations/016_module02_content_audit_fix.sql "$STAGE/db/migrations/"
+cp db/migrations/017_module07_rebuild_cleanup.sql "$STAGE/db/migrations/"
+cp db/migrations/018_module07_ewis_testing_crimping.sql "$STAGE/db/migrations/"
+cp db/migrations/019_module07_soldering_installation.sql "$STAGE/db/migrations/"
+cp db/migrations/020_module08_atmosphere_lift.sql "$STAGE/db/migrations/"
+cp db/migrations/021_module08_reynolds_drag_stalling.sql "$STAGE/db/migrations/"
+cp db/migrations/022_module08_flight_forces_turning.sql "$STAGE/db/migrations/"
+cp db/migrations/023_module08_performance_stability.sql "$STAGE/db/migrations/"
+cp db/migrations/024_module09_general_performance_factors.sql "$STAGE/db/migrations/"
+cp db/migrations/025_module09_social_communication_environment.sql "$STAGE/db/migrations/"
+cp db/migrations/026_module09_tasks_errors_hazards.sql "$STAGE/db/migrations/"
+cp db/migrations/027_fix_licence_types_b1_matching.sql "$STAGE/db/migrations/"
+cp db/migrations/028_module10_regulatory_framework_certifying_staff.sql "$STAGE/db/migrations/"
+cp db/migrations/029_module10_approved_maintenance_organizations.sql "$STAGE/db/migrations/"
+cp db/migrations/030_module10_air_operations_certification.sql "$STAGE/db/migrations/"
+cp db/migrations/031_module10_continuing_airworthiness_national_requirements.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -103,6 +118,21 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/014_module03_electrical_fundamentals_part4.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/015_password_reset_tokens.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/016_module02_content_audit_fix.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/017_module07_rebuild_cleanup.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/018_module07_ewis_testing_crimping.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/019_module07_soldering_installation.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/020_module08_atmosphere_lift.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/021_module08_reynolds_drag_stalling.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/022_module08_flight_forces_turning.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/023_module08_performance_stability.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/024_module09_general_performance_factors.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/025_module09_social_communication_environment.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/026_module09_tasks_errors_hazards.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/027_fix_licence_types_b1_matching.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/028_module10_regulatory_framework_certifying_staff.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/029_module10_approved_maintenance_organizations.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/030_module10_air_operations_certification.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/031_module10_continuing_airworthiness_national_requirements.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────

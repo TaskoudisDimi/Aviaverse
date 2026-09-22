@@ -97,25 +97,56 @@ const services = [
   },
 ]
 
+interface CalFn {
+  (...args: unknown[]): void
+  loaded?: boolean
+  ns?: Record<string, CalFn>
+  q?: unknown[][]
+}
+
 declare global {
   interface Window {
-    Cal?: (...args: unknown[]) => void
+    Cal?: CalFn
   }
 }
 
-function loadCalScript(): Promise<void> {
-  if (window.Cal) return Promise.resolve()
-  return new Promise((resolve) => {
-    const s = document.createElement('script')
-    s.src = 'https://app.cal.com/embed/embed.js'
-    s.async = true
-    s.onload = () => resolve()
-    document.head.appendChild(s)
-  })
+// Cal.com's official bootstrap snippet. IMPORTANT: the real embed.js script
+// (loaded below) expects `window.Cal` to already exist as this queueing stub
+// — it attaches its real implementation onto it rather than creating
+// `window.Cal` itself. Loading embed.js first and calling window.Cal()
+// afterwards (the naive approach) fails with "Cal is not defined".
+function bootstrapCal() {
+  if (window.Cal) return
+  const queue = (fn: CalFn, args: unknown[]) => {
+    fn.q = fn.q || []
+    fn.q.push(args)
+  }
+  const cal: CalFn = (...args: unknown[]) => {
+    if (!cal.loaded) {
+      cal.ns = {}
+      cal.q = cal.q || []
+      const script = document.createElement('script')
+      script.src = 'https://app.cal.com/embed/embed.js'
+      document.head.appendChild(script)
+      cal.loaded = true
+    }
+    if (args[0] === 'init') {
+      const namespace = args[1] as string | undefined
+      if (typeof namespace === 'string') {
+        const nsApi: CalFn = cal.ns![namespace] || ((...a: unknown[]) => queue(nsApi, a))
+        cal.ns![namespace] = nsApi
+        queue(nsApi, args)
+        queue(cal, ['initNamespace', namespace])
+        return
+      }
+    }
+    queue(cal, args)
+  }
+  window.Cal = cal
 }
 
-async function initCal(slug: string) {
-  await loadCalScript()
+function initCal(slug: string) {
+  bootstrapCal()
   if (!calContainer.value || !window.Cal) return
 
   // Clear previous embed
