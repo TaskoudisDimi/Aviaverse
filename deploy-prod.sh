@@ -122,6 +122,10 @@ cp db/migrations/070_module16_fundamentals_performance.sql "$STAGE/db/migrations
 cp db/migrations/071_module16_construction_fuelsystems.sql "$STAGE/db/migrations/"
 cp db/migrations/072_module16_supercharging_ignition.sql "$STAGE/db/migrations/"
 cp db/migrations/073_module16_lubricants_monitoring.sql "$STAGE/db/migrations/"
+cp db/migrations/074_module17_theory_storage.sql "$STAGE/db/migrations/"
+cp db/migrations/075_module17_constant_speed.sql "$STAGE/db/migrations/"
+cp db/migrations/076_module17_maintenance.sql "$STAGE/db/migrations/"
+cp db/migrations/077_module17_sync_ice.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -217,6 +221,10 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/071_module16_construction_fuelsystems.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/072_module16_supercharging_ignition.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/073_module16_lubricants_monitoring.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/074_module17_theory_storage.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/075_module17_constant_speed.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/076_module17_maintenance.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/077_module17_sync_ice.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────
