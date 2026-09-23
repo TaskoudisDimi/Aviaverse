@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
-	"github.com/vyron/ai/claude"
+	"github.com/vyron/ai/gemini"
 	"github.com/vyron/ai/handlers"
 	"github.com/vyron/ai/middleware"
 )
@@ -22,12 +22,12 @@ func main() {
 	}
 	defer db.Close()
 
-	claudeClient := claude.NewClient(db)
+	geminiClient := gemini.NewClient(db)
 
 	r := gin.Default()
 	r.Use(middleware.CORS())
 
-	h := handlers.New(claudeClient)
+	h := handlers.New(geminiClient)
 
 	v1 := r.Group("/api/v1/ai")
 	{

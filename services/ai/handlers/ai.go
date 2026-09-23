@@ -6,22 +6,22 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/vyron/ai/claude"
+	gemini "github.com/vyron/ai/gemini"
 )
 
 type Handler struct {
-	claude *claude.Client
+	gemini *gemini.Client
 }
 
-func New(c *claude.Client) *Handler {
-	return &Handler{claude: c}
+func New(c *gemini.Client) *Handler {
+	return &Handler{gemini: c}
 }
 
 type chatReq struct {
-	Mode    string          `json:"mode" binding:"required"`
-	Subject string          `json:"subject"`
-	Message string          `json:"message" binding:"required"`
-	History []claude.Message `json:"history"`
+	Mode    string           `json:"mode" binding:"required"`
+	Subject string           `json:"subject"`
+	Message string           `json:"message" binding:"required"`
+	History []gemini.Message `json:"history"`
 }
 
 // Chat handles SSE streaming responses from the AI Instructor.
@@ -41,7 +41,7 @@ func (h *Handler) Chat(c *gin.Context) {
 	tokenCh := make(chan string, 64)
 
 	go func() {
-		if err := h.claude.Chat(c.Request.Context(), claude.InstructorRequest{
+		if err := h.gemini.Chat(c.Request.Context(), gemini.InstructorRequest{
 			Mode:    req.Mode,
 			Subject: req.Subject,
 			Message: req.Message,
