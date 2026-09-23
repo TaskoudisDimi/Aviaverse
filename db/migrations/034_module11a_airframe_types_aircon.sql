@@ -1,0 +1,471 @@
+-- Module 11A (Turbine Aeroplane, B1-only): Fuselage/Wings/Stabilisers/Nacelles, Air Conditioning and Cabin Pressurisation
+-- Source: EASA Part-66 Module 11A official textbook (IKAROS Aviation Training Centre, IK M11A, Issue 1 - May 2012)
+
+DO $$
+DECLARE
+    m11_id INT;
+    s3_id  INT;
+    s4_id  INT;
+BEGIN
+    SELECT id INTO m11_id FROM easa_modules WHERE code = 'M11';
+
+    IF EXISTS (SELECT 1 FROM easa_subjects WHERE code = 'M11A.3') THEN
+        RAISE NOTICE 'M11A.3/M11A.4 already seeded, skipping.';
+        RETURN;
+    END IF;
+
+    -- ──────────────────────────────────────────────────────────────
+    -- Sub-Module 11A.3: Fuselage, Wings, Stabilisers and Nacelles
+    -- ──────────────────────────────────────────────────────────────
+    INSERT INTO easa_subjects (module_id, code, title, content, sort_order)
+    VALUES (
+        m11_id, 'M11A.3', 'Fuselage, Wings, Stabilisers and Nacelles',
+        $cnt$
+# Fuselage, Wings, Stabilisers and Nacelles
+
+## Fuselage
+
+The fuselage is the body of the aircraft to which the wings, tail, landing gear and engines may be attached. Larger aircraft can have their main landing gear attached to the wings, and on multiple-engined aircraft a number of the power-plants can be wing mounted also. Loads produced either on the ground or in flight must, at some time, pass through the fuselage, which must have maximum strength combined with minimum weight.
+
+There are two types of construction found in the majority of modern aircraft fuselage design: the **truss** type and the **stressed skin** type.
+
+### Truss Fuselage Construction
+
+A truss is a form of construction in which a number of members (or struts) are joined to form a rigid structure, normally covered with non-load-carrying material such as cloth, fabric or thin sheets of wood.
+
+- **Pratt Truss** — very early aircraft used this method, where struts were held in **compression** and diagonal wires between the struts were in **tension**.
+- **Warren Truss** — became popular once fuselages were made from welded tubes; the longerons are separated by diagonal members which carry **both** compressive and tensile loads.
+
+### Stressed Skin Structure
+
+The need to build a non-load-carrying covering over a structural truss led designers to develop the stressed skin form of construction, in which a proportion of the load is carried by the outside skin itself, which can also be formed into a smoother, more efficient shape.
+
+- **Pure Monocoque** — the commonest form of stressed skin structure, likened to a chicken egg: a seemingly fragile shell that can resist high loads if applied in the proper direction. It is rarely seen in its purest form (some gliders/sailplanes made from GRP, with a thick skin and a core of balsa wood or composite honeycomb, are an exception, needing no internal supporting structure).
+- **Semi-Monocoque** — has a skin carrying a large amount of the load, but with an internal structure of frames and stringers to keep the skin to its correct shape. Some designs have **longerons**, more substantial than stringers, carrying most of the longitudinal loads, with the **frames** carrying the radial loads.
+
+### Pressurised Structure
+
+High altitude flight places occupants in a hostile environment where life cannot be sustained without oxygen; raising the cabin pressure above the outside pressure avoids the need for oxygen masks.
+
+- In the 1950s, piston-engined aircraft had a maximum cabin pressure differential of about **2 psi**.
+- Modern aircraft cabins can sustain a pressure differential of **8 to 10 psi**.
+- There must be no part of the structure containing 'stress raisers' that would concentrate stress to an unacceptable level.
+- Much modern aircraft structure is built to the **'fail safe' philosophy** — multiple load paths for major stresses, catering for the unlikely failure of a single structural item.
+
+**Pressurisation sealing** — all joints, doors, panels and emergency exits must be completely airtight in flight. Joints use an interface of sealing compound; windows and doors use pre-formed rubber seals; points where control tubes and cables pass through the pressure hull use flexible, leak-proof bellows that still move with the controls.
+
+### Attachments
+
+Most other airframe components — wings, stabilisers, pylon and undercarriage — are fitted to the fuselage, which carries most of the major loads on the ground and in flight.
+
+- Wings can be mounted above or below the passenger compartment and are usually attached with multiple attachments, although light aircraft may have wings attached with as few as two bolts.
+- Where the horizontal stabiliser is fitted part-way up or on top of the vertical stabiliser, there is only one strong attachment point; otherwise there are separate attachments for the fin and for the left and right tailplane sections.
+- A moving horizontal stabiliser is attached by left and right rear pivot fittings plus a single forward attachment to a trim actuator.
+- Because of the loads generated by the empennage, the rear fuselage structure usually has stronger frames around the stabiliser attachment points, to transmit loads along the fuselage and away from the tail — the same technique used where engines are attached to wing- or rear-fuselage-mounted pylons.
+- Landing gear can be attached to the fuselage, the wings, or within wing-mounted engine nacelles. Fuselage-mounted main landing gear on passenger/freight aircraft is often housed in fairings or nacelles beneath the fuselage (e.g. the ATR-72), mounted on strong fuselage frames that also carry the wing attachments, with loads transmitted into the fuselage via longitudinal stringers and longerons.
+
+### Passengers and Cargo
+
+- Aircraft seats, with a person correctly strapped in, must survive a sudden stop of over **20g** without the floor mountings failing or the seat collapsing (crashworthiness regulations).
+- Passenger compartment floors are often panels of the composite material **'Fibrelam'**, supported by lateral and longitudinal primary-structure beams. Lateral beams attach to the lower portion of the (usually circular) fuselage frames; seats are fitted on the longitudinal beams.
+- The tops of longitudinal beams have standard-size location holes into which seats are slotted, allowing variable seat pitch for different cabin classes. On aircraft such as the Fokker 100, five longitudinal seat tracks allow five-abreast seating (3+2 or 2+3) with an off-set aisle.
+- **Cargo loading systems** — freight-carrying aircraft have reinforced flooring with tracks, guides and rollers for motorised pallet/container movement; a 'ball-mat' at the entrance door area allows freight to be loaded, rotated and man-handled onto the rollers.
+
+### Doors
+
+Doors cover entry/exit for passengers, crew, refreshments, baggage and maintenance access; some doors are dedicated emergency exits only.
+
+- On pressurised aircraft, doors must be more substantial and fitted with safety devices to prevent accidental opening. A common method is a **'plug' door** that opens inwards so the door plugs the aperture when closed, held in place by cabin pressure in addition to the door frame locating bolts.
+- Any door on a pressurised aircraft that opens outwards must have additional protection devices plus a flight deck warning system if it is not properly closed and secured.
+- Non-pressurised aircraft doors still require a system of handles and latches operating in a specific order or after a certain applied force.
+- Doors are constructed similarly to the fuselage, with an inner and outer skin and vertical/horizontal members, containing the locking/latching mechanisms and indicating/warning wiring.
+- Most fuselage doors are operated manually; larger freight/cargo doors are electrically or hydraulically operated. All cabin doors need an efficient single-handle emergency egress mechanism whose operation is 'rapid and obvious', typically indicated by decals and large red arrows.
+- Dedicated emergency exits are almost always plug type and therefore cannot be opened in flight, because cabin pressure acts on the (usually over-centre cam) opening mechanism, preventing handle rotation.
+- All doors have a substantial seal around their edges; some seals simply compress and fill the space when closed, others use cabin air to inflate and expand the seal.
+
+### Windows and Windscreens
+
+- Transparencies on non-pressurised aircraft are normally acrylic or other clear plastic.
+- On pressurised aircraft, flight deck windscreens must comply with strict bird-strike regulations and are made from a toughened **glass/plastic/glass sandwich**, tested by firing a dead bird from a large air gun.
+- A heating element is fitted between the front glass panel and the plastic core: it provides anti-icing protection and also helps absorb impact by making the plastic core more pliable and shock absorbent.
+- Passenger cabin windows are almost always acrylic plastic, saving weight and cost. They typically have **two layers with a space in between** as a fail-safe measure, so that if one fails the other carries the pressurisation loads; some assemblies add a third acrylic pane to help reduce engine noise in the cabin.
+- Most aircraft have one or more opening flight deck windows (sometimes called **Direct Vision windows**), used for signalling to ground crew, ventilation when air conditioning is off on the ground, and seeing out in an emergency (e.g. an obliterated windscreen). If the cabin is pressurised, these cannot be opened, due to a 'pressure on' safety lock system similar to the cabin doors.
+
+## Wings
+
+### Construction
+
+Wing construction divides first into **externally braced** wings or **cantilever** wings (no external bracing). Early aircraft were braced by wires and struts, producing high drag but low structural weight; by the mid-1930s, the first genuine fully cantilever wings, with all bracing built into the wing structure itself, went into production.
+
+- The heart of a wing is the **spar** (or spars), to which ribs, stringers and other structural items attach. Modern airliners normally have **two spars**; simple light aircraft wings may have only one main spar; some aircraft have up to **five spars** (a measure of fail-safe design); some modern military fighters can have more than **15 spars** as part of a 'damage tolerant' design.
+- Landing gears, primary flying controls, and leading/trailing edge devices are usually attached to one or other of the spars on larger aircraft.
+- Wing planforms are generally grouped as **straight**, **swept**, **delta** and **combination** wings. Straight wings include those with a slightly swept leading edge, trailing edge, or both. Swept wings have both leading and trailing edges swept back at various angles. Delta wings (from the Greek for triangle) are self-explanatory.
+
+### Fuel Storage
+
+Wings are often designed for fuel storage, using either separate tanks within the wing structure or the sealed wing structure itself as integral tanks.
+
+- **Rigid tanks** — usually manufactured from light alloy, first riveted then welded to make them fuel-tight, and clamped into the wing structure by straps or tie bars, often with baffles to prevent fuel surge.
+- **Flexible ('bladder') tanks** — located snugly into the tank bay, whose sides support the relatively weak tank skin. Older types were rubber-covered fabric; modern versions use man-made fibres impregnated with neoprene or a similar fuel-tight material.
+- **Integral tanks** — found on most modern commercial aircraft. Practically the entire wing structure becomes a sealed box (front and rear spars, top and bottom skins, sealed ribs) into which pumps, drains, filler caps and vents are fitted. The main advantage is maximum fuel capacity for minimum weight, with sealing only needed on the seams after construction.
+
+### Landing Gear
+
+Attachments for major components, such as the main landing gear (undercarriage), are often strong points on the wing spars, or a separate spar built specifically for that purpose. On some very large aircraft (e.g. Boeing 747, Airbus A340), additional body gears as well as conventional wing gears are fitted, requiring reinforcements built into the lower fuselage structure to absorb extreme touchdown loads.
+
+### Pylons
+
+Many aircraft mount engines on pylons attached to the wing (a 'podded engine' configuration). The pylons must take very large thrust forces from the engines and transfer them to the airframe, normally achieved by attaching the engine to strong points on the pylon and attaching the pylon to the wing spars, with thrust links fixed between the engine frame and the wing spars. Pylons must be low enough that engine exhaust doesn't strike the wing, but not so low as to risk a runway scrape.
+
+### Control Surface and High Lift/Drag Attachments
+
+All flying controls on the wing — high and low speed ailerons, leading and trailing edge flaps, slats, roll spoilers, speed brakes and lift dumpers — attach to strong points on the front or rear spars. The wing structure must be strong enough to carry lift forces in flight plus additional loads from pilot control inputs and drag devices; consequently, the spars are always the strongest part of the wing structure.
+
+## Stabilisers
+
+The **vertical stabiliser (fin)** produces directional (lateral) stability, while the **horizontal stabiliser (tailplane)** produces longitudinal stability. These surfaces are of similar construction to the wings, with spars, ribs and stringers, and must resist the twisting forces from the control surfaces mounted on their trailing edges. In many cases the fin is similar to one half of the tailplane, and on some light aircraft it is actually constructed that way, simplifying production. Light aircraft stabilisers are manufactured from welded tube or fabricated thin aluminium sheet; as aircraft size and weight increase, surfaces use stronger milled or machined skins and forged spars.
+
+## Flight Control Surfaces
+
+Flight control surfaces must be as light as possible: early control surfaces were a light tubular frame covered with fabric, later light alloy, and today metallic structures with honeycomb cores or epoxy-reinforced composite construction are typical. Control surfaces attach to the wing, fin or stabiliser by hinges, with the spars reinforced at these attachment points.
+
+- To prevent **flutter**, ailerons, elevators and rudders are constructed so that the part of the surface behind the hinge line is as light as possible, with calibrated **mass balance weights** added to the leading edge of the surface — a procedure called **mass balancing**.
+- Surfaces without hydraulic power assistance, which are difficult to move at high speed, also benefit from **aerodynamic balancing**: the hinge is inset so that part of the surface in front of the hinge line projects into the airstream when the control is deflected from neutral.
+
+## Nacelles and Pylons
+
+Nacelles and pylons keep engines outside the airframe. This is safer in the event of fire or explosion, since the engine can be isolated from the fuselage or wings by firewalls, and it is easier for routine maintenance and engine changes if the engine is externally mounted.
+
+- Most nacelles are streamlined fairings covering the power-plant, usually also serving as the intake for jet and turbo-propeller engines, with large easy-to-open doors/panels for access (sometimes smaller quick-release panels for items like oil level checks after every engine shutdown).
+- On light aircraft, nacelles are usually simple GRP fairings split into two parts, removed with a few screws or quick-release fasteners, and containing a small intake for carburettor air.
+- Larger aircraft with fan bypass engines are often fitted with **thrust reversers** as part of the cowlings — doors that translate rearwards, opening panels containing cascade vanes that redirect exhaust thrust forward when reverse thrust is selected after landing.
+- Modern jet engines produce harmful high-frequency noise, which can be kept below the safe/legal minimum by making cowlings from **honeycomb sandwich** (glass or carbon fibre honeycomb with composite or light alloy skin facings) — light in weight and excellent at absorbing sound.
+- Pylons supporting engines on the wings or rear fuselage transmit the full thrust of the engines into the airframe; they must be extremely strong yet flexible, since wing-mounted pylons especially have to move with the flexing of the wings. The space within pylons on many large aircraft is used to fit heat exchangers (radiators), air valves, fuel valves, pipes carrying air/oil/fuel, and electric cabling.
+- All engines must be isolated from the rest of the aircraft by a sealed **fire-resistant bulkhead** or divider, made from a material such as **titanium or stainless steel**, so a fire can be contained within the nacelle and extinguished.
+- Engine mounts are designed not only to hold the engine securely and transmit thrust, but also to absorb vibration — fabricated with a shock-absorbing material, usually an elastomeric or metallic woven block, to give passengers and crew a smooth flight.
+        $cnt$,
+        3
+    ) RETURNING id INTO s3_id;
+
+    -- ──────────────────────────────────────────────────────────────
+    -- Sub-Module 11A.4: Air Conditioning and Cabin Pressurisation
+    -- ──────────────────────────────────────────────────────────────
+    INSERT INTO easa_subjects (module_id, code, title, content, sort_order)
+    VALUES (
+        m11_id, 'M11A.4', 'Air Conditioning and Cabin Pressurisation',
+        $cnt2$
+# Air Conditioning and Cabin Pressurisation
+
+## Introduction
+
+The atmosphere above **10,000 ft** is too thin and cold for normal breathing, so passenger-carrying aircraft operating above this height need an air conditioning and pressurisation system. Temperature, flow rate and humidity of the air passing through the passenger cabin, flight deck and other compartments must be strictly controlled.
+
+- Cabin temperature is normally maintained between **15 and 30 degrees Celsius**.
+- Cabin pressurisation is controlled so that the air pressure in the passenger cabin and adjacent areas does not exceed the equivalent of ambient air pressure at **8,000 ft**.
+- Air conditioning is also essential for un-pressurised aircraft types.
+
+A typical air conditioning and pressurisation system comprises eight principal sub-systems: **Air Supplies** (Pneumatics ATA 36), **Cooling**, **Heating**, **Temperature Control**, **Humidity Control**, **Mass Flow Control**, **Distribution**, and **Pressurisation**.
+
+## Air Supply
+
+- **Engine Bleed Air (compression)** — the most common method on modern aircraft. Very hot air is tapped from the main engine compressor stages and supplied to the cabin, flight deck and other areas, passing through a temperature control system that reduces its temperature and pressure before it enters the cabin, plus flow control and (on some aircraft) humidity control. On pressurised aircraft, discharge of the conditioned air is regulated to maintain cabin pressure at the selected pressure altitude.
+- **Air Compressors or Blowers** — used on turbo-prop, piston engine or turbo-jet aircraft where main engine compressor bleed is unavailable or unsuitable. The compressor/blower is normally mechanically driven from the accessory gearbox of the main engine.
+- **Auxiliary Power Unit (APU)** — a small gas turbine engine that can be connected into the main air supply system to provide an independent means of air conditioning and pressurisation, on the ground or in flight, when the main engines cannot supply it; it uses the engine bleed air principle.
+- **Ram Air** — the normal primary ventilation method on un-pressurised aircraft, via a ram air scoop placed directly into the airflow. Since air at altitude is cold, the temperature control system through which it passes is normally a heater (self-contained combustion heater or exhaust gas heater). On pressurised aircraft, a ram air system can serve as emergency ventilation after complete loss of the main system.
+- **Ground Cart** — an independent means of heating or cooling the passenger cabin on the ground, used on aircraft without an APU, connected externally via a purpose-built inlet, normally employing a combustion-type heater with output controlled from a panel on the cart.
+
+## Cooling
+
+When bleed air is used, air tapped off the engine compressor can reach a temperature in excess of **300 degrees Celsius**, far too hot to feed directly into air-conditioned areas — it must first be cooled to around **20 degrees Celsius**. There are two main cooling methods: **Air Cycle** and **Vapour Cycle**.
+
+### Air Cycle Cooling
+
+Air cycle cooling relies on three basic principles:
+
+- **Surface heat exchange** — passing the charge air (tapped from the engine compressor) across a heat exchanger, subjected to a colder ram air cross-flow. Although 90% of heat is given up this way, the charge air temperature can never be reduced below the ram air temperature by this method alone.
+- **Expansion** — cooling as the pressure of the charge air is reduced by increasing its velocity and expanding it across the turbine of an **Air Cycle Machine (ACM)**, also called a **Cold Air Unit (CAU)**. This can rapidly lower the charge air temperature to zero degrees Celsius, irrespective of ram air temperature.
+- **Energy Conversion** — cooling by making the hot air do work: the charge air drives a turbine connected by a shaft to a compressor or fan within the cold air unit, converting heat energy into kinetic energy, also helping reduce charge air to zero degrees Celsius.
+
+**Heat exchangers** transfer heat from one gas stream to another, using ram air as the cooling medium for the hot charge air. Depending on position, they are called a **'Pre-cooler'/'Primary Heat Exchanger'** or an **'Inter-cooler'/'Secondary Heat Exchanger'**. Construction is a sealed unit with cooling passages, through which charge air flows and over which ram air is directed, with thin corrugated strips between the passages to dissipate heat.
+
+**Air Cycle Machine (ACM) / Cold Air Unit (CAU)** — the primary component of an air cycle cooling system. Three types exist, differing mainly in weight for a given mass flow, size and method of dissipating turbine power output:
+
+- **Turbo-compressor** — a turbine driving a centrifugal compressor, with an inter-cooler connected between the compressor and turbine stages. Charge air enters the compressor eye, is compressed (raising temperature and energy), passes across the inter-cooler matrix (cooled by ram air), then drives the turbine, where expansion rapidly lowers pressure and temperature before the air passes to the cabin.
+- **Brake turbine** — charge air is routed directly from the pre-cooler to drive the turbine, with a large temperature/pressure drop and no need for an inter-cooler (greater efficiency, weight saving). The turbine is coupled to a compressor rotating in ambient air, which acts as a braking medium to prevent the turbine over-speeding.
+- **Turbo-fan** — mechanically similar to the brake-turbine type, but the turbine drives a large centrifugal fan instead of a compressor. The fan draws ambient air over the pre-cooler; its main advantage is that it can be used with the aircraft stationary on the ground and engines running, without relying solely on ram air to cool the pre-cooler.
+
+ACM/CAU compressor and turbine wheels rotate at extremely high speeds, often in excess of **80,000 rpm**, requiring efficient bearing lubrication — either an integral **wet sump** arrangement (oil metered by wicks or an oil slinger) or **pressurised air bearings** needing no oil, where the rotor 'floats' on a thin air layer and must be kept clean, dry and free of oil/grease.
+
+### Vapour Cycle Cooling
+
+An alternative to air cycle cooling, not commonly used these days for cabin air conditioning but still used to remove heat from electrical/electronic equipment. It relies on a refrigerant's ability to absorb heat when changing from a liquid to a gas through vaporisation. A sufficient reduction in pressure causes a liquid to change state into a vapour; a corresponding increase in pressure reverses the process.
+
+The major components — a liquid receiver, thermostatic expansion valve, evaporator, turbo-compressor, condenser and condenser fan — are often mounted together as a line-replaceable **vapour cycle cooling pack**.
+
+- The liquid receiver stores refrigerant, normally a highly volatile chemical such as **Freon**.
+- Refrigerant passes to a thermostatic expansion valve, is metered into the evaporator, where hot charge air flows across it, releasing heat that vaporises the refrigerant, and cooled air passes into the cabin.
+- Vaporised refrigerant gas is drawn into the turbo-compressor, whose coupled turbine is driven by main engine bleed air (an electric motor may be used instead, as in a domestic refrigerator).
+- The refrigerant leaves the compressor at high pressure/temperature, is cooled by ram air across the condenser matrix, condenses back into a liquid, and returns to the liquid receiver.
+- A condenser fan induces air across the condenser matrix when the aircraft is stationary on the ground and no ram air is available.
+
+## Heating
+
+Un-pressurised aircraft use a ram-air system for ventilation, which is very cold at altitude, so a heating system is required. Heating systems divide into two types: **Exhaust heating systems** and **Combustion heating systems**.
+
+- **Exhaust heating systems** — a heater muff surrounds the exhaust pipes of a piston engine (or jet pipe of a turbo-jet). A ram air scoop allows some cold air to go directly to a mixing valve; the remainder enters the muff, is heated by the pipes, and joins the cold air at the mixing valve, with a control lever modulating the hot/cold proportion. Some aircraft fit **carbon monoxide detectors**, filled with brightly coloured crystals that turn black if exposed to dangerous CO levels, to cater for possible exhaust contamination.
+- **Combustion heating systems** — use a purpose-built combustion chamber heater assembly. Fuel from the aircraft fuel system passes through a pressure regulating and shut-off valve, a fuel filter, a fuel pump and a spray nozzle, where it is atomised and ignited with an igniter plug; the combustion chamber assembly heats the ram air passing around it.
+
+## Temperature Control
+
+Temperature regulation for aircraft using the engine bleed air method is usually accomplished by controlling the proportion of hot and cold air from the air supply system. An electric motor driving a **double butterfly type air mixing valve** regulates cabin temperature, allowing a controlled amount of hot air to bypass the air cycle system and recombine with cold air at a downstream mix chamber.
+
+- Normally operated **automatically**, with a **manual** backup if the automatic controller fails.
+- In automatic operation, the controller continually monitors cabin temperatures and repositions the air mixing valve as needed, using signals from a temperature selector on the flight deck (requested temperature) and temperature sensors in the cabin, flight compartment and supply ducts (actual temperature).
+- In manual operation, the control circuit bypasses the controller and connects the flight deck temperature selector directly to the air mixing valve, with sensors transmitting compartment temperatures to flight deck overhead panel indicators.
+
+## Humidity Control
+
+Humidity control ensures the correct amount of water moisture content in the cabin air conditioning air, needed because occupants can suffer low humidity effects at high altitude flight. It is achieved two ways: **Water Separation** (removal of excessive moisture from the charge air, normally by a water extractor/separator) and **Water Infiltration** (addition of moisture into the conditioned air using a water pump and spray nozzle).
+
+### Water Separation — Water Extractor
+
+Water can be introduced into the system by the compression and expansion of air in the ACM/CAU and other parts of the air cycle process. Three types of water separator are in general use:
+
+- **Coalescer/diffuser type** — a coalescer of layers of monel metal gauze and glass fibre cloth sandwiched between stainless steel gauze, supported by a diffuser cone and held by a relief valve housing. As air passes over the coalescer, moisture converts into water droplets, which enter the collector shell, drain into collector tubes and a collector box, and are ejected overboard.
+- **Coalescer/bag type** — a porous bag supported by a shell converts moisture into droplets; a swirl and centrifugal effect forces droplets to the outlet shell, where they collect and drain. A bag visual indicator (operated by back pressure) shows when the bag is dirty or blocked, at which point a relief valve opens to keep flow available.
+- **Swirl vane type** — uses centrifugal force to spin moisture-laden air outwards against the exit shell; a fixed or rotating swirl vane imparts high-speed rotation, separating heavier water droplets, which collect in a sump and are drained away.
+
+### Water Infiltration
+
+As an aircraft climbs to high altitude, air moisture reduces to a much lower level, which may cause occupant discomfort. Moisture is added into the conditioned air by pumping water from a tank to a spray nozzle at the cabin air inlet. Humidity sensors detect low humidity conditions and automatically turn on the controller water pump to restore acceptable humidity.
+
+## Mass Flow Control
+
+Legislation requires a minimum amount of fresh air for passengers and crew, with stale air removed and odours eliminated. Most pressurisation systems rely on air being delivered at a constant rate under all flight conditions. Mass flow control systems constantly monitor the velocity and density of the air supply, adjusting demand on the source or spilling excess air overboard, so mass flow stays constant regardless of aircraft altitude, cabin pressure, or changes in engine compressor/blower speed.
+
+- **Mass Flow Controller** — automatically caters for changes in air density, cabin back pressure and engine compressor supply pressure. Compressor bleed pressure acts on an altitude-compensated piston valve, opposed by a spring and cabin back pressure; the resulting position of the valve varies the size of its outlet ports, producing a constant mass flow downstream at all times.
+- **Spill Valve Flow Controller** — a metering duct senses variations in air velocity and density and transmits the information to a mass flow controller, which converts air pressure signals into electrical signals controlling the position of spill valves, opening or closing them to vary the amount of air spilled overboard and keep the flow rate into the cabin constant.
+
+## Distribution Systems
+
+The air distribution system takes cold air from the air conditioning packs and hot bleed air from the engines and mixes them in a mixer unit to the required temperature, distributing it to sidewall and overhead cabin vents. On some aircraft, cabin air is drawn back into the mixing unit by re-circulating fans, mixed with new air, and re-distributed. Major components are usually located together in a designated bay for ease of maintenance.
+
+- A **gasper fan** provides cold air to individual overhead outlets for crew and passengers, drawn direct from outside or from the cooling packs; each occupant can control the amount received via a rotary nozzle or louvre.
+- Duct systems supply the cockpit and the cabin separately; cabin ducting divides into overhead systems (fore-and-aft ceiling ducting) and sidewall systems (ducting between sidewall and cabin interior linings, releasing air through cove light grills and louvres). A cockpit-controlled selector valve on the main distribution manifold allows overhead, sidewall or a combination to be used.
+- Duct sections are joined with clamps or clips; systems are protected from excess pressures by a spring-loaded pressure relief valve, usually located in the main distribution manifold, immediately downstream from the mixing units.
+- On large aircraft, cockpit-controlled dual selector valves (interlinked butterfly valves) divide air between cockpit and cabin areas — when one is fully open, the other is fully closed.
+- Air is exhausted from the cabin through grills and outflow valves in the sidewalls above the floor, some routed around the cargo compartment walls to assist temperature control there, before discharge overboard through outflow valves. Below each floor air exhaust outlet is a **flotation check valve** — a plastic ball held in a cage — that seals off the floor if the cargo compartment floods, to help prevent water entering the cabin.
+- Aircraft may be separated into zones, each with its own air conditioning system and controls located in a distribution bay; some areas (e.g. avionics bays) may have a remote heat exchanger and fan assembly fed from a zone pack.
+
+### Re-circulation Air System
+
+To improve cabin ventilation and supplement airflow, cabin air is recirculated back to the main distribution manifold and mixed with conditioned air from the cooling packs, improving airflow and offloading the air supply system, converting into a fuel saving. The re-circulation fan draws air from the cabin through a check valve and filter assembly (removing smoke and noxious odours) before passing it to the mixer unit; the check valve prevents reverse flow through the fan and ducting when it is not in use.
+
+## Pressurisation Systems
+
+At high altitude there is not enough atmospheric pressure to aid breathing, and even at lower altitudes the body must work harder to absorb sufficient oxygen through the lungs. This is overcome by pressurising the cockpit/cabin area to create an artificial atmosphere equivalent to below **10,000 feet**. The minimum quantity of fresh air supplied to each person on board must be at least **0.5 lb/minute**.
+
+Aircraft are pressurised by sealing off a strengthened portion of the fuselage — the **pressure vessel** — normally including cabin, cockpit and possibly cargo areas. Air is pumped into the pressure vessel and controlled by an **outflow valve** at the rear of the vessel. Sealing is accomplished with seals around tubing, ducting, bolts, rivets and other hardware, sealing compounds on panels and large structural components, and integral (sometimes inflatable) seals on access/removable doors and hatches.
+
+Pressurisation systems do not need to move large volumes of air — their function is to raise the pressure inside the vessel:
+
+- Small reciprocating engine aircraft receive pressurisation air from the compressor of a coupled turbocharger. Air tapped after the compressor passes through a **flow limiter (sonic venturi)** and then an inter-cooler before entering the cabin. A **sonic venturi**, fitted between the engine and pressurisation system, forms a shock wave once airflow reaches the speed of sound, limiting the flow of air to the pressurisation system.
+- Large reciprocating engine aircraft use engine-driven compressors (driven through an accessory drive or by an electric/hydraulic motor); multi-engine aircraft interconnect more than one compressor through ducting, each with a check or isolation valve to prevent pressure loss if one system fails.
+- Turbine powered aircraft use compressor bleed air directly, which is contamination-free; some use an independent compressor driven by the engine bleed air, or a **jet pump** — a venturi nozzle in the flush air intake ducting where high-velocity engine air creates a low-pressure area that sucks in outside air, mixed and passed into the cabin.
+
+### Control and Indication
+
+There are **three modes of pressurisation**:
+
+- **Un-pressurised mode** — cabin altitude remains the same as flight altitude. The outflow valve remains open, and cabin pressure equals outside ambient pressure. This mode usually applies from sea level up to around **5,000 ft**, but varies by aircraft.
+- **Isobaric mode** — cabin altitude remains constant as flight altitude changes. The cabin pressure controller closes the outflow valve as the aircraft climbs to a chosen cabin altitude, then modulates it to maintain that cabin altitude, up to the flight altitude that produces the maximum differential pressure the aircraft structure is rated for.
+- **Constant-Differential Pressure mode** — cabin pressure is maintained at a constant amount above outside ambient pressure. As the aircraft climbs further, cabin altitude increases, but the internal/external pressure ratio is maintained, up to a maximum cabin altitude that determines the aircraft's operating ceiling.
+
+The amount of differential pressure is determined by the structural strength of the aircraft: the stronger the structure, the higher the differential pressure and the higher the aircraft's operating ceiling.
+
+### Cabin Air Pressure Regulator
+
+The pressure regulator maintains cabin altitude at a selected level in the isobaric range, and limits cabin pressure to a pre-set differential in the differential range, by regulating the outflow valve position. It has two main sections: the head and reference chamber, and the base with the outflow valve and diaphragm.
+
+- **Isobaric control system** — incorporates an evacuated capsule, a rocker arm, a valve spring and a ball-type metering valve. When cabin air pressure increases enough to compress the evacuated capsule, the rocker arm pivots, opening the metering valve proportionally, venting reference pressure air to atmosphere, causing the outflow valve to open and decreasing cabin pressure — modulating to hold cabin pressure constant throughout the isobaric range.
+- **Differential control system** — incorporates a diaphragm, rocker arm, valve spring and ball-type metering valve, with atmospheric pressure on one side of the diaphragm and reference chamber pressure on the other. When reference pressure exceeds the set differential pressure limit, the diaphragm collapses and opens the metering valve, reducing reference pressure and causing the outflow valve to open, reducing cabin pressure to maintain the system pressure differential.
+
+### Safety Valves
+
+- **Cabin Air Pressure Safety (pressure relief) Valve** — prevents cabin pressure from exceeding the predetermined cabin-to-ambient differential.
+- **Negative Pressure Relief Valve** — if cabin pressure were to become lower than outside air pressure, the cabin structure could fail; this valve allows outside air to enter the cabin to prevent that, acting essentially as an inward pressure relief valve.
+- **Dump Valve** — normally solenoid-actuated by a cockpit switch; when energised, it opens, dumping cabin air to atmosphere so cabin pressure decreases rapidly until equal to outside air pressure.
+- **Ditching Valve** — if cabin control valves are situated below the water line and the aircraft ditches, the cabin would quickly flood; a mechanical or electrical ditching selection seals off all pressurisation valves and inlets.
+
+## Electronic Pressurisation Control
+
+Most modern airliners electronically control cabin pressure automatically for the entire flight, from settings made by the flight crew before take-off. The system consists of a flight deck control panel, an automatic pressure controller (with pressure sensing inputs and outputs to monitoring indicators), an electrically-driven gate-type outflow valve, and inward and outward safety relief valves.
+
+### Flight Deck Control Panel
+
+Provides three mode selections:
+
+- **Auto (fully automatic mode)** — settings such as intended cruise altitude and destination landing altitude are made before flight, allowing automatic control for the whole flight.
+- **Standby (semi-automatic, back-up mode)** — a cabin altitude setting must be made for each desired cabin pressure change; the input is then controlled automatically as before.
+- **Manual mode** — used if neither automatic mode is available (e.g. controller failure); the outflow valve is positioned directly from the flight deck via electric torque motors, with a choice of AC or DC electrical supply.
+
+### Automatic Pressure Controller
+
+Provides output control signals to the outflow valve's AC or DC torque motors, positioning and modulating the valve to establish and control cabin pressure according to pre-programmed climb, cruise or descent schedules, so every aircraft altitude has a particular cabin altitude. Input signals come from the flight deck control panel, cabin and ambient pressure sensors, barometric correction and air/ground sensing.
+
+### Outflow Valve
+
+Has a moving gate that covers or uncovers an aperture in the fuselage skin. Increasing the aperture size causes cabin pressure to fall (cabin altitude to ascend); decreasing it increases cabin pressure (cabin altitude to descend). The gate is driven by one of two electrically driven (AC or DC) motors, with input signals from the controller (auto/standby modes) or directly from a control panel switch (manual mode).
+
+### Inward and Outward Safety Relief Valves
+
+Fuselage frames handle tensile (outward) loads well but poorly resist compression loads if outside pressure exceeds inside pressure. Therefore:
+
+- An **inward relief valve** opens to equalise pressure if the inward/negative differential exceeds about **0.5 psid**.
+- **Two outward relief valves** prevent the maximum outward differential pressure from exceeding the structural limit, typically around **8.5 psid**.
+
+Even though the main pressure control is electronic, the safety relief valves are mechanically operated and completely independent of any automatic control system.
+
+## Cabin Pressure Indication
+
+Most pressurisation systems have three basic cockpit indicators:
+
+- **Cabin altitude gauge** — measures actual cabin altitude.
+- **Cabin rate of climb indicator** — shows the rate at which cabin altitude is climbing or descending (i.e. the rate the cabin loses or gains pressure); a typical maximum climb rate is **500 ft/minute** and maximum descent rate is **300 ft/minute**.
+- **Differential pressure gauge** — reads the difference between cabin and outside air pressures, normally controlled and maintained to a structural limitation of around **7 psid**, depending on aircraft type and operating ceiling; it may be combined with the cabin altitude gauge in a dual display.
+
+## Safety and Warning Devices
+
+To ground test the pressurisation system with engines running, at least **three men** are required inside the aircraft for safety reasons. Both air conditioning and pressurisation systems use safety and warning devices to protect against catastrophic failures; some protection devices may be inhibited during landing or take-off, where extra distractions could be unsafe for the crew.
+
+- **Overheating** — most pack systems are protected by a thermal switch downstream of the pack outlet; if outlet temperature reaches a pre-determined figure, the switch shuts the pack valves and sends a warning signal to the cockpit central warning panel (caution/warning lights, aural chimes, fault light on the pack selector switch). Once cooled, the crew may reselect the system, or control it manually via a manual selector switch if the automatic temperature controller was at fault. Extraction/ventilation fans are protected similarly, and may also be protected against over/under-speeding via speed sensors.
+- **Duct Hot Air Leakage** — a duct protection system includes fire-wire (thermistor type) elements around hot zones such as engine air bleeds, air conditioning packs and APUs. As temperature around the wire increases, resistance decreases until a circuit is made, triggering a warning signal; the leaking duct may be isolated automatically or the pilot may need to close off the air valves.
+- **Excess Cabin Altitude** — if cabin altitude increased unchecked, crew and passengers could unknowingly suffer hypoxia; most aircraft give an audio and visual warning on the central warning panel when cabin altitude reaches **10,000 ft**.
+- **Smoke Detection** — smoke detectors may be fitted in the cabin, avionics bay and cargo areas, sending a signal to the central warning panel with lights and audio warnings, and may automatically switch on extractor fans to remove smoke overboard. The pilot may also have a switch or control lever to isolate the cockpit air conditioning ducting from the rest of the aircraft, to prevent smoke reaching the cockpit.
+        $cnt2$,
+        4
+    ) RETURNING id INTO s4_id;
+
+    -- ──────────────────────────────────────────────────────────────
+    -- Questions — M11A.3 Fuselage, Wings, Stabilisers and Nacelles (14 questions)
+    -- ──────────────────────────────────────────────────────────────
+    INSERT INTO questions (subject_id, text, options, licence_types) VALUES
+
+    (s3_id, 'In the early Pratt Truss form of fuselage construction, the struts and diagonal wires carried loads in what way?',
+     '[{"id":"a","text":"Struts held in compression, wires held in tension","correct":true},{"id":"b","text":"Struts held in tension, wires held in compression","correct":false},{"id":"c","text":"Both struts and wires held only in compression","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'In a Warren Truss fuselage, the diagonal members between the longerons carry:',
+     '[{"id":"a","text":"Tensile loads only","correct":false},{"id":"b","text":"Compressive loads only","correct":false},{"id":"c","text":"Both compressive and tensile loads","correct":true}]',
+     '{"B1"}'),
+
+    (s3_id, 'Which type of stressed-skin structure has an internal framework of frames and stringers to keep the skin to its correct load-carrying shape?',
+     '[{"id":"a","text":"Pure monocoque","correct":false},{"id":"b","text":"Semi-monocoque","correct":true},{"id":"c","text":"Warren truss","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'Compared with the roughly 2 psi maximum cabin pressure differential of 1950s piston-engined aircraft, modern pressurised aircraft cabins typically sustain a differential of:',
+     '[{"id":"a","text":"8 to 10 psi","correct":true},{"id":"b","text":"1 to 2 psi","correct":false},{"id":"c","text":"20 to 25 psi","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'The design philosophy in which a structure is built with multiple load paths for major stresses, to cater for the unlikely failure of a single structural item, is known as:',
+     '[{"id":"a","text":"Fail safe","correct":true},{"id":"b","text":"Damage tolerant only","correct":false},{"id":"c","text":"Stress raising","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'To comply with crashworthiness regulations, an aircraft seat with a person correctly strapped in must survive a sudden stop of over:',
+     '[{"id":"a","text":"5g","correct":false},{"id":"b","text":"20g","correct":true},{"id":"c","text":"50g","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'A common method of preventing a pressurised aircraft door from opening accidentally in flight is to design it as a:',
+     '[{"id":"a","text":"''Plug'' door that opens inwards, held closed by cabin pressure as well as the door frame locating bolts","correct":true},{"id":"b","text":"Sliding door with no locking bolts","correct":false},{"id":"c","text":"Door that opens outwards with no additional safety devices","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'Flight deck windscreens on pressurised aircraft are typically constructed as a toughened sandwich of:',
+     '[{"id":"a","text":"Glass/plastic/glass","correct":true},{"id":"b","text":"Acrylic/rubber/acrylic","correct":false},{"id":"c","text":"Mylar/foam/mylar","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'Passenger cabin windows are almost always made from two layers of acrylic plastic with a space in between. This arrangement is an example of:',
+     '[{"id":"a","text":"Aerodynamic balancing","correct":false},{"id":"b","text":"Fail-safe design, so the remaining layer carries the pressurisation loads if one fails","correct":true},{"id":"c","text":"Mass balancing","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'The heart of a wing, to which ribs, stringers and other structural items are attached, is the:',
+     '[{"id":"a","text":"Spar","correct":true},{"id":"b","text":"Nacelle","correct":false},{"id":"c","text":"Longeron only","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'Modern airliner wings normally have how many main spars?',
+     '[{"id":"a","text":"One","correct":false},{"id":"b","text":"Two","correct":true},{"id":"c","text":"Ten","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'During manufacture of an integral fuel tank, practically the entire wing structure becomes a sealed box comprising:',
+     '[{"id":"a","text":"Front and rear spars, top and bottom wing skins, and sealed ribs","correct":true},{"id":"b","text":"A separate rubberised fabric bladder fitted inside the wing bay","correct":false},{"id":"c","text":"A riveted and welded light-alloy tank clamped by straps","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'The calibrated weights added to the leading edge of ailerons, elevators and rudders to prevent flutter are known as:',
+     '[{"id":"a","text":"Aerodynamic balance weights","correct":false},{"id":"b","text":"Mass balance weights","correct":true},{"id":"c","text":"Trim tab weights","correct":false}]',
+     '{"B1"}'),
+
+    (s3_id, 'The sealed bulkhead or divider isolating an engine from the rest of the aircraft, made of a fire-resistant material such as titanium or stainless steel, is fitted so that:',
+     '[{"id":"a","text":"A fire can be contained within the nacelle and extinguished","correct":true},{"id":"b","text":"The engine can be more easily removed for maintenance","correct":false},{"id":"c","text":"Engine vibration is transmitted more efficiently to the airframe","correct":false}]',
+     '{"B1"}');
+
+    -- ──────────────────────────────────────────────────────────────
+    -- Questions — M11A.4 Air Conditioning and Cabin Pressurisation (14 questions)
+    -- ──────────────────────────────────────────────────────────────
+    INSERT INTO questions (subject_id, text, options, licence_types) VALUES
+
+    (s4_id, 'Passenger-carrying aircraft need an air conditioning and pressurisation system above approximately what altitude, because the atmosphere becomes too thin and cold for normal breathing?',
+     '[{"id":"a","text":"5,000 ft","correct":false},{"id":"b","text":"10,000 ft","correct":true},{"id":"c","text":"25,000 ft","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'A cabin pressurisation system is normally controlled so that cabin pressure does not exceed the equivalent of ambient air pressure at:',
+     '[{"id":"a","text":"4,000 ft","correct":false},{"id":"b","text":"8,000 ft","correct":true},{"id":"c","text":"15,000 ft","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'Which method of supplying air to the air conditioning system is the most common, installed on the majority of modern aircraft types?',
+     '[{"id":"a","text":"Ram air scoop","correct":false},{"id":"b","text":"Engine bleed air (compression)","correct":true},{"id":"c","text":"Ground cart only","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'Air tapped from the engine compressor for bleed air cooling can reach a temperature in excess of approximately what value before it must be cooled?',
+     '[{"id":"a","text":"100 degrees Celsius","correct":false},{"id":"b","text":"300 degrees Celsius","correct":true},{"id":"c","text":"1000 degrees Celsius","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'Air cycle cooling relies on which three basic principles?',
+     '[{"id":"a","text":"Surface heat exchange, expansion and energy conversion","correct":true},{"id":"b","text":"Vaporisation, condensation and refrigeration","correct":false},{"id":"c","text":"Compression, ignition and combustion","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'In an air cycle cooling system, the component in which the charge air is expanded across a turbine to rapidly lower its temperature is called the:',
+     '[{"id":"a","text":"Water separator","correct":false},{"id":"b","text":"Air Cycle Machine (ACM) or Cold Air Unit (CAU)","correct":true},{"id":"c","text":"Mixer unit","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'Which type of Air Cycle Machine drives a large centrifugal fan (instead of a compressor) from the turbine, giving the advantage that it can be used on the ground with the aircraft stationary without relying solely on ram air?',
+     '[{"id":"a","text":"Turbo-compressor type","correct":false},{"id":"b","text":"Brake turbine type","correct":false},{"id":"c","text":"Turbo-fan type","correct":true}]',
+     '{"B1"}'),
+
+    (s4_id, 'In a vapour cycle cooling system, the refrigerant commonly used is a highly volatile chemical such as:',
+     '[{"id":"a","text":"Freon","correct":true},{"id":"b","text":"Glycol","correct":false},{"id":"c","text":"Hydraulic fluid","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'On un-pressurised aircraft, the primary ventilation air supply method used with a heating system is normally:',
+     '[{"id":"a","text":"Ram air","correct":true},{"id":"b","text":"Vapour cycle cooling","correct":false},{"id":"c","text":"Electronic pressurisation control","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'Temperature regulation for aircraft using the engine bleed air method is usually accomplished by controlling the proportion of hot and cold air using an electric motor driving what type of valve?',
+     '[{"id":"a","text":"A double butterfly type air mixing valve","correct":true},{"id":"b","text":"A sonic venturi valve","correct":false},{"id":"c","text":"A negative pressure relief valve","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'Which type of water separator uses centrifugal force generated by fixed or rotating vanes to spin moisture-laden air outwards against the exit shell?',
+     '[{"id":"a","text":"Coalescer/diffuser type","correct":false},{"id":"b","text":"Coalescer/bag type","correct":false},{"id":"c","text":"Swirl vane type","correct":true}]',
+     '{"B1"}'),
+
+    (s4_id, 'In the isobaric mode of cabin pressurisation, as the aircraft climbs:',
+     '[{"id":"a","text":"Cabin altitude remains constant while flight altitude changes","correct":true},{"id":"b","text":"Cabin altitude remains the same as flight altitude at all times","correct":false},{"id":"c","text":"The outflow valve remains fully open at all times","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'The minimum quantity of fresh air that must be supplied to each person on board a pressurised aircraft is at least:',
+     '[{"id":"a","text":"0.05 lb/minute","correct":false},{"id":"b","text":"0.5 lb/minute","correct":true},{"id":"c","text":"5 lb/minute","correct":false}]',
+     '{"B1"}'),
+
+    (s4_id, 'The outward safety relief valves on a pressurised fuselage are typically set to prevent the maximum outward differential pressure from exceeding approximately:',
+     '[{"id":"a","text":"0.5 psid","correct":false},{"id":"b","text":"8.5 psid","correct":true},{"id":"c","text":"20 psid","correct":false}]',
+     '{"B1"}');
+
+END $$;

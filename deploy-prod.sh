@@ -80,6 +80,19 @@ cp db/migrations/028_module10_regulatory_framework_certifying_staff.sql "$STAGE/
 cp db/migrations/029_module10_approved_maintenance_organizations.sql "$STAGE/db/migrations/"
 cp db/migrations/030_module10_air_operations_certification.sql "$STAGE/db/migrations/"
 cp db/migrations/031_module10_continuing_airworthiness_national_requirements.sql "$STAGE/db/migrations/"
+cp db/migrations/032_module11_fix_title_and_licence.sql "$STAGE/db/migrations/"
+cp db/migrations/033_module11a_aerodynamics_structures_general.sql "$STAGE/db/migrations/"
+cp db/migrations/034_module11a_airframe_types_aircon.sql "$STAGE/db/migrations/"
+cp db/migrations/035_module11a_autoflight_communications.sql "$STAGE/db/migrations/"
+cp db/migrations/036_module11a_communications_navigation.sql "$STAGE/db/migrations/"
+cp db/migrations/037_module11a_navigation_instruments.sql "$STAGE/db/migrations/"
+cp db/migrations/038_module11a_electrical_power_generation.sql "$STAGE/db/migrations/"
+cp db/migrations/039_module11a_electrical_power_distribution.sql "$STAGE/db/migrations/"
+cp db/migrations/040_module11a_equipment_fire_flightcontrols.sql "$STAGE/db/migrations/"
+cp db/migrations/041_module11a_fuel_hydraulics.sql "$STAGE/db/migrations/"
+cp db/migrations/042_module11a_icerain_landinggear.sql "$STAGE/db/migrations/"
+cp db/migrations/043_module11a_lights_oxygen_general_water.sql "$STAGE/db/migrations/"
+cp db/migrations/044_module11a_fix_m19_title.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -133,6 +146,19 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/029_module10_approved_maintenance_organizations.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/030_module10_air_operations_certification.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/031_module10_continuing_airworthiness_national_requirements.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/032_module11_fix_title_and_licence.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/033_module11a_aerodynamics_structures_general.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/034_module11a_airframe_types_aircon.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/035_module11a_autoflight_communications.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/036_module11a_communications_navigation.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/037_module11a_navigation_instruments.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/038_module11a_electrical_power_generation.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/039_module11a_electrical_power_distribution.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/040_module11a_equipment_fire_flightcontrols.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/041_module11a_fuel_hydraulics.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/042_module11a_icerain_landinggear.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/043_module11a_lights_oxygen_general_water.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/044_module11a_fix_m19_title.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────
