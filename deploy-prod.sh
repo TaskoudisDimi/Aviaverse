@@ -117,6 +117,11 @@ cp db/migrations/065_module15_starting_ignition_indication.sql "$STAGE/db/migrat
 cp db/migrations/066_module15_augmentation_turboprop_turboshaft_apu.sql "$STAGE/db/migrations/"
 cp db/migrations/067_module15_powerplant_installation_fire.sql "$STAGE/db/migrations/"
 cp db/migrations/068_module15_monitoring_storage.sql "$STAGE/db/migrations/"
+cp db/migrations/069_module16_fix_licence.sql "$STAGE/db/migrations/"
+cp db/migrations/070_module16_fundamentals_performance.sql "$STAGE/db/migrations/"
+cp db/migrations/071_module16_construction_fuelsystems.sql "$STAGE/db/migrations/"
+cp db/migrations/072_module16_supercharging_ignition.sql "$STAGE/db/migrations/"
+cp db/migrations/073_module16_lubricants_monitoring.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -207,6 +212,11 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/066_module15_augmentation_turboprop_turboshaft_apu.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/067_module15_powerplant_installation_fire.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/068_module15_monitoring_storage.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/069_module16_fix_licence.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/070_module16_fundamentals_performance.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/071_module16_construction_fuelsystems.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/072_module16_supercharging_ignition.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/073_module16_lubricants_monitoring.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────
