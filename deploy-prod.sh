@@ -107,6 +107,8 @@ cp db/migrations/055_module13_hydraulic_power.sql "$STAGE/db/migrations/"
 cp db/migrations/056_module13_icerain_infosys.sql "$STAGE/db/migrations/"
 cp db/migrations/057_module13_landing_gear.sql "$STAGE/db/migrations/"
 cp db/migrations/058_module13_ima_cabin.sql "$STAGE/db/migrations/"
+cp db/migrations/059_module14_turbine_engines_starting.sql "$STAGE/db/migrations/"
+cp db/migrations/060_module14_engine_indicating_systems.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -187,6 +189,8 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/056_module13_icerain_infosys.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/057_module13_landing_gear.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/058_module13_ima_cabin.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/059_module14_turbine_engines_starting.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/060_module14_engine_indicating_systems.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────
