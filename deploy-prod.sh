@@ -109,6 +109,14 @@ cp db/migrations/057_module13_landing_gear.sql "$STAGE/db/migrations/"
 cp db/migrations/058_module13_ima_cabin.sql "$STAGE/db/migrations/"
 cp db/migrations/059_module14_turbine_engines_starting.sql "$STAGE/db/migrations/"
 cp db/migrations/060_module14_engine_indicating_systems.sql "$STAGE/db/migrations/"
+cp db/migrations/061_module15_fundamentals_performance_inlet.sql "$STAGE/db/migrations/"
+cp db/migrations/062_module15_compressors_combustion_turbine_exhaust.sql "$STAGE/db/migrations/"
+cp db/migrations/063_module15_bearings_lubricants_lubrication.sql "$STAGE/db/migrations/"
+cp db/migrations/064_module15_fuel_air_systems.sql "$STAGE/db/migrations/"
+cp db/migrations/065_module15_starting_ignition_indication.sql "$STAGE/db/migrations/"
+cp db/migrations/066_module15_augmentation_turboprop_turboshaft_apu.sql "$STAGE/db/migrations/"
+cp db/migrations/067_module15_powerplant_installation_fire.sql "$STAGE/db/migrations/"
+cp db/migrations/068_module15_monitoring_storage.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -191,6 +199,14 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/058_module13_ima_cabin.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/059_module14_turbine_engines_starting.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/060_module14_engine_indicating_systems.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/061_module15_fundamentals_performance_inlet.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/062_module15_compressors_combustion_turbine_exhaust.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/063_module15_bearings_lubricants_lubrication.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/064_module15_fuel_air_systems.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/065_module15_starting_ignition_indication.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/066_module15_augmentation_turboprop_turboshaft_apu.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/067_module15_powerplant_installation_fire.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/068_module15_monitoring_storage.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────
