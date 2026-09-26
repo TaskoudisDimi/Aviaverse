@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <div class="bg-navy-900 rounded-2xl p-6 text-white flex flex-col justify-between">
+        <div class="bg-gradient-to-br from-navy-700 to-navy-800 rounded-2xl p-6 text-white flex flex-col justify-between">
           <div>
             <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center mb-3">
               <svg class="w-5 h-5 text-aviation-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
