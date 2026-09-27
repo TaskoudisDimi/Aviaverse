@@ -152,6 +152,10 @@ cp db/migrations/100_module03_supplement_part1.sql "$STAGE/db/migrations/"
 cp db/migrations/101_module03_supplement_part2.sql "$STAGE/db/migrations/"
 cp db/migrations/102_module03_supplement_part3.sql "$STAGE/db/migrations/"
 cp db/migrations/103_module03_supplement_part4.sql "$STAGE/db/migrations/"
+cp db/migrations/104_module08_supplement_part1.sql "$STAGE/db/migrations/"
+cp db/migrations/105_module08_supplement_part2.sql "$STAGE/db/migrations/"
+cp db/migrations/106_module08_supplement_part3.sql "$STAGE/db/migrations/"
+cp db/migrations/107_module08_supplement_part4.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -277,6 +281,10 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/101_module03_supplement_part2.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/102_module03_supplement_part3.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/103_module03_supplement_part4.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/104_module08_supplement_part1.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/105_module08_supplement_part2.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/106_module08_supplement_part3.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/107_module08_supplement_part4.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────
