@@ -136,6 +136,16 @@ cp db/migrations/084_module11b_fuel_hydraulics.sql "$STAGE/db/migrations/"
 cp db/migrations/085_module11b_icerain_landinggear.sql "$STAGE/db/migrations/"
 cp db/migrations/086_module11b_fuel_smallaircraft_appendix.sql "$STAGE/db/migrations/"
 cp db/migrations/087_module11b_lights_oxygen_pneumatic_water.sql "$STAGE/db/migrations/"
+cp db/migrations/088_module05_instruments_numbering_conversion.sql "$STAGE/db/migrations/"
+cp db/migrations/089_module05_databuses_logic_computer.sql "$STAGE/db/migrations/"
+cp db/migrations/090_module06_ferrous_nonferrous.sql "$STAGE/db/migrations/"
+cp db/migrations/091_module06_composite_corrosion.sql "$STAGE/db/migrations/"
+cp db/migrations/092_module05_microprocessors_ics_multiplexing_fibreoptics.sql "$STAGE/db/migrations/"
+cp db/migrations/093_module05_displays_esd_software.sql "$STAGE/db/migrations/"
+cp db/migrations/094_module06_fasteners_pipes.sql "$STAGE/db/migrations/"
+cp db/migrations/095_module06_springs_bearings_transmissions.sql "$STAGE/db/migrations/"
+cp db/migrations/096_module05_emenvironment_typicalsystems.sql "$STAGE/db/migrations/"
+cp db/migrations/097_module06_controlcables_electricalcables.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -245,6 +255,16 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/085_module11b_icerain_landinggear.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/086_module11b_fuel_smallaircraft_appendix.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/087_module11b_lights_oxygen_pneumatic_water.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/088_module05_instruments_numbering_conversion.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/089_module05_databuses_logic_computer.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/090_module06_ferrous_nonferrous.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/091_module06_composite_corrosion.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/092_module05_microprocessors_ics_multiplexing_fibreoptics.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/093_module05_displays_esd_software.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/094_module06_fasteners_pipes.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/095_module06_springs_bearings_transmissions.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/096_module05_emenvironment_typicalsystems.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/097_module06_controlcables_electricalcables.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────
