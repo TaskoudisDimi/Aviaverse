@@ -4,9 +4,7 @@
     <header class="flex-shrink-0 bg-white border-b border-slate-200">
       <div class="flex items-center h-16 px-4 sm:px-6 gap-4">
         <div class="flex items-center gap-2 flex-shrink-0">
-          <svg class="w-6 h-6 text-aviation-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/>
-          </svg>
+          <img src="/favicon.png" alt="" class="w-7 h-7 flex-shrink-0" />
           <span class="font-bold text-lg tracking-tight text-slate-900 whitespace-nowrap">VJet-Academy</span>
         </div>
 
@@ -55,7 +53,10 @@
         <div class="absolute inset-0 bg-black/40" @click="mobileOpen = false" />
         <aside class="absolute left-0 top-0 h-full w-64 bg-white flex flex-col">
           <div class="flex items-center justify-between px-6 py-5 border-b border-slate-200">
-            <span class="font-bold text-aviation-600">VJet-Academy</span>
+            <div class="flex items-center gap-2">
+              <img src="/favicon.png" alt="" class="w-6 h-6 flex-shrink-0" />
+              <span class="font-bold text-aviation-600">VJet-Academy</span>
+            </div>
             <button @click="mobileOpen = false" class="text-slate-500">
               <XMarkIcon class="w-5 h-5" />
             </button>
