@@ -11,16 +11,6 @@
 
     <form @submit.prevent="startExam" class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 space-y-5">
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Module</label>
-        <select v-model="form.module_id" required
-          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
-                 focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
-          <option value="" disabled>Select a module…</option>
-          <option v-for="m in modules" :key="m.id" :value="m.id">{{ m.code }} – {{ m.title }}</option>
-        </select>
-      </div>
-
-      <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Licence type</label>
         <select v-model="form.licence_type" required
           class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
@@ -29,6 +19,19 @@
           <option value="B1">B1</option>
           <option value="B2">B2</option>
         </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Module</label>
+        <select v-model="form.module_id" required :disabled="!form.licence_type"
+          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
+                 focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm disabled:opacity-50">
+          <option value="" disabled>{{ form.licence_type ? 'Select a module…' : 'Select a licence first…' }}</option>
+          <option v-for="m in availableModules" :key="m.id" :value="m.id">{{ m.code }} – {{ m.title }}</option>
+        </select>
+        <p v-if="form.licence_type && !availableModules.length" class="text-xs text-slate-500 mt-1.5">
+          No modules available for {{ form.licence_type }}.
+        </p>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
@@ -66,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/lib/api'
 import { useExamStore } from '@/stores/exam'
@@ -74,7 +77,7 @@ import { useExamStore } from '@/stores/exam'
 const router = useRouter()
 const examStore = useExamStore()
 
-interface Module { id: number; code: string; title: string }
+interface Module { id: number; code: string; title: string; licence_types: string[] }
 const modules = ref<Module[]>([])
 const loading = ref(false)
 const error = ref('')
@@ -84,6 +87,16 @@ const form = ref({
   licence_type: '',
   num_questions: 20,
   time_limit_min: 30,
+})
+
+const availableModules = computed(() =>
+  modules.value.filter(m => m.licence_types.includes(form.value.licence_type))
+)
+
+watch(() => form.value.licence_type, () => {
+  if (!availableModules.value.some(m => m.id === form.value.module_id)) {
+    form.value.module_id = ''
+  }
 })
 
 onMounted(async () => {
