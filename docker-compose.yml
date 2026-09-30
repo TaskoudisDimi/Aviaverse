@@ -80,7 +80,10 @@ services:
       - "8083:8083"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
       - DATABASE_URL=postgres://vyron:vyron_secret@postgres:5432/vyron?sslmode=disable
+      - REDIS_URL=redis:6379
+      - AI_MONTHLY_MESSAGE_LIMIT=100
       - PORT=8083
     depends_on:
       - redis

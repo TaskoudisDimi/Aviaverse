@@ -211,7 +211,14 @@ async function send() {
     })
 
     if (!res.ok || !res.body) {
-      assistantMsg.content = '⚠️ Could not reach AI service. Please try again.'
+      if (res.status === 429) {
+        const data = await res.json().catch(() => null)
+        assistantMsg.content = data?.message
+          ? `🚦 ${data.message}`
+          : '🚦 You have reached this month\'s AI Instructor message limit.'
+      } else {
+        assistantMsg.content = '⚠️ Could not reach AI service. Please try again.'
+      }
       streaming.value = false
       saveHistory()
       return
