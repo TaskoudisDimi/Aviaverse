@@ -43,8 +43,41 @@
       </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto">
-      <RouterView />
+    <main class="relative flex-1 overflow-y-auto">
+      <svg class="fixed inset-0 w-full h-full pointer-events-none z-0" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1600 1000" aria-hidden="true">
+        <g stroke="#94a3b8" stroke-width="1" fill="none" opacity="0.4">
+          <!-- turbofan cutaway, left edge -->
+          <line x1="-40" y1="500" x2="420" y2="500" stroke-dasharray="2 6"/>
+          <circle cx="60" cy="500" r="120"/>
+          <circle cx="60" cy="500" r="80"/>
+          <circle cx="170" cy="500" r="95"/>
+          <circle cx="170" cy="500" r="55"/>
+          <circle cx="280" cy="500" r="70"/>
+          <circle cx="370" cy="500" r="45"/>
+          <path d="M-40 430 L420 455 M-40 570 L420 545"/>
+        </g>
+        <g fill="#94a3b8" opacity="0.55" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
+          <text x="20" y="335">FAN</text>
+          <text x="20" y="378">COMPRESSOR</text>
+          <text x="20" y="421">COMBUSTION</text>
+          <text x="20" y="642">TURBINE</text>
+          <text x="20" y="685">EXHAUST</text>
+        </g>
+        <g stroke="#94a3b8" stroke-width="1" fill="none" opacity="0.4">
+          <!-- aircraft silhouette, right edge -->
+          <path d="M1560 360 L1560 560 L1500 600 L1470 600 L1470 585 L1495 575 L1495 460 L1420 510 L1420 545 L1440 555 L1440 566 L1400 566 L1400 400 L1420 400 L1420 435 L1495 385 L1495 300 L1440 265 L1440 253 L1400 253 L1400 240 L1470 240 L1470 255 L1500 275 Z"/>
+          <line x1="1560" y1="230" x2="1560" y2="780" stroke-dasharray="2 6"/>
+        </g>
+        <g fill="#94a3b8" opacity="0.55" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
+          <text x="1580" y="470" transform="rotate(90 1580 470)">MAINTAIN</text>
+          <text x="1580" y="600" transform="rotate(90 1580 600)">LEARN</text>
+          <text x="1580" y="700" transform="rotate(90 1580 700)">CERTIFY</text>
+          <text x="1580" y="800" transform="rotate(90 1580 800)">FLY HIGHER</text>
+        </g>
+      </svg>
+      <div class="relative z-10">
+        <RouterView />
+      </div>
     </main>
 
     <!-- Mobile nav drawer -->
