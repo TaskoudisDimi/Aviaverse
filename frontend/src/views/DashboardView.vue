@@ -1,17 +1,39 @@
 <template>
   <div class="p-6 max-w-7xl mx-auto space-y-6">
     <!-- Hero -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-aviation-700 via-aviation-600 to-aviation-500 px-6 py-8 sm:px-10 sm:py-10 text-white">
-      <svg class="absolute -right-10 -top-10 w-64 h-64 text-white/10" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/>
+    <div class="relative overflow-hidden rounded-2xl bg-[linear-gradient(120deg,#0a1a33_0%,#173d7a_38%,#3f6fc4_62%,#e8a33d_100%)] px-6 py-8 sm:px-10 sm:py-10 text-white">
+      <svg class="absolute inset-0 w-full h-full" viewBox="0 0 800 260" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <defs>
+          <radialGradient id="sunGlow" cx="86%" cy="78%" r="55%">
+            <stop offset="0%" stop-color="#ffd9a0" stop-opacity="0.85"/>
+            <stop offset="45%" stop-color="#f6b25a" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#f6b25a" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="trail" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0.35"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="800" height="260" fill="url(#sunGlow)"/>
+        <!-- distant skyline / mountain ridge -->
+        <path d="M0 200 L60 178 L110 196 L170 160 L230 198 L290 172 L350 200 L420 168 L480 200 L560 182 L630 202 L700 176 L800 200 L800 260 L0 260 Z"
+              fill="#061226" opacity="0.38"/>
+        <path d="M0 215 L90 200 L160 218 L240 192 L320 220 L410 198 L500 222 L590 202 L680 222 L800 206 L800 260 L0 260 Z"
+              fill="#061226" opacity="0.55"/>
+        <!-- climbing jet with light trail -->
+        <g transform="translate(610,192) rotate(-22) scale(2.6)">
+          <line x1="-110" y1="9" x2="-7" y2="0" stroke="url(#trail)" stroke-width="5" stroke-linecap="round"/>
+          <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"
+                transform="translate(-12,-12)" fill="#ffffff" opacity="0.95"/>
+        </g>
       </svg>
       <div class="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <p class="text-xs font-medium uppercase tracking-wider text-aviation-100">For aircraft engineers. A brighter tomorrow.</p>
-          <h1 class="text-2xl sm:text-3xl font-bold mt-2">Welcome back, {{ auth.user?.full_name }}</h1>
-          <p class="text-aviation-100 text-sm mt-1">Continue your aviation maintenance journey</p>
+          <p class="text-xs font-medium uppercase tracking-wider text-white/80">For aircraft engineers. A brighter tomorrow.</p>
+          <h1 class="text-2xl sm:text-3xl font-bold mt-2 drop-shadow-sm">Welcome back, {{ auth.user?.full_name }}</h1>
+          <p class="text-white/80 text-sm mt-1">Continue your aviation maintenance journey</p>
         </div>
-        <p class="text-sm italic text-aviation-100 sm:max-w-xs sm:text-right">"Better engineers keep the world flying."</p>
+        <p class="text-sm italic text-white/90 sm:max-w-xs sm:text-right drop-shadow-sm">"Better engineers keep the world flying."</p>
       </div>
     </div>
 
