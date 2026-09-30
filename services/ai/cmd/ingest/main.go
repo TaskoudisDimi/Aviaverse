@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	embedModel   = "text-embedding-004"
+	embedModel   = "gemini-embedding-001"
 	embedDims    = 768
 	chunkSize    = 1200 // characters
 	chunkOverlap = 150  // characters
@@ -156,7 +156,10 @@ func extractText(pdfPath string) (string, int, error) {
 	if err := cmd.Run(); err != nil {
 		return "", 0, fmt.Errorf("pdftotext: %w", err)
 	}
-	return out.String(), pageCount, nil
+	// pdftotext occasionally emits raw bytes that aren't valid UTF-8 (stray
+	// Latin-1 bytes from a PDF's font encoding table) — Postgres rejects
+	// those outright on insert, so strip them here instead of per-chunk.
+	return strings.ToValidUTF8(out.String(), ""), pageCount, nil
 }
 
 // chunkText splits text into overlapping chunks, preferring to break on
@@ -170,7 +173,11 @@ func chunkText(text string) []string {
 	var current strings.Builder
 
 	flush := func() {
-		s := strings.TrimSpace(current.String())
+		// Byte-offset slicing below (overlap carry-forward, hard-split) can
+		// land mid-rune even when the source text is valid UTF-8 — sanitize
+		// each chunk right before it's stored rather than trying to make
+		// every slice point rune-aware.
+		s := strings.ToValidUTF8(strings.TrimSpace(current.String()), "")
 		if len(s) >= 40 { // skip near-empty fragments
 			chunks = append(chunks, s)
 		}
@@ -201,7 +208,7 @@ func chunkText(text string) []string {
 			if idx := strings.LastIndexByte(s[:chunkSize], ' '); idx > chunkSize/2 {
 				cut = idx
 			}
-			chunks = append(chunks, strings.TrimSpace(s[:cut]))
+			chunks = append(chunks, strings.ToValidUTF8(strings.TrimSpace(s[:cut]), ""))
 			rest := s[cut:]
 			current.Reset()
 			current.WriteString(rest)
