@@ -10,8 +10,10 @@
     <div class="grid sm:grid-cols-2 gap-5">
       <div
         v-for="svc in services" :key="svc.title"
-        class="bg-white border border-slate-200 rounded-2xl p-6 hover:border-aviation-300 transition-colors cursor-pointer"
-        :class="selected === svc.calSlug ? 'border-aviation-400 bg-aviation-50/40' : ''"
+        class="bg-white border-2 rounded-2xl p-6 transition-all cursor-pointer"
+        :class="selected === svc.calSlug
+          ? 'border-aviation-500 bg-aviation-50 ring-2 ring-aviation-500/25 shadow-sm'
+          : 'border-slate-200 hover:border-aviation-300'"
         @click="selectService(svc.calSlug)"
       >
         <div class="w-10 h-10 rounded-xl bg-aviation-50 flex items-center justify-center mb-4">
