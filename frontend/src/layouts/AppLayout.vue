@@ -75,7 +75,7 @@
           <text x="1580" y="800" transform="rotate(90 1580 800)">FLY HIGHER</text>
         </g>
       </svg>
-      <div class="relative z-10">
+      <div class="relative z-10 h-full">
         <RouterView />
       </div>
     </main>
