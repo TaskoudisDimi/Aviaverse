@@ -79,6 +79,17 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 
+	// Every new account starts on the free plan. Not fatal if this fails —
+	// log it rather than rolling back the whole registration over a billing
+	// bookkeeping row.
+	if _, err := h.db.Exec(
+		`INSERT INTO user_subscriptions (user_id, plan_id, status)
+		 SELECT $1, id, 'active' FROM subscription_plans WHERE code = 'free'`,
+		user.ID,
+	); err != nil {
+		log.Printf("failed to assign free plan to new user %s: %v", user.ID, err)
+	}
+
 	token, err := h.generateToken(user.ID, user.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "token error"})

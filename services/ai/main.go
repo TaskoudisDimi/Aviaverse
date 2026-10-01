@@ -40,7 +40,7 @@ func main() {
 	r := gin.Default()
 	r.Use(middleware.CORS())
 
-	h := handlers.New(geminiClient, rdb, messageLimit)
+	h := handlers.New(geminiClient, db, rdb, messageLimit)
 
 	v1 := r.Group("/api/v1/ai")
 	v1.Use(middleware.Auth())

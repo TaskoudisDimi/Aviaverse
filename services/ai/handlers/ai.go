@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -13,13 +15,39 @@ import (
 )
 
 type Handler struct {
-	gemini       *gemini.Client
-	redis        *redis.Client
-	messageLimit int
+	gemini              *gemini.Client
+	db                  *sql.DB
+	redis               *redis.Client
+	defaultMessageLimit int
 }
 
-func New(c *gemini.Client, rdb *redis.Client, messageLimit int) *Handler {
-	return &Handler{gemini: c, redis: rdb, messageLimit: messageLimit}
+func New(c *gemini.Client, db *sql.DB, rdb *redis.Client, defaultMessageLimit int) *Handler {
+	return &Handler{gemini: c, db: db, redis: rdb, defaultMessageLimit: defaultMessageLimit}
+}
+
+// planMessageCap looks up the monthly AI message cap from the user's
+// currently active subscription plan. Falls back to defaultMessageLimit if
+// the user has no subscription row (shouldn't happen — every account gets
+// one on registration) or the lookup fails, so a DB hiccup degrades to a
+// safe default instead of blocking chat entirely.
+func (h *Handler) planMessageCap(ctx context.Context, userID string) int {
+	var messageCap int
+	err := h.db.QueryRowContext(ctx, `
+		SELECT sp.ai_message_cap
+		FROM user_subscriptions us
+		JOIN subscription_plans sp ON sp.id = us.plan_id
+		WHERE us.user_id = $1
+		  AND us.status = 'active'
+		  AND (us.expires_at IS NULL OR us.expires_at > now())
+		ORDER BY us.started_at DESC
+		LIMIT 1`, userID).Scan(&messageCap)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Printf("planMessageCap lookup failed for user %s: %v", userID, err)
+		}
+		return h.defaultMessageLimit
+	}
+	return messageCap
 }
 
 type chatReq struct {
@@ -30,10 +58,10 @@ type chatReq struct {
 }
 
 // checkAndIncrementUsage atomically increments this user's message count for
-// the current calendar month and reports whether they're still under the
-// cap. The counter key expires automatically after ~32 days so it never
-// needs manual cleanup, and a fresh key naturally starts each new month.
-func (h *Handler) checkAndIncrementUsage(ctx context.Context, userID string) (count int64, limited bool, err error) {
+// the current calendar month and reports whether they're still under their
+// plan's cap. The counter key expires automatically after ~32 days so it
+// never needs manual cleanup, and a fresh key naturally starts each month.
+func (h *Handler) checkAndIncrementUsage(ctx context.Context, userID string, messageCap int) (count int64, limited bool, err error) {
 	key := fmt.Sprintf("ai:msgs:%s:%s", userID, time.Now().Format("2006-01"))
 	count, err = h.redis.Incr(ctx, key).Result()
 	if err != nil {
@@ -42,7 +70,7 @@ func (h *Handler) checkAndIncrementUsage(ctx context.Context, userID string) (co
 	if count == 1 {
 		h.redis.Expire(ctx, key, 32*24*time.Hour)
 	}
-	return count, count > int64(h.messageLimit), nil
+	return count, count > int64(messageCap), nil
 }
 
 // Chat handles SSE streaming responses from the AI Instructor.
@@ -56,7 +84,8 @@ func (h *Handler) Chat(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	userIDStr, _ := userID.(string)
 
-	_, limited, err := h.checkAndIncrementUsage(c.Request.Context(), userIDStr)
+	messageCap := h.planMessageCap(c.Request.Context(), userIDStr)
+	_, limited, err := h.checkAndIncrementUsage(c.Request.Context(), userIDStr, messageCap)
 	if err != nil {
 		// Redis being unavailable shouldn't take down the chat feature —
 		// fail open, same tolerance the rest of this handler has toward
@@ -67,7 +96,7 @@ func (h *Handler) Chat(c *gin.Context) {
 		c.JSON(http.StatusTooManyRequests, gin.H{
 			"error":   "monthly_limit_reached",
 			"message": "You've reached this month's AI Instructor message limit. It resets at the start of next month.",
-			"limit":   h.messageLimit,
+			"limit":   messageCap,
 		})
 		return
 	}
