@@ -311,6 +311,92 @@ func (h *Handler) Me(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+type updateProfileReq struct {
+	FullName    string `json:"full_name" binding:"required"`
+	LicenceType string `json:"licence_type" binding:"required,oneof=B1.1 B1.3 B2 all"`
+}
+
+// UpdateProfile lets a user change their own name and licence type.
+func (h *Handler) UpdateProfile(c *gin.Context) {
+	userID := c.GetString("user_id")
+	var req updateProfileReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err := h.db.Exec(
+		`UPDATE users SET full_name = $1, licence_type = $2, updated_at = now() WHERE id = $3`,
+		req.FullName, req.LicenceType, userID,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"full_name": req.FullName, "licence_type": req.LicenceType})
+}
+
+type changePlanReq struct {
+	PlanCode string `json:"plan_code" binding:"required"`
+}
+
+// ChangePlan switches the caller's active subscription to a different plan.
+// No payment is collected here — real billing isn't wired up yet, so this
+// is a self-service switch on the honor system until a payment processor
+// is integrated. Marks the subscription payment_provider as 'manual' so
+// it's obvious in the data which subscriptions went through real billing.
+func (h *Handler) ChangePlan(c *gin.Context) {
+	userID := c.GetString("user_id")
+	var req changePlanReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var planID int
+	var periodDays sql.NullInt32
+	err := h.db.QueryRow(
+		`SELECT id, period_days FROM subscription_plans WHERE code = $1 AND active = true`, req.PlanCode,
+	).Scan(&planID, &periodDays)
+	if err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"error": "unknown plan"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	res, err := h.db.Exec(`
+		UPDATE user_subscriptions
+		SET plan_id = $1,
+		    started_at = now(),
+		    expires_at = CASE WHEN $2::int IS NULL THEN NULL ELSE now() + ($2::int || ' days')::interval END,
+		    payment_provider = 'manual',
+		    status = 'active',
+		    updated_at = now()
+		WHERE user_id = $3 AND status = 'active'`,
+		planID, periodDays, userID,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		// No active subscription row somehow — create one rather than fail.
+		if _, err := h.db.Exec(
+			`INSERT INTO user_subscriptions (user_id, plan_id, status, payment_provider)
+			 VALUES ($1, $2, 'active', 'manual')`,
+			userID, planID,
+		); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"plan_code": req.PlanCode})
+}
+
 // Plans lists all active subscription plans, for display on the settings /
 // pricing page. Public (no auth) since it's shown on the pricing-comparison
 // view even to visitors deciding whether to sign up.

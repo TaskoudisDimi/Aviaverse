@@ -45,6 +45,8 @@ func main() {
 		v1.POST("/forgot-password", h.ForgotPassword)
 		v1.POST("/reset-password", h.ResetPassword)
 		v1.GET("/me", middleware.Auth(jwtSecret), h.Me)
+		v1.PATCH("/me", middleware.Auth(jwtSecret), h.UpdateProfile)
+		v1.POST("/me/plan", middleware.Auth(jwtSecret), h.ChangePlan)
 		v1.GET("/plans", h.Plans)
 	}
 

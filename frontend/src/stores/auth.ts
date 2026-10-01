@@ -17,6 +17,7 @@ interface User {
   email: string
   full_name: string
   licence_type: string
+  created_at: string
   plan?: Plan
 }
 
@@ -48,6 +49,16 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = res.data
   }
 
+  async function updateProfile(fullName: string, licenceType: string) {
+    await api.patch('/api/v1/auth/me', { full_name: fullName, licence_type: licenceType })
+    await fetchMe()
+  }
+
+  async function changePlan(planCode: string) {
+    await api.post('/api/v1/auth/me/plan', { plan_code: planCode })
+    await fetchMe()
+  }
+
   function logout() {
     token.value = null
     user.value = null
@@ -62,5 +73,5 @@ export const useAuthStore = defineStore('auth', () => {
       })
     : Promise.resolve()
 
-  return { token, user, isAuthenticated, login, register, logout, fetchMe, ready }
+  return { token, user, isAuthenticated, login, register, logout, fetchMe, updateProfile, changePlan, ready }
 })
