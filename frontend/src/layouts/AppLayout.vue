@@ -22,9 +22,10 @@
 
         <div class="flex-1 lg:flex-none" />
 
-        <!-- User block (desktop) -->
-        <div class="hidden lg:flex items-center gap-3 flex-shrink-0">
-          <RouterLink to="/settings" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <!-- User menu (desktop) -->
+        <div class="hidden lg:block relative flex-shrink-0">
+          <button @click="userMenuOpen = !userMenuOpen"
+            class="flex items-center gap-2 py-1.5 pl-2 pr-1.5 rounded-xl hover:bg-slate-100 transition-colors">
             <div class="text-right">
               <p class="text-sm font-medium text-slate-900 leading-tight">{{ auth.user?.full_name }}</p>
               <p class="text-xs text-slate-500 leading-tight">{{ auth.user?.plan?.name ?? auth.user?.licence_type }}</p>
@@ -32,10 +33,25 @@
             <div class="w-8 h-8 rounded-full bg-aviation-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
               {{ userInitial }}
             </div>
-          </RouterLink>
-          <button @click="auth.logout(); router.push('/auth/login')" class="text-slate-400 hover:text-slate-600">
-            <ArrowRightOnRectangleIcon class="w-5 h-5" />
+            <ChevronDownIcon class="w-4 h-4 text-slate-400 transition-transform" :class="{ 'rotate-180': userMenuOpen }" />
           </button>
+
+          <div v-if="userMenuOpen" class="fixed inset-0 z-40" @click="userMenuOpen = false" />
+          <Transition name="fade">
+            <div v-if="userMenuOpen"
+              class="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-50">
+              <RouterLink to="/settings" @click="userMenuOpen = false"
+                class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+                <CogIcon class="w-4 h-4 text-slate-400 flex-shrink-0" />
+                Settings &amp; Plan
+              </RouterLink>
+              <button @click="auth.logout(); router.push('/auth/login')"
+                class="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+                <ArrowRightOnRectangleIcon class="w-4 h-4 text-slate-400 flex-shrink-0" />
+                Log out
+              </button>
+            </div>
+          </Transition>
         </div>
 
         <!-- Mobile toggle -->
@@ -106,6 +122,15 @@
               <component :is="item.icon" class="w-5 h-5" />
               {{ item.label }}
             </RouterLink>
+            <hr class="my-2 border-slate-200" />
+            <RouterLink to="/settings" @click="mobileOpen = false"
+              class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              :class="[$route.name === 'settings'
+                ? 'bg-aviation-50 text-aviation-700'
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">
+              <CogIcon class="w-5 h-5" />
+              Settings &amp; Plan
+            </RouterLink>
           </nav>
           <div class="px-3 py-4 border-t border-slate-200">
             <div class="flex items-center gap-3 px-3 py-2">
@@ -137,6 +162,7 @@ import { useAuthStore } from '@/stores/auth'
 const auth = useAuthStore()
 const router = useRouter()
 const mobileOpen = ref(false)
+const userMenuOpen = ref(false)
 
 const userInitial = computed(() => auth.user?.full_name?.[0]?.toUpperCase() ?? '?')
 
@@ -157,6 +183,8 @@ const CalendarIcon = icon('M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1
 const Bars3Icon = icon('M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5')
 const XMarkIcon = icon('M6 18 18 6M6 6l12 12')
 const ArrowRightOnRectangleIcon = icon('M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15')
+const ChevronDownIcon = icon('m19.5 8.25-7.5 7.5-7.5-7.5')
+const CogIcon = icon('M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.164-.398.142-.854-.108-1.204l-.527-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z')
 
 const navItems = [
   { to: '/',         name: 'dashboard',  label: 'Dashboard',        icon: HomeIcon },
@@ -170,4 +198,6 @@ const navItems = [
 <style>
 .slide-enter-active, .slide-leave-active { transition: transform 0.25s ease; }
 .slide-enter-from, .slide-leave-to { transform: translateX(-100%); }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.12s ease, transform 0.12s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-4px); }
 </style>
