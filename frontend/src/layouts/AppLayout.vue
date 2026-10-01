@@ -24,13 +24,15 @@
 
         <!-- User block (desktop) -->
         <div class="hidden lg:flex items-center gap-3 flex-shrink-0">
-          <div class="text-right">
-            <p class="text-sm font-medium text-slate-900 leading-tight">{{ auth.user?.full_name }}</p>
-            <p class="text-xs text-slate-500 leading-tight">{{ auth.user?.licence_type }}</p>
-          </div>
-          <div class="w-8 h-8 rounded-full bg-aviation-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-            {{ userInitial }}
-          </div>
+          <RouterLink to="/settings" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <div class="text-right">
+              <p class="text-sm font-medium text-slate-900 leading-tight">{{ auth.user?.full_name }}</p>
+              <p class="text-xs text-slate-500 leading-tight">{{ auth.user?.plan?.name ?? auth.user?.licence_type }}</p>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-aviation-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+              {{ userInitial }}
+            </div>
+          </RouterLink>
           <button @click="auth.logout(); router.push('/auth/login')" class="text-slate-400 hover:text-slate-600">
             <ArrowRightOnRectangleIcon class="w-5 h-5" />
           </button>
@@ -107,13 +109,15 @@
           </nav>
           <div class="px-3 py-4 border-t border-slate-200">
             <div class="flex items-center gap-3 px-3 py-2">
-              <div class="w-8 h-8 rounded-full bg-aviation-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-                {{ userInitial }}
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-slate-900 truncate">{{ auth.user?.full_name }}</p>
-                <p class="text-xs text-slate-500 truncate">{{ auth.user?.licence_type }}</p>
-              </div>
+              <RouterLink to="/settings" @click="mobileOpen = false" class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="w-8 h-8 rounded-full bg-aviation-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                  {{ userInitial }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-slate-900 truncate">{{ auth.user?.full_name }}</p>
+                  <p class="text-xs text-slate-500 truncate">{{ auth.user?.plan?.name ?? auth.user?.licence_type }}</p>
+                </div>
+              </RouterLink>
               <button @click="auth.logout(); router.push('/auth/login')" class="text-slate-400 hover:text-slate-600">
                 <ArrowRightOnRectangleIcon class="w-4 h-4" />
               </button>

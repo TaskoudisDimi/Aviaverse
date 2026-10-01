@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/vyron/auth/mailer"
@@ -261,6 +262,16 @@ func (h *Handler) ResetPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Password updated. You can now sign in."})
 }
 
+type planResp struct {
+	Code           string     `json:"code"`
+	Name           string     `json:"name"`
+	PriceCents     int        `json:"price_cents"`
+	Currency       string     `json:"currency"`
+	AIMessageCap   int        `json:"ai_message_cap"`
+	AllowedModules []string   `json:"allowed_module_codes"`
+	ExpiresAt      *time.Time `json:"expires_at"`
+}
+
 func (h *Handler) Me(c *gin.Context) {
 	userID := c.GetString("user_id")
 	var user userResp
@@ -271,7 +282,70 @@ func (h *Handler) Me(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
-	c.JSON(http.StatusOK, user)
+
+	var plan planResp
+	err = h.db.QueryRow(`
+		SELECT sp.code, sp.name, sp.price_cents, sp.currency, sp.ai_message_cap, sp.allowed_module_codes, us.expires_at
+		FROM user_subscriptions us
+		JOIN subscription_plans sp ON sp.id = us.plan_id
+		WHERE us.user_id = $1
+		  AND us.status = 'active'
+		  AND (us.expires_at IS NULL OR us.expires_at > now())
+		ORDER BY us.started_at DESC
+		LIMIT 1`, userID,
+	).Scan(&plan.Code, &plan.Name, &plan.PriceCents, &plan.Currency, &plan.AIMessageCap, pq.Array(&plan.AllowedModules), &plan.ExpiresAt)
+
+	resp := gin.H{
+		"id":           user.ID,
+		"email":        user.Email,
+		"full_name":    user.FullName,
+		"licence_type": user.LicenceType,
+		"created_at":   user.CreatedAt,
+	}
+	if err == nil {
+		resp["plan"] = plan
+	} else if err != sql.ErrNoRows {
+		log.Printf("plan lookup failed for user %s: %v", userID, err)
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
+// Plans lists all active subscription plans, for display on the settings /
+// pricing page. Public (no auth) since it's shown on the pricing-comparison
+// view even to visitors deciding whether to sign up.
+func (h *Handler) Plans(c *gin.Context) {
+	rows, err := h.db.Query(`
+		SELECT code, name, price_cents, currency, period_days, ai_message_cap, allowed_module_codes
+		FROM subscription_plans
+		WHERE active = true
+		ORDER BY sort_order`)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	defer rows.Close()
+
+	type plan struct {
+		Code           string   `json:"code"`
+		Name           string   `json:"name"`
+		PriceCents     int      `json:"price_cents"`
+		Currency       string   `json:"currency"`
+		PeriodDays     *int     `json:"period_days"`
+		AIMessageCap   int      `json:"ai_message_cap"`
+		AllowedModules []string `json:"allowed_module_codes"`
+	}
+
+	plans := []plan{}
+	for rows.Next() {
+		var p plan
+		if err := rows.Scan(&p.Code, &p.Name, &p.PriceCents, &p.Currency, &p.PeriodDays, &p.AIMessageCap, pq.Array(&p.AllowedModules)); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+			return
+		}
+		plans = append(plans, p)
+	}
+	c.JSON(http.StatusOK, plans)
 }
 
 func (h *Handler) generateToken(userID, email string) (string, error) {

@@ -45,6 +45,7 @@ func main() {
 		v1.POST("/forgot-password", h.ForgotPassword)
 		v1.POST("/reset-password", h.ResetPassword)
 		v1.GET("/me", middleware.Auth(jwtSecret), h.Me)
+		v1.GET("/plans", h.Plans)
 	}
 
 	port := os.Getenv("PORT")

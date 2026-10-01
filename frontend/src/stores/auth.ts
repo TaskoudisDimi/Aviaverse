@@ -2,11 +2,22 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { api } from '@/lib/api'
 
+interface Plan {
+  code: string
+  name: string
+  price_cents: number
+  currency: string
+  ai_message_cap: number
+  allowed_module_codes: string[] | null
+  expires_at: string | null
+}
+
 interface User {
   id: string
   email: string
   full_name: string
   licence_type: string
+  plan?: Plan
 }
 
 export const useAuthStore = defineStore('auth', () => {
