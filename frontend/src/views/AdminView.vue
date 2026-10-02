@@ -41,7 +41,7 @@
               </td>
               <td class="px-4 py-3">
                 <select v-if="editingId === u.id" v-model="editForm.licenceType"
-                  class="bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm">
+                  class="bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-slate-900">
                   <option value="B1.1">B1.1</option>
                   <option value="B1.3">B1.3</option>
                   <option value="B2">B2</option>
@@ -51,7 +51,7 @@
               </td>
               <td class="px-4 py-3">
                 <select v-if="editingId === u.id" v-model="editForm.planCode"
-                  class="bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm">
+                  class="bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-slate-900">
                   <option v-for="p in allPlans" :key="p.code" :value="p.code">{{ p.name }}</option>
                 </select>
                 <span v-else class="text-slate-700">{{ u.plan_name ?? '—' }}</span>
