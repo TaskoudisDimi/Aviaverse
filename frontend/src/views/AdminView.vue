@@ -80,6 +80,30 @@
       </div>
       <p v-if="!loading && !filteredUsers.length" class="text-center text-slate-400 text-sm py-10">No matching users.</p>
     </div>
+
+    <!-- Delete confirmation modal -->
+    <Transition name="fade">
+      <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40" @click="deleteTarget = null" />
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+          <h3 class="text-base font-semibold text-slate-900 mb-2">Delete this account?</h3>
+          <p class="text-sm text-slate-500 mb-6">
+            <span class="font-medium text-slate-700">{{ deleteTarget.full_name }}</span>
+            ({{ deleteTarget.email }}) will be permanently removed, along with their progress and history. This can't be undone.
+          </p>
+          <div class="flex justify-end gap-3">
+            <button @click="deleteTarget = null"
+              class="text-sm font-medium text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl">
+              Cancel
+            </button>
+            <button @click="performDelete" :disabled="deleting"
+              class="text-sm font-medium bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl transition-colors">
+              {{ deleting ? 'Deleting…' : 'Delete account' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -157,15 +181,27 @@ async function save(u: AdminUser) {
   }
 }
 
-async function confirmDelete(u: AdminUser) {
-  if (!window.confirm(`Delete ${u.full_name} (${u.email})? This can't be undone.`)) return
+const deleteTarget = ref<AdminUser | null>(null)
+const deleting = ref(false)
+
+function confirmDelete(u: AdminUser) {
+  deleteTarget.value = u
+  error.value = ''
+}
+
+async function performDelete() {
+  if (!deleteTarget.value) return
+  deleting.value = true
   error.value = ''
   try {
-    await api.delete(`/api/v1/auth/admin/users/${u.id}`)
-    flashNotice(`Deleted ${u.full_name}.`)
+    await api.delete(`/api/v1/auth/admin/users/${deleteTarget.value.id}`)
+    flashNotice(`Deleted ${deleteTarget.value.full_name}.`)
+    deleteTarget.value = null
     await load()
   } catch (e: unknown) {
     error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not delete user.'
+  } finally {
+    deleting.value = false
   }
 }
 
@@ -189,3 +225,8 @@ async function load() {
 
 onMounted(load)
 </script>
+
+<style>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>
