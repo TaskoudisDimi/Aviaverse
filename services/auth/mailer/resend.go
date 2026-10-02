@@ -11,16 +11,18 @@ import (
 )
 
 type Client struct {
-	apiKey string
-	from   string
-	http   *http.Client
+	apiKey  string
+	from    string
+	replyTo string
+	http    *http.Client
 }
 
 func NewClient() *Client {
 	return &Client{
-		apiKey: os.Getenv("RESEND_API_KEY"),
-		from:   os.Getenv("EMAIL_FROM"),
-		http:   &http.Client{},
+		apiKey:  os.Getenv("RESEND_API_KEY"),
+		from:    os.Getenv("EMAIL_FROM"),
+		replyTo: os.Getenv("EMAIL_REPLY_TO"),
+		http:    &http.Client{},
 	}
 }
 
@@ -36,6 +38,7 @@ type sendReq struct {
 	To      []string `json:"to"`
 	Subject string   `json:"subject"`
 	HTML    string   `json:"html"`
+	ReplyTo string   `json:"reply_to,omitempty"`
 }
 
 func (c *Client) Send(to, subject, html string) error {
@@ -43,7 +46,7 @@ func (c *Client) Send(to, subject, html string) error {
 		return fmt.Errorf("mailer not configured: RESEND_API_KEY / EMAIL_FROM missing")
 	}
 
-	body, err := json.Marshal(sendReq{From: c.from, To: []string{to}, Subject: subject, HTML: html})
+	body, err := json.Marshal(sendReq{From: c.from, To: []string{to}, Subject: subject, HTML: html, ReplyTo: c.replyTo})
 	if err != nil {
 		return err
 	}
