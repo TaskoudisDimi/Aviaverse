@@ -275,9 +275,10 @@ type planResp struct {
 func (h *Handler) Me(c *gin.Context) {
 	userID := c.GetString("user_id")
 	var user userResp
+	var isAdmin bool
 	err := h.db.QueryRow(
-		`SELECT id, email, full_name, licence_type, created_at FROM users WHERE id=$1`, userID,
-	).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt)
+		`SELECT id, email, full_name, licence_type, created_at, is_admin FROM users WHERE id=$1`, userID,
+	).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt, &isAdmin)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
@@ -301,6 +302,7 @@ func (h *Handler) Me(c *gin.Context) {
 		"full_name":    user.FullName,
 		"licence_type": user.LicenceType,
 		"created_at":   user.CreatedAt,
+		"is_admin":     isAdmin,
 	}
 	if err == nil {
 		resp["plan"] = plan

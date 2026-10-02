@@ -48,6 +48,15 @@ func main() {
 		v1.PATCH("/me", middleware.Auth(jwtSecret), h.UpdateProfile)
 		v1.POST("/me/plan", middleware.Auth(jwtSecret), h.ChangePlan)
 		v1.GET("/plans", h.Plans)
+
+		admin := v1.Group("/admin")
+		admin.Use(middleware.Auth(jwtSecret), middleware.AdminOnly(db))
+		{
+			admin.GET("/users", h.ListUsers)
+			admin.PATCH("/users/:id", h.AdminUpdateUser)
+			admin.POST("/users/:id/plan", h.AdminChangePlan)
+			admin.DELETE("/users/:id", h.AdminDeleteUser)
+		}
 	}
 
 	port := os.Getenv("PORT")

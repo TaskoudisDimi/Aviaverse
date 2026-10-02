@@ -18,6 +18,7 @@ interface User {
   full_name: string
   licence_type: string
   created_at: string
+  is_admin: boolean
   plan?: Plan
 }
 

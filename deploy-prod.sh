@@ -162,6 +162,7 @@ cp db/migrations/110_module04_ics_pcb.sql "$STAGE/db/migrations/"
 cp db/migrations/111_module04_servo_radio.sql "$STAGE/db/migrations/"
 cp db/migrations/113_subscription_plans.sql "$STAGE/db/migrations/"
 cp db/migrations/114_subscription_plans_english.sql "$STAGE/db/migrations/"
+cp db/migrations/115_admin_users.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -297,6 +298,7 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/111_module04_servo_radio.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/113_subscription_plans.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/114_subscription_plans_english.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/115_admin_users.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────

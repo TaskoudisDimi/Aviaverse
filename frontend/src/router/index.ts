@@ -29,6 +29,7 @@ const router = createRouter({
         { path: 'results/:id', name: 'results', component: () => import('@/views/ResultsView.vue') },
         { path: 'sessions', name: 'sessions', component: () => import('@/views/OnlineSessionsView.vue') },
         { path: 'settings', name: 'settings', component: () => import('@/views/SettingsView.vue') },
+        { path: 'admin',    name: 'admin',    component: () => import('@/views/AdminView.vue'), meta: { requiresAdmin: true } },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
@@ -40,6 +41,9 @@ router.beforeEach(async (to) => {
   await auth.ready
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login' }
+  }
+  if (to.meta.requiresAdmin && !auth.user?.is_admin) {
+    return { name: 'dashboard' }
   }
   if ((to.name === 'login' || to.name === 'register') && auth.isAuthenticated) {
     return { name: 'dashboard' }
