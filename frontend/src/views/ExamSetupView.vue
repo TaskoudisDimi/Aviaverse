@@ -34,29 +34,12 @@
         </p>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1.5">Questions</label>
-          <select v-model.number="form.num_questions"
-            class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
-                   focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
-            <option :value="10">10</option>
-            <option :value="20">20</option>
-            <option :value="30">30</option>
-            <option :value="40">40</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1.5">Time limit</label>
-          <select v-model.number="form.time_limit_min"
-            class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
-                   focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
-            <option :value="15">15 min</option>
-            <option :value="30">30 min</option>
-            <option :value="60">60 min</option>
-            <option :value="90">90 min</option>
-          </select>
-        </div>
+      <div v-if="form.module_id && form.licence_type" class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+        <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Exam format</p>
+        <p class="text-slate-900 font-medium">
+          {{ examFormat.question_count }} questions · {{ examFormat.time_limit_min }} minutes
+        </p>
+        <p class="text-xs text-slate-400 mt-1">Matches the official EASA Part-66 format for this module and licence.</p>
       </div>
 
       <button type="submit" :disabled="loading"
@@ -78,7 +61,10 @@ const router = useRouter()
 const examStore = useExamStore()
 
 interface Module { id: number; code: string; title: string; licence_types: string[] }
+interface ExamFormat { module_code: string; licence_type: string; question_count: number; time_limit_min: number }
+
 const modules = ref<Module[]>([])
+const examFormats = ref<ExamFormat[]>([])
 const loading = ref(false)
 const error = ref('')
 
@@ -93,6 +79,24 @@ const availableModules = computed(() =>
   modules.value.filter(m => m.licence_types.includes(form.value.licence_type))
 )
 
+// Falls back to a sensible default if a module+licence pairing has no
+// official format on file yet, rather than leaving the form stuck.
+const DEFAULT_FORMAT = { question_count: 20, time_limit_min: 30 }
+
+const examFormat = computed(() => {
+  const mod = modules.value.find(m => m.id === form.value.module_id)
+  if (!mod) return DEFAULT_FORMAT
+  const match = examFormats.value.find(
+    f => f.module_code === mod.code && f.licence_type === form.value.licence_type
+  )
+  return match ?? DEFAULT_FORMAT
+})
+
+watch(examFormat, (f) => {
+  form.value.num_questions = f.question_count
+  form.value.time_limit_min = f.time_limit_min
+}, { immediate: true })
+
 watch(() => form.value.licence_type, () => {
   if (!availableModules.value.some(m => m.id === form.value.module_id)) {
     form.value.module_id = ''
@@ -100,8 +104,12 @@ watch(() => form.value.licence_type, () => {
 })
 
 onMounted(async () => {
-  const res = await api.get('/api/v1/content/modules')
-  modules.value = res.data
+  const [modulesRes, formatsRes] = await Promise.all([
+    api.get('/api/v1/content/modules'),
+    api.get('/api/v1/content/exam-formats'),
+  ])
+  modules.value = modulesRes.data
+  examFormats.value = formatsRes.data
 })
 
 async function startExam() {

@@ -163,6 +163,7 @@ cp db/migrations/111_module04_servo_radio.sql "$STAGE/db/migrations/"
 cp db/migrations/113_subscription_plans.sql "$STAGE/db/migrations/"
 cp db/migrations/114_subscription_plans_english.sql "$STAGE/db/migrations/"
 cp db/migrations/115_admin_users.sql "$STAGE/db/migrations/"
+cp db/migrations/116_exam_formats.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -179,10 +180,10 @@ tar czf - -C "$STAGE" . | $SSH "mkdir -p $REMOTE_DIR && tar xzf - -C $REMOTE_DIR
 
 # ── Build & start ─────────────────────────────────────────────────────────────
 echo "→ Building containers ..."
-$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod build --no-cache frontend ai auth exam 2>&1"
+$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod build --no-cache frontend ai auth exam content 2>&1"
 
 echo "→ Starting containers ..."
-$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --force-recreate frontend ai auth exam 2>&1"
+$SSH "cd $REMOTE_DIR && docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --force-recreate frontend ai auth exam content 2>&1"
 
 # ── DB migrations ─────────────────────────────────────────────────────────────
 echo "→ Running DB migrations ..."
@@ -299,6 +300,7 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/113_subscription_plans.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/114_subscription_plans_english.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/115_admin_users.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/116_exam_formats.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────

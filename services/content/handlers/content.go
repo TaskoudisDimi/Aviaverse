@@ -136,3 +136,34 @@ func (h *Handler) GetSubject(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, s)
 }
+
+// ListExamFormats returns the official question-count/time-limit for every
+// module+licence combination, so the exam setup page can show the real
+// exam format instead of a generic question-count picker.
+func (h *Handler) ListExamFormats(c *gin.Context) {
+	rows, err := h.db.QueryContext(c.Request.Context(),
+		`SELECT module_code, licence_type, question_count, time_limit_min FROM exam_formats`)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	type ExamFormat struct {
+		ModuleCode    string `json:"module_code"`
+		LicenceType   string `json:"licence_type"`
+		QuestionCount int    `json:"question_count"`
+		TimeLimitMin  int    `json:"time_limit_min"`
+	}
+
+	formats := []ExamFormat{}
+	for rows.Next() {
+		var f ExamFormat
+		if err := rows.Scan(&f.ModuleCode, &f.LicenceType, &f.QuestionCount, &f.TimeLimitMin); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		formats = append(formats, f)
+	}
+	c.JSON(http.StatusOK, formats)
+}

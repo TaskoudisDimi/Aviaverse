@@ -32,6 +32,7 @@ func main() {
 		v1.GET("/modules", h.ListModules)
 		v1.GET("/modules/:id", h.GetModule)
 		v1.GET("/subjects/:id", h.GetSubject)
+		v1.GET("/exam-formats", h.ListExamFormats)
 	}
 
 	port := os.Getenv("PORT")
