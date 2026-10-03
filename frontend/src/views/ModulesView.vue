@@ -11,8 +11,7 @@
           class="bg-white border border-slate-300 rounded-xl px-4 py-2 text-sm text-slate-900
                  focus:outline-none focus:ring-2 focus:ring-aviation-500 self-start sm:self-auto">
           <option value="">All licences</option>
-          <option value="B1.1">B1.1</option>
-          <option value="B1.3">B1.3</option>
+          <option value="B1">B1</option>
           <option value="B2">B2</option>
         </select>
       </div>
