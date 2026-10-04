@@ -104,6 +104,7 @@
 import { ref, nextTick, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 const route = useRoute()
 
@@ -132,7 +133,10 @@ const streaming = ref(false)
 const messagesEl = ref<HTMLDivElement | null>(null)
 
 function renderMd(text: string): string {
-  try { return marked.parse(text) as string } catch { return text }
+  // The AI's own output is rendered as HTML here, so it's sanitized before
+  // going into v-html — a prompt-injected or jailbroken response could
+  // otherwise land raw <script>/onerror= markup straight in the DOM.
+  try { return DOMPurify.sanitize(marked.parse(text) as string) } catch { return text }
 }
 
 function saveHistory() {
