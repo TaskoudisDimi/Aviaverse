@@ -58,9 +58,12 @@ services:
       - EMAIL_FROM=${EMAIL_FROM}
       - EMAIL_REPLY_TO=${EMAIL_REPLY_TO:-}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - REDIS_URL=redis:6379
       - PORT=8081
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   content:

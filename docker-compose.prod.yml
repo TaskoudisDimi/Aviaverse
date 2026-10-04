@@ -55,6 +55,7 @@ services:
       - EMAIL_FROM=${EMAIL_FROM}
       - EMAIL_REPLY_TO=${EMAIL_REPLY_TO:-}
       - FRONTEND_URL=${FRONTEND_URL}
+      - REDIS_URL=redis:6379
       - PORT=8081
       - GIN_MODE=release
     depends_on:

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
 	"github.com/vyron/auth/handlers"
 	"github.com/vyron/auth/mailer"
@@ -36,7 +37,14 @@ func main() {
 		log.Println("WARNING: RESEND_API_KEY / EMAIL_FROM not set — password reset emails will not be sent")
 	}
 
-	h := handlers.New(db, jwtSecret, mail)
+	var rdb *redis.Client
+	if redisURL := os.Getenv("REDIS_URL"); redisURL != "" {
+		rdb = redis.NewClient(&redis.Options{Addr: redisURL})
+	} else {
+		log.Println("WARNING: REDIS_URL not set — login brute-force protection is disabled")
+	}
+
+	h := handlers.New(db, jwtSecret, mail, rdb)
 
 	v1 := r.Group("/api/v1/auth")
 	{

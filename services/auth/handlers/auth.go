@@ -9,9 +9,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -25,14 +27,28 @@ type Handler struct {
 	jwtSecret   string
 	mail        *mailer.Client
 	frontendURL string
+	redis       *redis.Client
 }
 
-func New(db *sql.DB, jwtSecret string, mail *mailer.Client) *Handler {
+func New(db *sql.DB, jwtSecret string, mail *mailer.Client, rdb *redis.Client) *Handler {
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
 		frontendURL = "http://localhost:3000"
 	}
-	return &Handler{db: db, jwtSecret: jwtSecret, mail: mail, frontendURL: frontendURL}
+	return &Handler{db: db, jwtSecret: jwtSecret, mail: mail, frontendURL: frontendURL, redis: rdb}
+}
+
+const (
+	maxLoginAttempts = 8
+	loginLockWindow  = 15 * time.Minute
+)
+
+// loginKey normalizes the email so "Foo@Example.com" and "foo@example.com"
+// share the same lockout counter — the users table itself isn't
+// case-normalized on email lookup, but an attacker shouldn't get extra
+// free attempts just by varying case.
+func loginKey(email string) string {
+	return "login:fail:" + strings.ToLower(strings.TrimSpace(email))
 }
 
 type registerReq struct {
@@ -107,6 +123,35 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
+	key := loginKey(req.Email)
+	ctx := c.Request.Context()
+
+	if h.redis != nil {
+		attempts, err := h.redis.Get(ctx, key).Int()
+		if err == nil && attempts >= maxLoginAttempts {
+			ttl, _ := h.redis.TTL(ctx, key).Result()
+			c.JSON(http.StatusTooManyRequests, gin.H{
+				"error":            "too_many_attempts",
+				"message":          "Too many failed login attempts. Please try again later.",
+				"retry_after_secs": int(ttl.Seconds()),
+			})
+			return
+		}
+	}
+
+	fail := func() {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		if h.redis == nil {
+			return
+		}
+		// Best-effort: a Redis hiccup here shouldn't change the auth
+		// response, so errors from these calls are intentionally ignored.
+		count, err := h.redis.Incr(ctx, key).Result()
+		if err == nil && count == 1 {
+			h.redis.Expire(ctx, key, loginLockWindow)
+		}
+	}
+
 	var user userResp
 	var hash string
 	err := h.db.QueryRow(
@@ -114,12 +159,12 @@ func (h *Handler) Login(c *gin.Context) {
 		 FROM users WHERE email=$1`, req.Email,
 	).Scan(&user.ID, &user.Email, &hash, &user.FullName, &user.LicenceType, &user.CreatedAt)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		fail()
 		return
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(req.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		fail()
 		return
 	}
 
@@ -129,6 +174,9 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
+	if h.redis != nil {
+		h.redis.Del(ctx, key)
+	}
 	c.JSON(http.StatusOK, gin.H{"token": token, "user": user})
 }
 
