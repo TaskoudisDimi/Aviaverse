@@ -40,6 +40,11 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore()
   await auth.ready
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    // Guests land on the public modules catalog instead of a login wall —
+    // login/register only appear when they try a gated feature.
+    if (to.name === 'dashboard') {
+      return { name: 'modules' }
+    }
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.meta.requiresAdmin && !auth.user?.is_admin) {

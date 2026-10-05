@@ -22,20 +22,8 @@
 
         <div class="flex-1 lg:flex-none" />
 
-        <!-- Guest actions (desktop) -->
-        <div v-if="!auth.isAuthenticated" class="hidden lg:flex items-center gap-2 flex-shrink-0">
-          <RouterLink to="/auth/login"
-            class="px-3.5 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
-            Log in
-          </RouterLink>
-          <RouterLink to="/auth/register"
-            class="px-3.5 py-2 rounded-xl text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white transition-colors">
-            Get Started
-          </RouterLink>
-        </div>
-
         <!-- User menu (desktop) -->
-        <div v-else class="hidden lg:block relative flex-shrink-0">
+        <div v-if="auth.isAuthenticated" class="hidden lg:block relative flex-shrink-0">
           <button @click="userMenuOpen = !userMenuOpen"
             class="flex items-center gap-2 py-1.5 pl-2 pr-1.5 rounded-xl hover:bg-slate-100 transition-colors">
             <div class="text-right">
@@ -173,16 +161,6 @@
               <button @click="auth.logout(); router.push('/auth/login')" class="text-slate-400 hover:text-slate-600">
                 <ArrowRightOnRectangleIcon class="w-4 h-4" />
               </button>
-            </div>
-            <div v-else class="flex items-center gap-2 px-1">
-              <RouterLink to="/auth/login" @click="mobileOpen = false"
-                class="flex-1 text-center px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
-                Log in
-              </RouterLink>
-              <RouterLink to="/auth/register" @click="mobileOpen = false"
-                class="flex-1 text-center px-3.5 py-2.5 rounded-xl text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white transition-colors">
-                Get Started
-              </RouterLink>
             </div>
           </div>
         </aside>
