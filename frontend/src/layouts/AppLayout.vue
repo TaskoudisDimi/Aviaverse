@@ -3,10 +3,10 @@
     <!-- Top navbar -->
     <header class="flex-shrink-0 bg-white border-b border-slate-200">
       <div class="flex items-center h-16 px-4 sm:px-6 gap-4">
-        <div class="flex items-center gap-2 flex-shrink-0">
+        <RouterLink to="/" class="flex items-center gap-2 flex-shrink-0">
           <img src="/favicon.png" alt="" class="w-7 h-7 flex-shrink-0" />
           <span class="font-bold text-lg tracking-tight text-slate-900 whitespace-nowrap">VJet-Academy</span>
-        </div>
+        </RouterLink>
 
         <!-- Desktop nav -->
         <nav class="hidden lg:flex items-center gap-1 flex-1 min-w-0">
@@ -122,10 +122,10 @@
         <div class="absolute inset-0 bg-black/40" @click="mobileOpen = false" />
         <aside class="absolute left-0 top-0 h-full w-64 bg-white flex flex-col">
           <div class="flex items-center justify-between px-6 py-5 border-b border-slate-200">
-            <div class="flex items-center gap-2">
+            <RouterLink to="/" @click="mobileOpen = false" class="flex items-center gap-2">
               <img src="/favicon.png" alt="" class="w-6 h-6 flex-shrink-0" />
               <span class="font-bold text-aviation-600">VJet-Academy</span>
-            </div>
+            </RouterLink>
             <button @click="mobileOpen = false" class="text-slate-500">
               <XMarkIcon class="w-5 h-5" />
             </button>
