@@ -37,18 +37,19 @@
 
     <p class="text-center text-sm text-slate-500">
       No account?
-      <RouterLink to="/auth/register" class="text-aviation-600 hover:text-aviation-700 font-medium">Register</RouterLink>
+      <RouterLink :to="{ path: '/auth/register', query: route.query }" class="text-aviation-600 hover:text-aviation-700 font-medium">Register</RouterLink>
     </p>
   </form>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
@@ -59,7 +60,8 @@ async function submit() {
   error.value = ''
   try {
     await auth.login(email.value, password.value)
-    router.push('/')
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    router.push(redirect)
   } catch (e: unknown) {
     error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Login failed'
   } finally {

@@ -53,18 +53,19 @@
 
     <p class="text-center text-sm text-slate-500">
       Already have an account?
-      <RouterLink to="/auth/login" class="text-aviation-600 hover:text-aviation-700 font-medium">Sign in</RouterLink>
+      <RouterLink :to="{ path: '/auth/login', query: route.query }" class="text-aviation-600 hover:text-aviation-700 font-medium">Sign in</RouterLink>
     </p>
   </form>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const name = ref('')
 const email = ref('')
 const password = ref('')
@@ -78,7 +79,8 @@ async function submit() {
   try {
     await auth.register(name.value, email.value, password.value, licenceType.value)
     // register sends full_name to match Go handler
-    router.push('/')
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    router.push(redirect)
   } catch (e: unknown) {
     error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Registration failed'
   } finally {

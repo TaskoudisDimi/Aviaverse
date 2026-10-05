@@ -26,13 +26,21 @@ func main() {
 
 	h := handlers.New(db)
 
-	v1 := r.Group("/api/v1/content")
-	v1.Use(middleware.Auth())
+	// Module/subject structure and exam formats are catalog metadata (titles,
+	// descriptions, question counts) with no lesson content — safe to browse
+	// without an account, so prospective students can see what's covered.
+	public := r.Group("/api/v1/content")
 	{
-		v1.GET("/modules", h.ListModules)
-		v1.GET("/modules/:id", h.GetModule)
-		v1.GET("/subjects/:id", h.GetSubject)
-		v1.GET("/exam-formats", h.ListExamFormats)
+		public.GET("/modules", h.ListModules)
+		public.GET("/modules/:id", h.GetModule)
+		public.GET("/exam-formats", h.ListExamFormats)
+	}
+
+	// Full lesson content is gated — this is the paid material itself.
+	authed := r.Group("/api/v1/content")
+	authed.Use(middleware.Auth())
+	{
+		authed.GET("/subjects/:id", h.GetSubject)
 	}
 
 	port := os.Getenv("PORT")

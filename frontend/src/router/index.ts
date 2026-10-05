@@ -20,8 +20,8 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         { path: '',         name: 'dashboard', component: () => import('@/views/DashboardView.vue') },
-        { path: 'modules',  name: 'modules',   component: () => import('@/views/ModulesView.vue') },
-        { path: 'modules/:id', name: 'module', component: () => import('@/views/ModuleView.vue') },
+        { path: 'modules',  name: 'modules',   component: () => import('@/views/ModulesView.vue'), meta: { requiresAuth: false } },
+        { path: 'modules/:id', name: 'module', component: () => import('@/views/ModuleView.vue'), meta: { requiresAuth: false } },
         { path: 'subjects/:id', name: 'subject', component: () => import('@/views/SubjectView.vue') },
         { path: 'ai',       name: 'ai',        component: () => import('@/views/AIInstructorView.vue') },
         { path: 'exam',     name: 'exam-setup', component: () => import('@/views/ExamSetupView.vue') },
@@ -40,7 +40,7 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore()
   await auth.ready
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return { name: 'login' }
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.meta.requiresAdmin && !auth.user?.is_admin) {
     return { name: 'dashboard' }

@@ -10,7 +10,7 @@
 
         <!-- Desktop nav -->
         <nav class="hidden lg:flex items-center gap-1 flex-1 min-w-0">
-          <RouterLink v-for="item in navItems" :key="item.to" :to="item.to"
+          <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to"
             class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap"
             :class="[$route.name === item.name
               ? 'bg-aviation-50 text-aviation-700 border border-aviation-200'
@@ -22,8 +22,20 @@
 
         <div class="flex-1 lg:flex-none" />
 
+        <!-- Guest actions (desktop) -->
+        <div v-if="!auth.isAuthenticated" class="hidden lg:flex items-center gap-2 flex-shrink-0">
+          <RouterLink to="/auth/login"
+            class="px-3.5 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
+            Log in
+          </RouterLink>
+          <RouterLink to="/auth/register"
+            class="px-3.5 py-2 rounded-xl text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white transition-colors">
+            Get Started
+          </RouterLink>
+        </div>
+
         <!-- User menu (desktop) -->
-        <div class="hidden lg:block relative flex-shrink-0">
+        <div v-else class="hidden lg:block relative flex-shrink-0">
           <button @click="userMenuOpen = !userMenuOpen"
             class="flex items-center gap-2 py-1.5 pl-2 pr-1.5 rounded-xl hover:bg-slate-100 transition-colors">
             <div class="text-right">
@@ -118,7 +130,7 @@
             </button>
           </div>
           <nav class="flex-1 px-3 py-4 space-y-1">
-            <RouterLink v-for="item in navItems" :key="item.to" :to="item.to"
+            <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to"
               @click="mobileOpen = false"
               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
               :class="[$route.name === item.name
@@ -127,26 +139,28 @@
               <component :is="item.icon" class="w-5 h-5" />
               {{ item.label }}
             </RouterLink>
-            <hr class="my-2 border-slate-200" />
-            <RouterLink to="/settings" @click="mobileOpen = false"
-              class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
-              :class="[$route.name === 'settings'
-                ? 'bg-aviation-50 text-aviation-700'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">
-              <CogIcon class="w-5 h-5" />
-              Settings &amp; Plan
-            </RouterLink>
-            <RouterLink v-if="auth.user?.is_admin" to="/admin" @click="mobileOpen = false"
-              class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
-              :class="[$route.name === 'admin'
-                ? 'bg-aviation-50 text-aviation-700'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">
-              <ShieldIcon class="w-5 h-5" />
-              Admin
-            </RouterLink>
+            <template v-if="auth.isAuthenticated">
+              <hr class="my-2 border-slate-200" />
+              <RouterLink to="/settings" @click="mobileOpen = false"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                :class="[$route.name === 'settings'
+                  ? 'bg-aviation-50 text-aviation-700'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">
+                <CogIcon class="w-5 h-5" />
+                Settings &amp; Plan
+              </RouterLink>
+              <RouterLink v-if="auth.user?.is_admin" to="/admin" @click="mobileOpen = false"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                :class="[$route.name === 'admin'
+                  ? 'bg-aviation-50 text-aviation-700'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">
+                <ShieldIcon class="w-5 h-5" />
+                Admin
+              </RouterLink>
+            </template>
           </nav>
           <div class="px-3 py-4 border-t border-slate-200">
-            <div class="flex items-center gap-3 px-3 py-2">
+            <div v-if="auth.isAuthenticated" class="flex items-center gap-3 px-3 py-2">
               <RouterLink to="/settings" @click="mobileOpen = false" class="flex items-center gap-3 flex-1 min-w-0">
                 <div class="w-8 h-8 rounded-full bg-aviation-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
                   {{ userInitial }}
@@ -159,6 +173,16 @@
               <button @click="auth.logout(); router.push('/auth/login')" class="text-slate-400 hover:text-slate-600">
                 <ArrowRightOnRectangleIcon class="w-4 h-4" />
               </button>
+            </div>
+            <div v-else class="flex items-center gap-2 px-1">
+              <RouterLink to="/auth/login" @click="mobileOpen = false"
+                class="flex-1 text-center px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
+                Log in
+              </RouterLink>
+              <RouterLink to="/auth/register" @click="mobileOpen = false"
+                class="flex-1 text-center px-3.5 py-2.5 rounded-xl text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white transition-colors">
+                Get Started
+              </RouterLink>
             </div>
           </div>
         </aside>
@@ -207,6 +231,11 @@ const navItems = [
   { to: '/exam',     name: 'exam-setup', label: 'Exam Simulator',   icon: ClipboardIcon },
   { to: '/sessions', name: 'sessions',   label: 'Online Sessions',  icon: CalendarIcon },
 ]
+
+// Guests can only browse the public Study Modules catalog — the rest require an account.
+const visibleNavItems = computed(() =>
+  auth.isAuthenticated ? navItems : navItems.filter(item => item.name === 'modules')
+)
 </script>
 
 <style>
