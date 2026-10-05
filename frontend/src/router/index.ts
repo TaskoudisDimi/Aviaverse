@@ -19,9 +19,11 @@ const router = createRouter({
       component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiresAuth: true },
       children: [
-        { path: '',         name: 'dashboard', component: () => import('@/views/DashboardView.vue') },
-        { path: 'modules',  name: 'modules',   component: () => import('@/views/ModulesView.vue'), meta: { requiresAuth: false } },
-        { path: 'modules/:id', name: 'module', component: () => import('@/views/ModuleView.vue'), meta: { requiresAuth: false } },
+        { path: '',         name: 'dashboard', component: () => import('@/views/HomeView.vue'), meta: { requiresAuth: false } },
+        { path: 'modules',  name: 'modules',   component: () => import('@/views/ModulesView.vue'), meta: { requiresAuth: false, publicPage: true } },
+        { path: 'modules/:id', name: 'module', component: () => import('@/views/ModuleView.vue'), meta: { requiresAuth: false, publicPage: true } },
+        { path: 'pricing',  name: 'pricing',   component: () => import('@/views/PricingView.vue'), meta: { requiresAuth: false, publicPage: true } },
+        { path: 'about',    name: 'about',     component: () => import('@/views/AboutView.vue'), meta: { requiresAuth: false, publicPage: true } },
         { path: 'subjects/:id', name: 'subject', component: () => import('@/views/SubjectView.vue') },
         { path: 'ai',       name: 'ai',        component: () => import('@/views/AIInstructorView.vue') },
         { path: 'exam',     name: 'exam-setup', component: () => import('@/views/ExamSetupView.vue') },
@@ -40,11 +42,6 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore()
   await auth.ready
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    // Guests land on the public modules catalog instead of a login wall —
-    // login/register only appear when they try a gated feature.
-    if (to.name === 'dashboard') {
-      return { name: 'modules' }
-    }
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.meta.requiresAdmin && !auth.user?.is_admin) {

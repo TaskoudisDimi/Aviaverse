@@ -22,8 +22,20 @@
 
         <div class="flex-1 lg:flex-none" />
 
+        <!-- Guest actions (desktop) -->
+        <div v-if="!auth.isAuthenticated" class="hidden lg:flex items-center gap-2 flex-shrink-0">
+          <RouterLink to="/auth/login"
+            class="px-3.5 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
+            Log in
+          </RouterLink>
+          <RouterLink to="/auth/register"
+            class="px-3.5 py-2 rounded-xl text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white transition-colors">
+            Get Started
+          </RouterLink>
+        </div>
+
         <!-- User menu (desktop) -->
-        <div v-if="auth.isAuthenticated" class="hidden lg:block relative flex-shrink-0">
+        <div v-else class="hidden lg:block relative flex-shrink-0">
           <button @click="userMenuOpen = !userMenuOpen"
             class="flex items-center gap-2 py-1.5 pl-2 pr-1.5 rounded-xl hover:bg-slate-100 transition-colors">
             <div class="text-right">
@@ -101,6 +113,7 @@
       <div class="relative z-10 h-full">
         <RouterView />
       </div>
+      <AppFooter v-if="$route.meta.publicPage" />
     </main>
 
     <!-- Mobile nav drawer -->
@@ -162,6 +175,16 @@
                 <ArrowRightOnRectangleIcon class="w-4 h-4" />
               </button>
             </div>
+            <div v-else class="flex items-center gap-2 px-1">
+              <RouterLink to="/auth/login" @click="mobileOpen = false"
+                class="flex-1 text-center px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
+                Log in
+              </RouterLink>
+              <RouterLink to="/auth/register" @click="mobileOpen = false"
+                class="flex-1 text-center px-3.5 py-2.5 rounded-xl text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white transition-colors">
+                Get Started
+              </RouterLink>
+            </div>
           </div>
         </aside>
       </div>
@@ -173,6 +196,7 @@
 import { ref, computed, h } from 'vue'
 import { RouterView, RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import AppFooter from '@/components/AppFooter.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -201,6 +225,8 @@ const ArrowRightOnRectangleIcon = icon('M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.
 const ChevronDownIcon = icon('m19.5 8.25-7.5 7.5-7.5-7.5')
 const CogIcon = icon('M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.164-.398.142-.854-.108-1.204l-.527-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z')
 const ShieldIcon = icon('M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z')
+const TagIcon = icon('M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z M6 6h.008v.008H6V6Z')
+const InfoIcon = icon('M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z')
 
 const navItems = [
   { to: '/',         name: 'dashboard',  label: 'Dashboard',        icon: HomeIcon },
@@ -208,11 +234,14 @@ const navItems = [
   { to: '/ai',       name: 'ai',         label: 'AI Instructor',    icon: SparklesIcon },
   { to: '/exam',     name: 'exam-setup', label: 'Exam Simulator',   icon: ClipboardIcon },
   { to: '/sessions', name: 'sessions',   label: 'Online Sessions',  icon: CalendarIcon },
+  { to: '/about',    name: 'about',      label: 'About',            icon: InfoIcon },
+  { to: '/pricing',  name: 'pricing',    label: 'Pricing',          icon: TagIcon },
 ]
 
-// Guests can only browse the public Study Modules catalog — the rest require an account.
+// Guests see every tab except Dashboard (which just re-shows this same
+// landing page when logged out) — clicking a gated one sends them to login.
 const visibleNavItems = computed(() =>
-  auth.isAuthenticated ? navItems : navItems.filter(item => item.name === 'modules')
+  auth.isAuthenticated ? navItems : navItems.filter(item => item.name !== 'dashboard')
 )
 </script>
 
