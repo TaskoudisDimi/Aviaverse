@@ -62,7 +62,7 @@
                 <ShieldIcon class="w-4 h-4 text-slate-400 flex-shrink-0" />
                 Admin
               </RouterLink>
-              <button @click="auth.logout(); router.push('/auth/login')"
+              <button @click="auth.logout(); router.push('/')"
                 class="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
                 <ArrowRightOnRectangleIcon class="w-4 h-4 text-slate-400 flex-shrink-0" />
                 Log out
@@ -171,7 +171,7 @@
                   <p class="text-xs text-slate-500 truncate">{{ auth.user?.plan?.name ?? auth.user?.licence_type }}</p>
                 </div>
               </RouterLink>
-              <button @click="auth.logout(); router.push('/auth/login')" class="text-slate-400 hover:text-slate-600">
+              <button @click="auth.logout(); router.push('/')" class="text-slate-400 hover:text-slate-600">
                 <ArrowRightOnRectangleIcon class="w-4 h-4" />
               </button>
             </div>

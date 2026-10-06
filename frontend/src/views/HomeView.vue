@@ -3,14 +3,17 @@
 
   <div v-else class="min-h-full">
     <!-- Hero -->
-    <div class="relative overflow-hidden bg-white border-b border-slate-200 px-4 sm:px-6 py-16 sm:py-24 text-center">
-      <div class="absolute inset-0 bg-gradient-to-b from-aviation-50/70 via-aviation-50/20 to-transparent pointer-events-none" aria-hidden="true" />
-      <div class="relative max-w-2xl mx-auto">
-        <p class="text-xs font-bold tracking-widest text-aviation-600 uppercase mb-3">EASA Part-66 Training</p>
-        <h1 class="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
-          Build Your Aircraft<br class="hidden sm:block" /> Maintenance Career
+    <div class="relative overflow-hidden px-4 sm:px-6 py-24 sm:py-32">
+      <img src="/img/hero-engine.jpg" alt=""
+        class="absolute inset-0 w-full h-full object-cover" aria-hidden="true" />
+      <div class="absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-900/90 to-navy-900/40" aria-hidden="true" />
+      <div class="absolute inset-0 bg-gradient-to-t from-navy-900/70 via-transparent to-transparent" aria-hidden="true" />
+      <div class="relative max-w-5xl mx-auto">
+        <p class="text-xs font-bold tracking-widest text-aviation-300 uppercase mb-3">EASA Part-66 Training</p>
+        <h1 class="text-3xl sm:text-5xl font-bold text-white tracking-tight leading-tight max-w-xl">
+          Build Your Aircraft Maintenance Career
         </h1>
-        <p class="text-slate-500 mt-4 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+        <p class="text-slate-200 mt-4 text-base sm:text-lg max-w-md leading-relaxed">
           Study material, exam preparation, an AI tutor and personal training —
           everything you need for your Part-66 certification, in one place.
         </p>
@@ -41,6 +44,30 @@
             </svg>
           </span>
         </RouterLink>
+      </div>
+    </div>
+
+    <!-- About teaser -->
+    <div class="bg-white border-y border-slate-200">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid sm:grid-cols-[180px_1fr] gap-6 sm:gap-10 items-center">
+        <img src="/img/founder.jpg" alt="Vyron Charalampidis"
+          class="w-28 h-28 sm:w-[180px] sm:h-[180px] rounded-2xl object-cover mx-auto sm:mx-0" />
+        <div>
+          <p class="text-xs font-bold tracking-widest text-aviation-600 uppercase mb-2">Meet the Founder</p>
+          <h2 class="text-xl font-bold text-slate-900">Vyron Charalampidis</h2>
+          <p class="text-sm text-slate-500 mt-2 leading-relaxed max-w-2xl">
+            7+ years in aircraft maintenance and business aviation, an MSc in Thermal Power &amp;
+            Propulsion from Cranfield University, and a platform built from his own journey through
+            Part-66 — to make that same path clearer for the next generation of engineers.
+          </p>
+          <RouterLink to="/about"
+            class="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold text-aviation-600 hover:text-aviation-700">
+            Read My Story
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </RouterLink>
+        </div>
       </div>
     </div>
 
