@@ -34,15 +34,20 @@
           </ul>
 
           <p v-if="p.code === currentCode" class="text-xs font-medium text-aviation-600 mt-5 text-center">Your current plan</p>
-          <RouterLink v-else-if="auth.isAuthenticated" to="/settings"
+          <RouterLink v-else-if="!auth.isAuthenticated" to="/auth/register"
+            class="mt-5 w-full text-center text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white rounded-xl py-2.5 transition-colors">
+            Get Started
+          </RouterLink>
+          <RouterLink v-else-if="p.billing_mode === 'free'" to="/settings"
             class="mt-5 w-full text-center text-sm font-medium bg-white border border-aviation-300 text-aviation-700
                    hover:bg-aviation-50 rounded-xl py-2.5 transition-colors">
             Switch in Settings
           </RouterLink>
-          <RouterLink v-else to="/auth/register"
-            class="mt-5 w-full text-center text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white rounded-xl py-2.5 transition-colors">
-            Get Started
-          </RouterLink>
+          <button v-else @click="subscribe(p.code)" :disabled="checkingOutTo !== null"
+            class="mt-5 w-full text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white
+                   disabled:opacity-50 rounded-xl py-2.5 transition-colors">
+            {{ checkingOutTo === p.code ? 'Redirecting…' : 'Subscribe' }}
+          </button>
         </div>
       </div>
     </div>
@@ -64,12 +69,24 @@ interface PlanListItem {
   period_days: number | null
   ai_message_cap: number
   allowed_module_codes: string[] | null
+  billing_mode: 'free' | 'recurring' | 'one_time'
 }
 
 const auth = useAuthStore()
 const loading = ref(true)
 const plans = ref<PlanListItem[]>([])
 const currentCode = computed(() => auth.user?.plan?.code)
+const checkingOutTo = ref<string | null>(null)
+
+async function subscribe(code: string) {
+  checkingOutTo.value = code
+  try {
+    const url = await auth.startCheckout(code)
+    window.location.href = url
+  } catch {
+    checkingOutTo.value = null
+  }
+}
 
 const CheckIcon = {
   render() {

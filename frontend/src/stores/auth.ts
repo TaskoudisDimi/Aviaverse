@@ -10,6 +10,8 @@ interface Plan {
   ai_message_cap: number
   allowed_module_codes: string[] | null
   expires_at: string | null
+  billing_mode: 'free' | 'recurring' | 'one_time'
+  payment_provider: string | null
 }
 
 interface User {
@@ -60,6 +62,18 @@ export const useAuthStore = defineStore('auth', () => {
     await fetchMe()
   }
 
+  // Returns the Stripe Checkout URL to redirect the browser to.
+  async function startCheckout(planCode: string): Promise<string> {
+    const res = await api.post('/api/v1/auth/billing/checkout', { plan_code: planCode })
+    return res.data.url
+  }
+
+  async function cancelSubscription(): Promise<string> {
+    const res = await api.post('/api/v1/auth/billing/cancel')
+    await fetchMe()
+    return res.data.message
+  }
+
   function logout() {
     token.value = null
     user.value = null
@@ -74,5 +88,5 @@ export const useAuthStore = defineStore('auth', () => {
       })
     : Promise.resolve()
 
-  return { token, user, isAuthenticated, login, register, logout, fetchMe, updateProfile, changePlan, ready }
+  return { token, user, isAuthenticated, login, register, logout, fetchMe, updateProfile, changePlan, startCheckout, cancelSubscription, ready }
 })

@@ -75,7 +75,8 @@
           <p class="font-semibold text-aviation-900">{{ plan.name }}</p>
           <p class="text-sm text-aviation-700 mt-0.5">
             {{ formatPrice(plan.price_cents, plan.currency) }}
-            <span v-if="plan.expires_at"> · renews {{ formatDate(plan.expires_at) }}</span>
+            <span v-if="plan.billing_mode === 'recurring' && plan.expires_at"> · renews {{ formatDate(plan.expires_at) }}</span>
+            <span v-else-if="plan.billing_mode === 'one_time' && plan.expires_at"> · access until {{ formatDate(plan.expires_at) }}</span>
             <span v-else> · no expiry</span>
           </p>
         </div>
@@ -90,6 +91,11 @@
               {{ plan.allowed_module_codes?.length ? plan.allowed_module_codes.join(', ') : 'All modules' }}
             </p>
           </div>
+          <button v-if="plan.billing_mode === 'recurring' && plan.payment_provider === 'stripe'"
+            @click="cancelSubscription" :disabled="canceling"
+            class="text-red-600 hover:text-red-700 font-medium text-xs self-start disabled:opacity-50">
+            {{ canceling ? 'Canceling…' : 'Cancel subscription' }}
+          </button>
         </div>
       </div>
       <p v-else class="text-sm text-slate-400">Loading your plan…</p>
@@ -99,7 +105,7 @@
     <div class="bg-white border border-slate-200 rounded-2xl p-6">
       <h2 class="text-base font-semibold text-slate-900 mb-1">Available plans</h2>
       <p class="text-sm text-slate-500 mb-5">
-        Payment isn't wired up yet, so switching plans here doesn't charge you — it's a direct swap for now.
+        Paid plans are handled securely by Stripe — you'll be redirected to complete payment.
       </p>
       <div v-if="planError" class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-600 text-sm mb-4">
         {{ planError }}
@@ -120,10 +126,15 @@
             <li>{{ p.allowed_module_codes?.length ? `${p.allowed_module_codes.length} module(s)` : 'All modules' }}</li>
           </ul>
           <p v-if="p.code === plan?.code" class="text-xs font-medium text-aviation-600 mt-3">Current plan</p>
-          <button v-else @click="switchPlan(p.code)" :disabled="switchingTo !== null"
+          <button v-else-if="p.billing_mode === 'free'" @click="switchPlan(p.code)" :disabled="switchingTo !== null"
             class="mt-3 w-full text-sm font-medium bg-white border border-aviation-300 text-aviation-700
                    hover:bg-aviation-50 disabled:opacity-50 rounded-xl py-2 transition-colors">
             {{ switchingTo === p.code ? 'Switching…' : 'Switch to this plan' }}
+          </button>
+          <button v-else @click="subscribe(p.code)" :disabled="checkingOutTo !== null"
+            class="mt-3 w-full text-sm font-medium bg-aviation-500 hover:bg-aviation-600 text-white
+                   disabled:opacity-50 rounded-xl py-2 transition-colors">
+            {{ checkingOutTo === p.code ? 'Redirecting…' : 'Subscribe' }}
           </button>
         </div>
       </div>
@@ -133,10 +144,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { api } from '@/lib/api'
 
 const auth = useAuthStore()
+const route = useRoute()
 
 const userInitial = computed(() => auth.user?.full_name?.[0]?.toUpperCase() ?? '?')
 const plan = computed(() => auth.user?.plan)
@@ -188,10 +201,13 @@ interface PlanListItem {
   period_days: number | null
   ai_message_cap: number
   allowed_module_codes: string[] | null
+  billing_mode: 'free' | 'recurring' | 'one_time'
 }
 
 const allPlans = ref<PlanListItem[]>([])
 const switchingTo = ref<string | null>(null)
+const checkingOutTo = ref<string | null>(null)
+const canceling = ref(false)
 const planError = ref('')
 
 async function switchPlan(code: string) {
@@ -207,6 +223,32 @@ async function switchPlan(code: string) {
   }
 }
 
+async function subscribe(code: string) {
+  checkingOutTo.value = code
+  planError.value = ''
+  try {
+    const url = await auth.startCheckout(code)
+    window.location.href = url
+  } catch (e: unknown) {
+    planError.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not start checkout.'
+    checkingOutTo.value = null
+  }
+}
+
+async function cancelSubscription() {
+  if (!confirm('Cancel your subscription? You keep access until the end of the current billing period.')) return
+  canceling.value = true
+  planError.value = ''
+  try {
+    const message = await auth.cancelSubscription()
+    flashNotice(message)
+  } catch (e: unknown) {
+    planError.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not cancel subscription.'
+  } finally {
+    canceling.value = false
+  }
+}
+
 function formatPrice(cents: number, currency: string) {
   if (cents === 0) return 'Free'
   return new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(cents / 100)
@@ -219,5 +261,10 @@ function formatDate(iso: string) {
 onMounted(async () => {
   const res = await api.get('/api/v1/auth/plans')
   allPlans.value = res.data
+
+  if (route.query.checkout === 'success') {
+    await auth.fetchMe()
+    flashNotice('Payment received — your plan is now active.')
+  }
 })
 </script>

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
+	"github.com/vyron/auth/billing"
 	"github.com/vyron/auth/handlers"
 	"github.com/vyron/auth/mailer"
 	"github.com/vyron/auth/middleware"
@@ -44,7 +45,14 @@ func main() {
 		log.Println("WARNING: REDIS_URL not set — login brute-force protection is disabled")
 	}
 
-	h := handlers.New(db, jwtSecret, mail, rdb)
+	bc := billing.NewClient()
+	if !bc.Enabled() {
+		log.Println("WARNING: STRIPE_SECRET_KEY not set — paid checkout is disabled")
+	} else if bc.WebhookSecret == "" {
+		log.Println("WARNING: STRIPE_WEBHOOK_SECRET not set — the Stripe webhook will reject all events")
+	}
+
+	h := handlers.New(db, jwtSecret, mail, rdb, bc)
 
 	v1 := r.Group("/api/v1/auth")
 	{
@@ -56,6 +64,9 @@ func main() {
 		v1.PATCH("/me", middleware.Auth(jwtSecret), h.UpdateProfile)
 		v1.POST("/me/plan", middleware.Auth(jwtSecret), h.ChangePlan)
 		v1.GET("/plans", h.Plans)
+		v1.POST("/billing/checkout", middleware.Auth(jwtSecret), h.CreateCheckoutSession)
+		v1.POST("/billing/cancel", middleware.Auth(jwtSecret), h.CancelSubscription)
+		v1.POST("/stripe/webhook", h.StripeWebhook)
 
 		admin := v1.Group("/admin")
 		admin.Use(middleware.Auth(jwtSecret), middleware.AdminOnly(db))

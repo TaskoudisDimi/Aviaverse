@@ -19,6 +19,7 @@ import (
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/vyron/auth/billing"
 	"github.com/vyron/auth/mailer"
 )
 
@@ -28,14 +29,15 @@ type Handler struct {
 	mail        *mailer.Client
 	frontendURL string
 	redis       *redis.Client
+	billing     *billing.Client
 }
 
-func New(db *sql.DB, jwtSecret string, mail *mailer.Client, rdb *redis.Client) *Handler {
+func New(db *sql.DB, jwtSecret string, mail *mailer.Client, rdb *redis.Client, bc *billing.Client) *Handler {
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
 		frontendURL = "http://localhost:3000"
 	}
-	return &Handler{db: db, jwtSecret: jwtSecret, mail: mail, frontendURL: frontendURL, redis: rdb}
+	return &Handler{db: db, jwtSecret: jwtSecret, mail: mail, frontendURL: frontendURL, redis: rdb, billing: bc}
 }
 
 const (
@@ -311,13 +313,15 @@ func (h *Handler) ResetPassword(c *gin.Context) {
 }
 
 type planResp struct {
-	Code           string     `json:"code"`
-	Name           string     `json:"name"`
-	PriceCents     int        `json:"price_cents"`
-	Currency       string     `json:"currency"`
-	AIMessageCap   int        `json:"ai_message_cap"`
-	AllowedModules []string   `json:"allowed_module_codes"`
-	ExpiresAt      *time.Time `json:"expires_at"`
+	Code            string     `json:"code"`
+	Name            string     `json:"name"`
+	PriceCents      int        `json:"price_cents"`
+	Currency        string     `json:"currency"`
+	AIMessageCap    int        `json:"ai_message_cap"`
+	AllowedModules  []string   `json:"allowed_module_codes"`
+	ExpiresAt       *time.Time `json:"expires_at"`
+	BillingMode     string     `json:"billing_mode"`
+	PaymentProvider *string    `json:"payment_provider"`
 }
 
 func (h *Handler) Me(c *gin.Context) {
@@ -334,7 +338,8 @@ func (h *Handler) Me(c *gin.Context) {
 
 	var plan planResp
 	err = h.db.QueryRow(`
-		SELECT sp.code, sp.name, sp.price_cents, sp.currency, sp.ai_message_cap, sp.allowed_module_codes, us.expires_at
+		SELECT sp.code, sp.name, sp.price_cents, sp.currency, sp.ai_message_cap, sp.allowed_module_codes,
+		       us.expires_at, sp.billing_mode, us.payment_provider
 		FROM user_subscriptions us
 		JOIN subscription_plans sp ON sp.id = us.plan_id
 		WHERE us.user_id = $1
@@ -342,7 +347,8 @@ func (h *Handler) Me(c *gin.Context) {
 		  AND (us.expires_at IS NULL OR us.expires_at > now())
 		ORDER BY us.started_at DESC
 		LIMIT 1`, userID,
-	).Scan(&plan.Code, &plan.Name, &plan.PriceCents, &plan.Currency, &plan.AIMessageCap, pq.Array(&plan.AllowedModules), &plan.ExpiresAt)
+	).Scan(&plan.Code, &plan.Name, &plan.PriceCents, &plan.Currency, &plan.AIMessageCap, pq.Array(&plan.AllowedModules),
+		&plan.ExpiresAt, &plan.BillingMode, &plan.PaymentProvider)
 
 	resp := gin.H{
 		"id":           user.ID,
@@ -390,16 +396,18 @@ type changePlanReq struct {
 	PlanCode string `json:"plan_code" binding:"required"`
 }
 
-// ChangePlan switches the caller's active subscription to a different plan.
-// No payment is collected here — real billing isn't wired up yet, so this
-// is a self-service switch on the honor system until a payment processor
-// is integrated. Marks the subscription payment_provider as 'manual' so
-// it's obvious in the data which subscriptions went through real billing.
+// ChangePlan switches the caller onto the free plan — the only switch that
+// doesn't require payment. Paid plans go through CreateCheckoutSession
+// instead, which is the only path that can mark a subscription as paid.
 func (h *Handler) ChangePlan(c *gin.Context) {
 	userID := c.GetString("user_id")
 	var req changePlanReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if req.PlanCode != "free" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "paid plans require checkout — use /billing/checkout"})
 		return
 	}
 
@@ -452,7 +460,7 @@ func (h *Handler) ChangePlan(c *gin.Context) {
 // view even to visitors deciding whether to sign up.
 func (h *Handler) Plans(c *gin.Context) {
 	rows, err := h.db.Query(`
-		SELECT code, name, price_cents, currency, period_days, ai_message_cap, allowed_module_codes
+		SELECT code, name, price_cents, currency, period_days, ai_message_cap, allowed_module_codes, billing_mode
 		FROM subscription_plans
 		WHERE active = true
 		ORDER BY sort_order`)
@@ -470,12 +478,13 @@ func (h *Handler) Plans(c *gin.Context) {
 		PeriodDays     *int     `json:"period_days"`
 		AIMessageCap   int      `json:"ai_message_cap"`
 		AllowedModules []string `json:"allowed_module_codes"`
+		BillingMode    string   `json:"billing_mode"`
 	}
 
 	plans := []plan{}
 	for rows.Next() {
 		var p plan
-		if err := rows.Scan(&p.Code, &p.Name, &p.PriceCents, &p.Currency, &p.PeriodDays, &p.AIMessageCap, pq.Array(&p.AllowedModules)); err != nil {
+		if err := rows.Scan(&p.Code, &p.Name, &p.PriceCents, &p.Currency, &p.PeriodDays, &p.AIMessageCap, pq.Array(&p.AllowedModules), &p.BillingMode); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 			return
 		}
