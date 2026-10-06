@@ -7,7 +7,7 @@
     </div>
 
     <!-- Services grid -->
-    <div class="grid sm:grid-cols-2 gap-5">
+    <div class="grid sm:grid-cols-3 gap-5">
       <div
         v-for="svc in services" :key="svc.title"
         class="bg-white border-2 rounded-2xl p-6 transition-all cursor-pointer"
