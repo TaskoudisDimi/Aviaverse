@@ -1,5 +1,5 @@
 <template>
-  <footer class="border-t border-slate-200 mt-12">
+  <footer class="relative z-10 bg-white border-t border-slate-200 mt-12">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
       <p>&copy; {{ year }} VJet-Academy &middot; EASA Part-66 Training</p>
       <a href="mailto:vjetacademy@gmail.com" @click="copyEmail"

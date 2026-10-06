@@ -110,10 +110,12 @@
           <text x="1580" y="800" transform="rotate(90 1580 800)">FLY HIGHER</text>
         </g>
       </svg>
-      <div class="relative z-10 h-full">
-        <RouterView />
+      <div class="relative z-10 min-h-full flex flex-col">
+        <div class="flex-1">
+          <RouterView />
+        </div>
+        <AppFooter />
       </div>
-      <AppFooter v-if="$route.meta.publicPage" />
     </main>
 
     <!-- Mobile nav drawer -->

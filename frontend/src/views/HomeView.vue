@@ -70,8 +70,6 @@
         </div>
       </div>
     </div>
-
-    <AppFooter />
   </div>
 </template>
 
@@ -80,7 +78,6 @@ import { h } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import DashboardView from './DashboardView.vue'
-import AppFooter from '@/components/AppFooter.vue'
 
 const auth = useAuthStore()
 
