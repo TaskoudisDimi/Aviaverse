@@ -44,7 +44,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-slate-200">
         <div>
           <h2 class="text-base font-semibold text-slate-900">Book Your Session</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Pick a date and time — sessions via Google Meet or Zoom</p>
+          <p class="text-xs text-slate-500 mt-0.5">Pick a date and time — sessions via Cal Video</p>
         </div>
         <span class="text-xs text-aviation-700 font-medium bg-aviation-50 border border-aviation-200 px-2.5 py-1 rounded-full self-start sm:self-auto">
           Powered by Cal.com
@@ -66,18 +66,18 @@ import { ref, onMounted, watch } from 'vue'
 const CAL_USERNAME = import.meta.env.VITE_CAL_USERNAME || 'aviaverse'
 
 const calContainer = ref<HTMLElement | null>(null)
-const selected = ref('consultation')
+const selected = ref('15min')
 
 const services = [
   {
-    calSlug: 'consultation',
+    calSlug: '15min',
     title: '1-on-1 Study Session',
     description: 'Deep-dive into any EASA Part-66 module with a certified instructor via video call.',
     icon: 'M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z',
     bullets: ['60-min or 90-min sessions available', 'All modules covered', 'Practice oral exam questions'],
   },
   {
-    calSlug: 'cv-review',
+    calSlug: '30min',
     title: 'CV Review',
     description: 'Get your aviation CV reviewed and optimised to stand out to MROs, airlines, and Part-145 organisations.',
     icon: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z',
@@ -89,13 +89,6 @@ const services = [
     description: 'Strengthen your LinkedIn presence to attract recruiters in the aviation maintenance industry.',
     icon: 'M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244',
     bullets: ['Profile headline & summary optimisation', 'Skills & endorsement strategy', 'Recruiter visibility tips'],
-  },
-  {
-    calSlug: 'mock-exam',
-    title: 'Mock Oral Exam',
-    description: 'Practice your Part-66 oral examination with an experienced examiner in a realistic environment.',
-    icon: 'M4.5 12a7.5 7.5 0 0 0 15 0m-15 0a7.5 7.5 0 1 1 15 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077 1.41-.513m14.095-5.13 1.41-.513M5.106 17.785l1.15-.964m11.49-9.642 1.149-.964M7.501 19.795l.75-1.3m7.5-12.99.75-1.3m-6.063 16.658.26-1.477m2.605-14.772.26-1.477m0 17.726-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205 6.75 2.906',
-    bullets: ['Simulates real examiner questioning style', 'Detailed feedback report after session', 'Available for B1 and B2 candidates'],
   },
 ]
 
