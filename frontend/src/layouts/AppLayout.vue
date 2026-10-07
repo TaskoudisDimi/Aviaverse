@@ -9,9 +9,9 @@
         </RouterLink>
 
         <!-- Desktop nav -->
-        <nav class="hidden lg:flex items-center gap-1 flex-1 min-w-0">
+        <nav class="hidden lg:flex items-center gap-0.5 flex-1 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to"
-            class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap"
+            class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shrink-0"
             :class="[$route.name === item.name
               ? 'bg-aviation-50 text-aviation-700 border border-aviation-200'
               : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">

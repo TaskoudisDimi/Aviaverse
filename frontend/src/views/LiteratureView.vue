@@ -24,8 +24,9 @@
           <p class="text-sm text-slate-500">Power Heat Cool (P.H.C.) Publications</p>
         </div>
         <div class="flex flex-col sm:items-end gap-1 text-sm">
-          <a href="mailto:apolyzakis@yahoo.gr" class="text-aviation-600 hover:text-aviation-700 font-medium">
-            apolyzakis@yahoo.gr
+          <a href="mailto:apolyzakis@yahoo.gr" @click="copyEmail"
+            class="text-aviation-600 hover:text-aviation-700 font-medium">
+            {{ emailCopied ? 'Copied to clipboard ✓' : 'apolyzakis@yahoo.gr' }}
           </a>
           <a href="tel:+306946466391" class="text-slate-500 hover:text-aviation-600">
             +30 694 646 6391
@@ -69,6 +70,17 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
+const emailCopied = ref(false)
+async function copyEmail() {
+  try {
+    await navigator.clipboard.writeText('apolyzakis@yahoo.gr')
+    emailCopied.value = true
+    setTimeout(() => { emailCopied.value = false }, 2000)
+  } catch {}
+}
+
 interface Book {
   slug: string
   title: string
