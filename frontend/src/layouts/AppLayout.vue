@@ -110,7 +110,13 @@
           <text x="1580" y="800" transform="rotate(90 1580 800)">FLY HIGHER</text>
         </g>
       </svg>
-      <div class="relative z-10 min-h-full flex flex-col">
+      <!-- Chat/exam screens manage their own internal scroll region and need
+           to exactly fill the available height — a footer below them would
+           break that fixed header/scroll-area/input layout, so they skip it. -->
+      <div v-if="$route.meta.fullHeight" class="relative z-10 h-full">
+        <RouterView />
+      </div>
+      <div v-else class="relative z-10 min-h-full flex flex-col">
         <div class="flex-1">
           <RouterView />
         </div>
@@ -229,6 +235,7 @@ const CogIcon = icon('M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398
 const ShieldIcon = icon('M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z')
 const TagIcon = icon('M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z M6 6h.008v.008H6V6Z')
 const InfoIcon = icon('M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z')
+const LibraryIcon = icon('M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z')
 
 const navItems = [
   { to: '/',         name: 'dashboard',  label: 'Dashboard',        icon: HomeIcon },
@@ -237,6 +244,7 @@ const navItems = [
   { to: '/exam',     name: 'exam-setup', label: 'Exam Simulator',   icon: ClipboardIcon },
   { to: '/sessions', name: 'sessions',   label: 'Online Sessions',  icon: CalendarIcon },
   { to: '/about',    name: 'about',      label: 'About',            icon: InfoIcon },
+  { to: '/literature', name: 'literature', label: 'Literature',     icon: LibraryIcon },
   { to: '/pricing',  name: 'pricing',    label: 'Pricing',          icon: TagIcon },
 ]
 

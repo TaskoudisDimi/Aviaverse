@@ -61,8 +61,15 @@
             </svg>
           </div>
           <div class="max-w-[85%] bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 min-w-0">
+            <!-- Waiting for the first token -->
+            <div v-if="streaming && i === messages.length - 1 && !msg.content"
+              class="flex items-center gap-1.5 py-1" aria-label="AI Instructor is thinking">
+              <span class="w-1.5 h-1.5 rounded-full bg-aviation-400 animate-bounce [animation-delay:-0.3s]" />
+              <span class="w-1.5 h-1.5 rounded-full bg-aviation-400 animate-bounce [animation-delay:-0.15s]" />
+              <span class="w-1.5 h-1.5 rounded-full bg-aviation-400 animate-bounce" />
+            </div>
             <!-- Streaming: show plain text while streaming for performance -->
-            <p v-if="streaming && i === messages.length - 1"
+            <p v-else-if="streaming && i === messages.length - 1"
               class="text-sm text-slate-800 whitespace-pre-wrap">{{ msg.content }}<span
               class="inline-block w-1.5 h-4 bg-aviation-500 ml-0.5 animate-pulse align-middle" /></p>
             <!-- Rendered markdown for completed messages -->

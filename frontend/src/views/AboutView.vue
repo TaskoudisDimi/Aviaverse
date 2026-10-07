@@ -27,7 +27,7 @@
             to study demanding Part-66 modules, prepare for technical examinations, search for the
             right learning material, build a career from the ground up and make important decisions
             about where to go next. Over the years, I realised that aspiring and experienced aircraft
-            maintenance professionals need more than just information &mdash; they need clear guidance,
+            maintenance professionals need more than just information - they need clear guidance,
             practical knowledge and support from someone who understands the industry first-hand.
           </p>
           <p>
