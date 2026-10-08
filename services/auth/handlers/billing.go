@@ -211,6 +211,19 @@ func (h *Handler) StripeWebhook(c *gin.Context) {
 			return
 		}
 		h.downgradeToFree(sub.ID)
+
+	case "invoice.paid":
+		// Fires on every recurring renewal charge (the initial charge is
+		// logged separately by activateSubscriptionFromCheckout). This is
+		// what makes a monthly Pro subscription show up more than once in
+		// the transactions ledger.
+		var inv stripe.Invoice
+		if err := json.Unmarshal(event.Data.Raw, &inv); err != nil {
+			log.Printf("stripe webhook: bad invoice payload: %v", err)
+			c.JSON(http.StatusOK, gin.H{})
+			return
+		}
+		h.logRenewalPayment(&inv)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"received": true})
@@ -225,11 +238,12 @@ func (h *Handler) activateSubscriptionFromCheckout(sess *stripe.CheckoutSession)
 	}
 
 	var planID int
+	var planName string
 	var periodDays sql.NullInt32
 	var billingMode string
 	if err := h.db.QueryRow(
-		`SELECT id, period_days, billing_mode FROM subscription_plans WHERE code = $1`, planCode,
-	).Scan(&planID, &periodDays, &billingMode); err != nil {
+		`SELECT id, name, period_days, billing_mode FROM subscription_plans WHERE code = $1`, planCode,
+	).Scan(&planID, &planName, &periodDays, &billingMode); err != nil {
 		log.Printf("stripe webhook: unknown plan_code %q on checkout session %s: %v", planCode, sess.ID, err)
 		return
 	}
@@ -275,6 +289,46 @@ func (h *Handler) activateSubscriptionFromCheckout(sess *stripe.CheckoutSession)
 
 	if sess.Customer != nil {
 		h.db.Exec(`UPDATE users SET stripe_customer_id = $1 WHERE id = $2 AND stripe_customer_id IS NULL`, sess.Customer.ID, userID)
+	}
+
+	h.logTransaction(userID, planID, int(sess.AmountTotal), string(sess.Currency),
+		fmt.Sprintf("%s - initial payment", planName), sess.ID)
+}
+
+// logRenewalPayment records a recurring subscription's monthly charge. The
+// user is looked up by the Stripe subscription id rather than metadata,
+// since renewal invoices don't carry the Checkout Session's metadata.
+func (h *Handler) logRenewalPayment(inv *stripe.Invoice) {
+	if inv.Subscription == nil {
+		return // one-time payments don't produce renewal invoices
+	}
+	var userID string
+	var planID int
+	var planName string
+	err := h.db.QueryRow(`
+		SELECT s.user_id, s.plan_id, sp.name
+		FROM user_subscriptions s JOIN subscription_plans sp ON sp.id = s.plan_id
+		WHERE s.external_subscription_id = $1`, inv.Subscription.ID,
+	).Scan(&userID, &planID, &planName)
+	if err != nil {
+		log.Printf("stripe webhook: no local subscription for invoice %s (sub %s): %v", inv.ID, inv.Subscription.ID, err)
+		return
+	}
+	h.logTransaction(userID, planID, int(inv.AmountPaid), string(inv.Currency),
+		fmt.Sprintf("%s - renewal", planName), inv.ID)
+}
+
+// logTransaction appends one row to the payment ledger. stripeReference is
+// the idempotency key — Stripe may redeliver the same webhook event, and
+// ON CONFLICT DO NOTHING keeps a retry from double-counting revenue.
+func (h *Handler) logTransaction(userID string, planID, amountCents int, currency, description, stripeReference string) {
+	if _, err := h.db.Exec(`
+		INSERT INTO payment_transactions (user_id, plan_id, amount_cents, currency, description, stripe_reference)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		ON CONFLICT (stripe_reference) DO NOTHING`,
+		userID, planID, amountCents, currency, description, stripeReference,
+	); err != nil {
+		log.Printf("stripe webhook: failed logging transaction %s for user %s: %v", stripeReference, userID, err)
 	}
 }
 

@@ -12,15 +12,23 @@
       {{ error }}
     </div>
 
-    <input v-model="search" type="text" placeholder="Search by name or email…"
+    <div class="flex gap-1 border-b border-slate-200">
+      <button v-for="t in ['users', 'transactions']" :key="t" @click="tab = t as typeof tab"
+        class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors capitalize"
+        :class="tab === t ? 'border-aviation-500 text-aviation-700' : 'border-transparent text-slate-500 hover:text-slate-700'">
+        {{ t }}
+      </button>
+    </div>
+
+    <input v-if="tab === 'users'" v-model="search" type="text" placeholder="Search by name or email…"
       class="w-full sm:max-w-sm bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900
              focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent" />
 
-    <div v-if="loading" class="flex justify-center py-12">
+    <div v-if="tab === 'users' && loading" class="flex justify-center py-12">
       <Spinner />
     </div>
 
-    <div v-else class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+    <div v-else-if="tab === 'users'" class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
@@ -81,6 +89,68 @@
       <p v-if="!loading && !filteredUsers.length" class="text-center text-slate-400 text-sm py-10">No matching users.</p>
     </div>
 
+    <!-- Transactions tab -->
+    <template v-else>
+      <div class="flex flex-col sm:flex-row sm:items-end gap-3 sm:justify-between">
+        <div class="flex gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">From</label>
+            <input v-model="txFrom" type="date"
+              class="bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900
+                     focus:outline-none focus:ring-2 focus:ring-aviation-500" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">To</label>
+            <input v-model="txTo" type="date"
+              class="bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900
+                     focus:outline-none focus:ring-2 focus:ring-aviation-500" />
+          </div>
+        </div>
+        <button @click="exportCsv" :disabled="!transactions.length"
+          class="bg-aviation-500 hover:bg-aviation-600 disabled:opacity-40 text-white text-sm font-medium
+                 px-4 py-2.5 rounded-xl transition-colors self-start">
+          Export CSV
+        </button>
+      </div>
+
+      <div v-if="txLoading" class="flex justify-center py-12"><Spinner /></div>
+
+      <div v-else class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-200 text-left text-xs text-slate-400 uppercase tracking-wide">
+                <th class="px-4 py-3 font-medium">Date</th>
+                <th class="px-4 py-3 font-medium">Customer</th>
+                <th class="px-4 py-3 font-medium">Description</th>
+                <th class="px-4 py-3 font-medium text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="t in transactions" :key="t.id" class="border-b border-slate-100 last:border-0">
+                <td class="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">{{ formatDateTime(t.created_at) }}</td>
+                <td class="px-4 py-3">
+                  <p class="font-medium text-slate-900">{{ t.user_name }}</p>
+                  <p class="text-slate-400 text-xs">{{ t.user_email }}</p>
+                </td>
+                <td class="px-4 py-3 text-slate-700">{{ t.description }}</td>
+                <td class="px-4 py-3 text-right font-medium text-slate-900 whitespace-nowrap">
+                  {{ formatAmount(t.amount_cents, t.currency) }}
+                </td>
+              </tr>
+            </tbody>
+            <tfoot v-if="transactions.length">
+              <tr class="border-t-2 border-slate-200">
+                <td colspan="3" class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Total</td>
+                <td class="px-4 py-3 text-right font-bold text-slate-900">{{ totalFormatted }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <p v-if="!txLoading && !transactions.length" class="text-center text-slate-400 text-sm py-10">No transactions in this period.</p>
+      </div>
+    </template>
+
     <!-- Delete confirmation modal -->
     <Transition name="fade">
       <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -108,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { api } from '@/lib/api'
 import Spinner from '@/components/Spinner.vue'
 
@@ -128,6 +198,19 @@ interface PlanListItem {
   code: string
   name: string
 }
+
+interface Transaction {
+  id: number
+  user_email: string
+  user_name: string
+  plan_name: string | null
+  amount_cents: number
+  currency: string
+  description: string
+  created_at: string
+}
+
+const tab = ref<'users' | 'transactions'>('users')
 
 const users = ref<AdminUser[]>([])
 const allPlans = ref<PlanListItem[]>([])
@@ -224,6 +307,73 @@ async function load() {
 }
 
 onMounted(load)
+
+// Transactions tab — for the monthly myDATA export handed to the accountant.
+function monthStart(): string {
+  const d = new Date()
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10)
+}
+function today(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+const transactions = ref<Transaction[]>([])
+const txLoading = ref(false)
+const txFrom = ref(monthStart())
+const txTo = ref(today())
+
+async function loadTransactions() {
+  txLoading.value = true
+  try {
+    const params: Record<string, string> = {}
+    if (txFrom.value) params.from = txFrom.value
+    if (txTo.value) params.to = `${txTo.value}T23:59:59Z`
+    const res = await api.get('/api/v1/auth/admin/transactions', { params })
+    transactions.value = res.data
+  } finally {
+    txLoading.value = false
+  }
+}
+
+watch(tab, (t) => { if (t === 'transactions' && !transactions.value.length) loadTransactions() })
+watch([txFrom, txTo], () => { if (tab.value === 'transactions') loadTransactions() })
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function formatAmount(cents: number, currency: string) {
+  return new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(cents / 100)
+}
+
+const totalFormatted = computed(() => {
+  if (!transactions.value.length) return ''
+  const currency = transactions.value[0].currency
+  const total = transactions.value.reduce((sum, t) => sum + t.amount_cents, 0)
+  return formatAmount(total, currency)
+})
+
+function exportCsv() {
+  const header = ['Date', 'Customer name', 'Customer email', 'Description', 'Amount', 'Currency']
+  const rows = transactions.value.map(t => [
+    new Date(t.created_at).toISOString(),
+    t.user_name,
+    t.user_email,
+    t.description,
+    (t.amount_cents / 100).toFixed(2),
+    t.currency.toUpperCase(),
+  ])
+  const csv = [header, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `vjet-academy-transactions_${txFrom.value}_${txTo.value}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <style>

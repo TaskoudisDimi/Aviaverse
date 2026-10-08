@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -141,6 +142,58 @@ func (h *Handler) AdminChangePlan(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+type transactionResp struct {
+	ID          int       `json:"id"`
+	UserEmail   string    `json:"user_email"`
+	UserName    string    `json:"user_name"`
+	PlanName    *string   `json:"plan_name"`
+	AmountCents int       `json:"amount_cents"`
+	Currency    string    `json:"currency"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+// ListTransactions returns the payment ledger, most recent first, optionally
+// filtered to a date range — used for the admin Transactions tab and for
+// building the monthly export handed to the accountant for myDATA.
+func (h *Handler) ListTransactions(c *gin.Context) {
+	query := `
+		SELECT t.id, u.email, u.full_name, sp.name, t.amount_cents, t.currency, t.description, t.created_at
+		FROM payment_transactions t
+		JOIN users u ON u.id = t.user_id
+		LEFT JOIN subscription_plans sp ON sp.id = t.plan_id
+		WHERE 1=1`
+	args := []interface{}{}
+
+	if from := c.Query("from"); from != "" {
+		args = append(args, from)
+		query += fmt.Sprintf(" AND t.created_at >= $%d", len(args))
+	}
+	if to := c.Query("to"); to != "" {
+		args = append(args, to)
+		query += fmt.Sprintf(" AND t.created_at < $%d", len(args))
+	}
+	query += " ORDER BY t.created_at DESC"
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	defer rows.Close()
+
+	transactions := []transactionResp{}
+	for rows.Next() {
+		var t transactionResp
+		if err := rows.Scan(&t.ID, &t.UserEmail, &t.UserName, &t.PlanName, &t.AmountCents, &t.Currency, &t.Description, &t.CreatedAt); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+			return
+		}
+		transactions = append(transactions, t)
+	}
+	c.JSON(http.StatusOK, transactions)
 }
 
 // AdminDeleteUser permanently removes an account. Cascades to their

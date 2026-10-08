@@ -72,6 +72,7 @@ func main() {
 		admin.Use(middleware.Auth(jwtSecret), middleware.AdminOnly(db))
 		{
 			admin.GET("/users", h.ListUsers)
+			admin.GET("/transactions", h.ListTransactions)
 			admin.PATCH("/users/:id", h.AdminUpdateUser)
 			admin.POST("/users/:id/plan", h.AdminChangePlan)
 			admin.DELETE("/users/:id", h.AdminDeleteUser)
