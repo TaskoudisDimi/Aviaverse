@@ -69,7 +69,7 @@
     <div class="bg-aviation-50 border border-aviation-200 rounded-2xl p-6">
       <h2 class="font-semibold text-slate-900 mb-2">Why VJet-Academy</h2>
       <p class="text-sm text-slate-600 leading-relaxed">
-        Practical, industry-grounded Part-66 training — structured study material, realistic exam
+        Practical, industry-grounded Part-66 training - structured study material, realistic exam
         preparation, an AI tutor for day-to-day questions, and direct support for exam prep and career
         decisions.
       </p>

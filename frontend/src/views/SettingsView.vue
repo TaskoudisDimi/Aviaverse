@@ -105,7 +105,7 @@
     <div class="bg-white border border-slate-200 rounded-2xl p-6">
       <h2 class="text-base font-semibold text-slate-900 mb-1">Available plans</h2>
       <p class="text-sm text-slate-500 mb-5">
-        Paid plans are handled securely by Stripe — you'll be redirected to complete payment.
+        Paid plans are handled securely by Stripe - you'll be redirected to complete payment.
       </p>
       <div v-if="planError" class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-600 text-sm mb-4">
         {{ planError }}
@@ -264,7 +264,7 @@ onMounted(async () => {
 
   if (route.query.checkout === 'success') {
     await auth.fetchMe()
-    flashNotice('Payment received — your plan is now active.')
+    flashNotice('Payment received - your plan is now active.')
   }
 })
 </script>

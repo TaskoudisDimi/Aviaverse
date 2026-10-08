@@ -52,7 +52,7 @@
         </div>
 
         <div v-if="!filteredDetails.length" class="px-6 py-10 text-center text-slate-400 text-sm">
-          No incorrect answers — nice work!
+          No incorrect answers - nice work!
         </div>
 
         <div v-else class="divide-y divide-slate-100">

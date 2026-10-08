@@ -44,7 +44,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-slate-200">
         <div>
           <h2 class="text-base font-semibold text-slate-900">Book Your Session</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Pick a date and time — sessions via Cal Video</p>
+          <p class="text-xs text-slate-500 mt-0.5">Pick a date and time - sessions via Cal Video</p>
         </div>
         <span class="text-xs text-aviation-700 font-medium bg-aviation-50 border border-aviation-200 px-2.5 py-1 rounded-full self-start sm:self-auto">
           Powered by Cal.com

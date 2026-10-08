@@ -5,7 +5,7 @@
       <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-slate-900">Study Modules</h1>
-          <p class="text-slate-500 text-sm mt-1">EASA Part-66 curriculum — 17 modules covering all aviation maintenance topics</p>
+          <p class="text-slate-500 text-sm mt-1">EASA Part-66 curriculum - 17 modules covering all aviation maintenance topics</p>
         </div>
         <select v-model="licenceFilter"
           class="bg-white border border-slate-300 rounded-xl px-4 py-2 text-sm text-slate-900

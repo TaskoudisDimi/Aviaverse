@@ -57,7 +57,7 @@
           <p class="text-sm text-slate-500 mt-2 leading-relaxed max-w-2xl">
             7+ years in aircraft maintenance and business aviation, an MSc in Thermal Power &amp;
             Propulsion from Cranfield University, and a platform built from his own journey through
-            Part-66 — to make that same path clearer for the next generation of engineers.
+            Part-66 - to make that same path clearer for the next generation of engineers.
           </p>
           <RouterLink to="/about"
             class="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold text-aviation-600 hover:text-aviation-700">
@@ -97,7 +97,7 @@ const InfoIcon = icon('M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a
 const LibraryIcon = icon('M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z')
 
 const tiles = [
-  { to: '/modules',  title: 'Study Modules',  description: 'Browse the full EASA Part-66 curriculum — 17 modules, B1 and B2.', icon: BookIcon, gated: false },
+  { to: '/modules',  title: 'Study Modules',  description: 'Browse the full EASA Part-66 curriculum - 17 modules, B1 and B2.', icon: BookIcon, gated: false },
   { to: '/ai',       title: 'AI Instructor',  description: 'Ask questions and get answers grounded in your training material.', icon: SparklesIcon, gated: true },
   { to: '/exam',     title: 'Exam Simulator', description: 'Practice real-format EASA-style questions by module.', icon: ClipboardIcon, gated: true },
   { to: '/sessions', title: 'Online Sessions', description: 'Book 1-to-1 training with a certified instructor.', icon: CalendarIcon, gated: true },
