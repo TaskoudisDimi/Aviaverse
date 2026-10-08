@@ -14,8 +14,7 @@
           Build Your Aircraft Maintenance Career
         </h1>
         <p class="text-slate-200 mt-4 text-base sm:text-lg max-w-md leading-relaxed">
-          Study material, exam preparation, an AI tutor and personal training —
-          everything you need for your Part-66 certification, in one place.
+          Study material, exam preparation, an AI tutor and personal training - everything you need for your Part-66 certification, in one place.
         </p>
         <RouterLink to="/auth/register"
           class="inline-block mt-7 bg-aviation-500 hover:bg-aviation-600 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors">
