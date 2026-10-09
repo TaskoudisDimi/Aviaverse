@@ -34,9 +34,7 @@
     <div ref="messagesEl" class="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
       <div v-if="!messages.length" class="flex flex-col items-center justify-center h-full text-center px-4">
         <div class="w-16 h-16 rounded-full bg-aviation-50 border border-aviation-200 flex items-center justify-center mb-4">
-          <svg class="w-8 h-8 text-aviation-500" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/>
-          </svg>
+          <img src="/favicon.png" alt="" class="w-9 h-9" />
         </div>
         <p class="text-slate-700 font-medium">Your AI EASA Instructor</p>
         <p class="text-slate-400 text-sm mt-1 max-w-xs">
@@ -56,9 +54,7 @@
         <!-- Assistant -->
         <div v-else class="flex gap-3">
           <div class="w-8 h-8 rounded-full bg-aviation-50 border border-aviation-200 flex items-center justify-center flex-shrink-0 mt-1">
-            <svg class="w-4 h-4 text-aviation-500" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/>
-            </svg>
+            <img src="/favicon.png" alt="" class="w-5 h-5" />
           </div>
           <div class="max-w-[85%] bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 min-w-0">
             <!-- Waiting for the first token -->
