@@ -75,7 +75,8 @@
           <p class="font-semibold text-aviation-900">{{ plan.name }}</p>
           <p class="text-sm text-aviation-700 mt-0.5">
             {{ formatPrice(plan.price_cents, plan.currency) }}
-            <span v-if="plan.billing_mode === 'recurring' && plan.expires_at"> · renews {{ formatDate(plan.expires_at) }}</span>
+            <span v-if="plan.cancel_at_period_end" class="text-red-600 font-medium"> · won't renew — cancels at period end</span>
+            <span v-else-if="plan.billing_mode === 'recurring' && plan.expires_at"> · renews {{ formatDate(plan.expires_at) }}</span>
             <span v-else-if="plan.billing_mode === 'one_time' && plan.expires_at"> · access until {{ formatDate(plan.expires_at) }}</span>
             <span v-else> · no expiry</span>
           </p>
@@ -91,15 +92,42 @@
               {{ plan.allowed_module_codes?.length ? plan.allowed_module_codes.join(', ') : 'All modules' }}
             </p>
           </div>
-          <button v-if="plan.billing_mode === 'recurring' && plan.payment_provider === 'stripe'"
-            @click="cancelSubscription" :disabled="canceling"
-            class="text-red-600 hover:text-red-700 font-medium text-xs self-start disabled:opacity-50">
-            {{ canceling ? 'Canceling…' : 'Cancel subscription' }}
+          <p v-if="plan.cancel_at_period_end" class="text-slate-400 font-medium text-xs self-start">
+            Cancellation scheduled
+          </p>
+          <button v-else-if="plan.billing_mode === 'recurring' && plan.payment_provider === 'stripe'"
+            @click="showCancelModal = true"
+            class="text-red-600 hover:text-red-700 font-medium text-xs self-start">
+            Cancel subscription
           </button>
         </div>
       </div>
       <p v-else class="text-sm text-slate-400">Loading your plan…</p>
     </div>
+
+    <!-- Cancel subscription modal -->
+    <Transition name="fade">
+      <div v-if="showCancelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40" @click="showCancelModal = false" />
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+          <h3 class="text-base font-semibold text-slate-900 mb-2">Cancel your subscription?</h3>
+          <p class="text-sm text-slate-500 mb-6">
+            You'll keep full access to <span class="font-medium text-slate-700">{{ plan?.name }}</span>
+            until the end of the current billing period — you just won't be charged again after that.
+          </p>
+          <div class="flex justify-end gap-3">
+            <button @click="showCancelModal = false"
+              class="text-sm font-medium text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl">
+              Keep subscription
+            </button>
+            <button @click="confirmCancelSubscription" :disabled="canceling"
+              class="text-sm font-medium bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl transition-colors">
+              {{ canceling ? 'Canceling…' : 'Cancel subscription' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Available plans -->
     <div class="bg-white border border-slate-200 rounded-2xl p-6">
@@ -208,6 +236,7 @@ const allPlans = ref<PlanListItem[]>([])
 const switchingTo = ref<string | null>(null)
 const checkingOutTo = ref<string | null>(null)
 const canceling = ref(false)
+const showCancelModal = ref(false)
 const planError = ref('')
 
 async function switchPlan(code: string) {
@@ -235,12 +264,12 @@ async function subscribe(code: string) {
   }
 }
 
-async function cancelSubscription() {
-  if (!confirm('Cancel your subscription? You keep access until the end of the current billing period.')) return
+async function confirmCancelSubscription() {
   canceling.value = true
   planError.value = ''
   try {
     const message = await auth.cancelSubscription()
+    showCancelModal.value = false
     flashNotice(message)
   } catch (e: unknown) {
     planError.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not cancel subscription.'
@@ -268,3 +297,8 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>

@@ -313,15 +313,16 @@ func (h *Handler) ResetPassword(c *gin.Context) {
 }
 
 type planResp struct {
-	Code            string     `json:"code"`
-	Name            string     `json:"name"`
-	PriceCents      int        `json:"price_cents"`
-	Currency        string     `json:"currency"`
-	AIMessageCap    int        `json:"ai_message_cap"`
-	AllowedModules  []string   `json:"allowed_module_codes"`
-	ExpiresAt       *time.Time `json:"expires_at"`
-	BillingMode     string     `json:"billing_mode"`
-	PaymentProvider *string    `json:"payment_provider"`
+	Code              string     `json:"code"`
+	Name              string     `json:"name"`
+	PriceCents        int        `json:"price_cents"`
+	Currency          string     `json:"currency"`
+	AIMessageCap      int        `json:"ai_message_cap"`
+	AllowedModules    []string   `json:"allowed_module_codes"`
+	ExpiresAt         *time.Time `json:"expires_at"`
+	BillingMode       string     `json:"billing_mode"`
+	PaymentProvider   *string    `json:"payment_provider"`
+	CancelAtPeriodEnd bool       `json:"cancel_at_period_end"`
 }
 
 func (h *Handler) Me(c *gin.Context) {
@@ -339,7 +340,7 @@ func (h *Handler) Me(c *gin.Context) {
 	var plan planResp
 	err = h.db.QueryRow(`
 		SELECT sp.code, sp.name, sp.price_cents, sp.currency, sp.ai_message_cap, sp.allowed_module_codes,
-		       us.expires_at, sp.billing_mode, us.payment_provider
+		       us.expires_at, sp.billing_mode, us.payment_provider, us.cancel_at_period_end
 		FROM user_subscriptions us
 		JOIN subscription_plans sp ON sp.id = us.plan_id
 		WHERE us.user_id = $1
@@ -348,7 +349,7 @@ func (h *Handler) Me(c *gin.Context) {
 		ORDER BY us.started_at DESC
 		LIMIT 1`, userID,
 	).Scan(&plan.Code, &plan.Name, &plan.PriceCents, &plan.Currency, &plan.AIMessageCap, pq.Array(&plan.AllowedModules),
-		&plan.ExpiresAt, &plan.BillingMode, &plan.PaymentProvider)
+		&plan.ExpiresAt, &plan.BillingMode, &plan.PaymentProvider, &plan.CancelAtPeriodEnd)
 
 	resp := gin.H{
 		"id":           user.ID,

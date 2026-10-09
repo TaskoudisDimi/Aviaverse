@@ -12,6 +12,7 @@ interface Plan {
   expires_at: string | null
   billing_mode: 'free' | 'recurring' | 'one_time'
   payment_provider: string | null
+  cancel_at_period_end: boolean
 }
 
 interface User {

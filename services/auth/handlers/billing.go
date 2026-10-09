@@ -161,6 +161,16 @@ func (h *Handler) CancelSubscription(c *gin.Context) {
 		return
 	}
 
+	// Canceling at period end doesn't change status/plan_id — Stripe only
+	// ends it later via customer.subscription.deleted — so without this the
+	// UI has no way to show "cancels on X" or know not to offer Cancel again.
+	if _, err := h.db.Exec(
+		`UPDATE user_subscriptions SET cancel_at_period_end = true WHERE user_id = $1 AND status = 'active'`,
+		userID,
+	); err != nil {
+		log.Printf("stripe: failed flagging cancel_at_period_end for user %s: %v", userID, err)
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Your subscription will not renew and ends at the close of the current billing period."})
 }
 
@@ -269,7 +279,7 @@ func (h *Handler) activateSubscriptionFromCheckout(sess *stripe.CheckoutSession)
 		UPDATE user_subscriptions
 		SET plan_id = $1, started_at = now(), expires_at = %s,
 		    payment_provider = $2, external_subscription_id = $3,
-		    status = 'active', updated_at = now()
+		    status = 'active', cancel_at_period_end = false, updated_at = now()
 		WHERE user_id = $4 AND status = 'active'`, expiresAtSQL), args...)
 	if err != nil {
 		log.Printf("stripe webhook: failed updating subscription for user %s: %v", userID, err)
