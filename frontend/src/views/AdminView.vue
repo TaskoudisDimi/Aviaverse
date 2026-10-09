@@ -124,6 +124,7 @@
                 <th class="px-4 py-3 font-medium">Customer</th>
                 <th class="px-4 py-3 font-medium">Description</th>
                 <th class="px-4 py-3 font-medium text-right">Amount</th>
+                <th class="px-4 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -137,12 +138,16 @@
                 <td class="px-4 py-3 text-right font-medium text-slate-900 whitespace-nowrap">
                   {{ formatAmount(t.amount_cents, t.currency) }}
                 </td>
+                <td class="px-4 py-3 text-right whitespace-nowrap">
+                  <button @click="txDeleteTarget = t" class="text-red-500 hover:text-red-600 text-xs font-medium">Delete</button>
+                </td>
               </tr>
             </tbody>
             <tfoot v-if="transactions.length">
               <tr class="border-t-2 border-slate-200">
                 <td colspan="3" class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Total</td>
                 <td class="px-4 py-3 text-right font-bold text-slate-900">{{ totalFormatted }}</td>
+                <td></td>
               </tr>
             </tfoot>
           </table>
@@ -169,6 +174,31 @@
             <button @click="performDelete" :disabled="deleting"
               class="text-sm font-medium bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl transition-colors">
               {{ deleting ? 'Deleting…' : 'Delete account' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Delete transaction confirmation modal -->
+    <Transition name="fade">
+      <div v-if="txDeleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40" @click="txDeleteTarget = null" />
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+          <h3 class="text-base font-semibold text-slate-900 mb-2">Delete this transaction?</h3>
+          <p class="text-sm text-slate-500 mb-6">
+            <span class="font-medium text-slate-700">{{ txDeleteTarget.description }}</span>
+            ({{ formatAmount(txDeleteTarget.amount_cents, txDeleteTarget.currency) }}, {{ txDeleteTarget.user_email }})
+            will be removed from the ledger only — this doesn't touch Stripe or the customer's access.
+          </p>
+          <div class="flex justify-end gap-3">
+            <button @click="txDeleteTarget = null"
+              class="text-sm font-medium text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl">
+              Cancel
+            </button>
+            <button @click="performDeleteTransaction" :disabled="txDeleting"
+              class="text-sm font-medium bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl transition-colors">
+              {{ txDeleting ? 'Deleting…' : 'Delete transaction' }}
             </button>
           </div>
         </div>
@@ -321,6 +351,23 @@ const transactions = ref<Transaction[]>([])
 const txLoading = ref(false)
 const txFrom = ref(monthStart())
 const txTo = ref(today())
+const txDeleteTarget = ref<Transaction | null>(null)
+const txDeleting = ref(false)
+
+async function performDeleteTransaction() {
+  if (!txDeleteTarget.value) return
+  txDeleting.value = true
+  try {
+    await api.delete(`/api/v1/auth/admin/transactions/${txDeleteTarget.value.id}`)
+    transactions.value = transactions.value.filter(t => t.id !== txDeleteTarget.value!.id)
+    flashNotice('Transaction deleted.')
+    txDeleteTarget.value = null
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not delete transaction.'
+  } finally {
+    txDeleting.value = false
+  }
+}
 
 async function loadTransactions() {
   txLoading.value = true

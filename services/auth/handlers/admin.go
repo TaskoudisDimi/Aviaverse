@@ -196,6 +196,24 @@ func (h *Handler) ListTransactions(c *gin.Context) {
 	c.JSON(http.StatusOK, transactions)
 }
 
+// DeleteTransaction removes one row from the payment ledger — for test
+// entries that shouldn't end up in the monthly export handed to the
+// accountant. Only removes the ledger row; never touches Stripe or the
+// user's actual subscription/access.
+func (h *Handler) DeleteTransaction(c *gin.Context) {
+	id := c.Param("id")
+	res, err := h.db.Exec(`DELETE FROM payment_transactions WHERE id = $1`, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "transaction not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
 // AdminDeleteUser permanently removes an account. Cascades to their
 // subscriptions, progress, and AI session history via FK constraints.
 func (h *Handler) AdminDeleteUser(c *gin.Context) {
