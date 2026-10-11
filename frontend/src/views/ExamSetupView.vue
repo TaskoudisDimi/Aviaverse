@@ -34,12 +34,26 @@
         </p>
       </div>
 
-      <div v-if="form.module_id && form.licence_type" class="bg-slate-50 border border-slate-200 rounded-xl p-4">
-        <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Exam format</p>
-        <p class="text-slate-900 font-medium">
-          {{ examFormat.question_count }} questions · {{ examFormat.time_limit_min }} minutes
-        </p>
-        <p class="text-xs text-slate-400 mt-1">Matches the official EASA Part-66 format for this module and licence.</p>
+      <div v-if="form.module_id && form.licence_type" class="space-y-2">
+        <label class="block text-sm font-medium text-slate-700">Format</label>
+
+        <button type="button" @click="mode = 'official'"
+          class="w-full text-left bg-slate-50 border rounded-xl p-4 transition-colors"
+          :class="mode === 'official' ? 'border-aviation-400 ring-1 ring-aviation-400' : 'border-slate-200 hover:border-slate-300'">
+          <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Official EASA format</p>
+          <p class="text-slate-900 font-medium">
+            {{ examFormat.question_count }} questions · {{ examFormat.time_limit_min }} minutes
+          </p>
+          <p class="text-xs text-slate-400 mt-1">Matches the official EASA Part-66 format for this module and licence.</p>
+        </button>
+
+        <button type="button" @click="mode = 'quick'"
+          class="w-full text-left bg-slate-50 border rounded-xl p-4 transition-colors"
+          :class="mode === 'quick' ? 'border-aviation-400 ring-1 ring-aviation-400' : 'border-slate-200 hover:border-slate-300'">
+          <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Quick test</p>
+          <p class="text-slate-900 font-medium">{{ QUICK_TEST.question_count }} questions · {{ QUICK_TEST.time_limit_min }} minutes</p>
+          <p class="text-xs text-slate-400 mt-1">A short, random set of questions — good for a quick review.</p>
+        </button>
       </div>
 
       <button type="submit" :disabled="loading"
@@ -82,6 +96,9 @@ const availableModules = computed(() =>
 // Falls back to a sensible default if a module+licence pairing has no
 // official format on file yet, rather than leaving the form stuck.
 const DEFAULT_FORMAT = { question_count: 20, time_limit_min: 30 }
+const QUICK_TEST = { question_count: 10, time_limit_min: 15 }
+
+const mode = ref<'official' | 'quick'>('official')
 
 const examFormat = computed(() => {
   const mod = modules.value.find(m => m.id === form.value.module_id)
@@ -92,9 +109,10 @@ const examFormat = computed(() => {
   return match ?? DEFAULT_FORMAT
 })
 
-watch(examFormat, (f) => {
-  form.value.num_questions = f.question_count
-  form.value.time_limit_min = f.time_limit_min
+watch([examFormat, mode], ([f, m]) => {
+  const chosen = m === 'quick' ? QUICK_TEST : f
+  form.value.num_questions = chosen.question_count
+  form.value.time_limit_min = chosen.time_limit_min
 }, { immediate: true })
 
 watch(() => form.value.licence_type, () => {
