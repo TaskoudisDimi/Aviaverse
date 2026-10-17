@@ -27,13 +27,24 @@
       <div v-else class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <RouterLink
           v-for="m in modules" :key="m.id"
-          :to="`/modules/${m.id}`"
+          :to="isLocked(m.code) ? '/pricing' : `/modules/${m.id}`"
           class="group relative bg-white border border-slate-200 rounded-2xl overflow-hidden
                  hover:border-aviation-300 hover:shadow-lg hover:shadow-aviation-100
-                 transition-all duration-200 flex flex-col">
+                 transition-all duration-200 flex flex-col"
+          :class="{ 'opacity-75': isLocked(m.code) }">
 
           <!-- Coloured top strip -->
           <div class="h-1 w-full" :class="moduleAccent(m.code)" />
+
+          <!-- Locked badge -->
+          <div v-if="isLocked(m.code)"
+            class="absolute top-3 right-3 flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg z-10">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            Pro
+          </div>
 
           <div class="p-5 flex flex-col flex-1 gap-3">
             <!-- Code badge + licence badges -->
@@ -84,6 +95,7 @@
 import { ref, watch, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api } from '@/lib/api'
+import { useAuthStore } from '@/stores/auth'
 import Spinner from '@/components/Spinner.vue'
 
 interface Module {
@@ -95,9 +107,17 @@ interface Module {
   sort_order: number
 }
 
+const authStore = useAuthStore()
 const loading = ref(true)
 const modules = ref<Module[]>([])
 const licenceFilter = ref('')
+
+// null allowed_module_codes means unrestricted (paid plans); an array means
+// only those module codes are unlocked (the free plan).
+function isLocked(code: string): boolean {
+  const allowed = authStore.user?.plan?.allowed_module_codes
+  return !!allowed && !allowed.includes(code)
+}
 
 async function load() {
   loading.value = true

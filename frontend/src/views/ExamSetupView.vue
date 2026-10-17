@@ -32,6 +32,11 @@
         <p v-if="form.licence_type && !availableModules.length" class="text-xs text-slate-500 mt-1.5">
           No modules available for {{ form.licence_type }}.
         </p>
+        <p v-else-if="allowedModuleCodes" class="text-xs text-slate-500 mt-1.5">
+          Your plan includes {{ allowedModuleCodes.length }} modules.
+          <RouterLink to="/pricing" class="text-aviation-600 hover:text-aviation-700 font-medium">Upgrade</RouterLink>
+          to unlock all 17.
+        </p>
       </div>
 
       <div v-if="form.module_id && form.licence_type" class="space-y-2">
@@ -67,12 +72,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { api } from '@/lib/api'
 import { useExamStore } from '@/stores/exam'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const examStore = useExamStore()
+const authStore = useAuthStore()
 
 interface Module { id: number; code: string; title: string; licence_types: string[] }
 interface ExamFormat { module_code: string; licence_type: string; question_count: number; time_limit_min: number }
@@ -89,8 +96,14 @@ const form = ref({
   time_limit_min: 30,
 })
 
+// null allowed_module_codes means unrestricted (paid plans); an array means
+// only those module codes are selectable (the free plan).
+const allowedModuleCodes = computed(() => authStore.user?.plan?.allowed_module_codes ?? null)
+
 const availableModules = computed(() =>
-  modules.value.filter(m => m.licence_types.includes(form.value.licence_type))
+  modules.value
+    .filter(m => m.licence_types.includes(form.value.licence_type))
+    .filter(m => !allowedModuleCodes.value || allowedModuleCodes.value.includes(m.code))
 )
 
 // Falls back to a sensible default if a module+licence pairing has no

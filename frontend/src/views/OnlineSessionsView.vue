@@ -74,7 +74,7 @@ const services = [
     title: '1-on-1 Study Session',
     description: 'Deep-dive into any EASA Part-66 module with a certified instructor via video call.',
     icon: 'M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z',
-    bullets: ['60-min or 90-min sessions available', 'All modules covered', 'Practice oral exam questions'],
+    bullets: ['60-min sessions available', 'All modules covered', 'Practice oral exam questions'],
   },
   {
     calSlug: '30min',

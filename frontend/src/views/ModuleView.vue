@@ -33,11 +33,29 @@
         </div>
       </div>
 
+      <!-- Locked-module upsell banner -->
+      <div v-if="locked" class="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <svg class="w-6 h-6 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+          <div>
+            <p class="font-medium text-slate-900">This module is part of a paid plan</p>
+            <p class="text-sm text-slate-500 mt-0.5">Upgrade to unlock the full lesson content for {{ module.title }}.</p>
+          </div>
+        </div>
+        <RouterLink to="/pricing"
+          class="flex-shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors text-center">
+          View plans
+        </RouterLink>
+      </div>
+
       <!-- Subjects list -->
       <div class="space-y-2">
         <RouterLink
           v-for="(s, idx) in module.subjects" :key="s.id"
-          :to="`/subjects/${s.id}`"
+          :to="locked ? '/pricing' : `/subjects/${s.id}`"
           class="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl
                  hover:border-aviation-300 hover:bg-aviation-50/30 transition-all group">
 
@@ -57,7 +75,11 @@
             </span>
           </div>
 
-          <svg class="w-4 h-4 text-slate-400 group-hover:text-aviation-500 transition-colors shrink-0"
+          <svg v-if="locked" class="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+          <svg v-else class="w-4 h-4 text-slate-400 group-hover:text-aviation-500 transition-colors shrink-0"
             fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
@@ -82,12 +104,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { api } from '@/lib/api'
+import { useAuthStore } from '@/stores/auth'
 import Spinner from '@/components/Spinner.vue'
 
 const route = useRoute()
+const authStore = useAuthStore()
 const loading = ref(true)
 const module = ref<{
   id: number
@@ -96,6 +120,13 @@ const module = ref<{
   licence_types: string[]
   subjects: { id: number; code: string; title: string }[]
 } | null>(null)
+
+// null allowed_module_codes means unrestricted (paid plans); an array means
+// only those module codes are unlocked (the free plan).
+const locked = computed(() => {
+  const allowed = authStore.user?.plan?.allowed_module_codes
+  return !!allowed && !!module.value && !allowed.includes(module.value.code)
+})
 
 onMounted(async () => {
   const res = await api.get(`/api/v1/content/modules/${route.params.id}`)

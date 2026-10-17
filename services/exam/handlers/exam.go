@@ -4,12 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type Handler struct {
@@ -47,6 +49,43 @@ type examSession struct {
 	EndsAt      time.Time   `json:"ends_at"`
 }
 
+// allowedModuleCodes returns the module codes this user's plan permits
+// (nil = unrestricted, all modules). Mirrors the AI service's
+// planMessageCap: on error/no-rows, fail open (unrestricted) rather than
+// blocking exams for what's almost certainly a provisioning hiccup, since
+// every account gets a subscription row on registration.
+func (h *Handler) allowedModuleCodes(ctx context.Context, userID string) []string {
+	var codes []string
+	err := h.db.QueryRowContext(ctx, `
+		SELECT sp.allowed_module_codes
+		FROM user_subscriptions us
+		JOIN subscription_plans sp ON sp.id = us.plan_id
+		WHERE us.user_id = $1
+		  AND us.status = 'active'
+		  AND (us.expires_at IS NULL OR us.expires_at > now())
+		ORDER BY us.started_at DESC
+		LIMIT 1`, userID).Scan(pq.Array(&codes))
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Printf("allowedModuleCodes lookup failed for user %s: %v", userID, err)
+		}
+		return nil
+	}
+	return codes
+}
+
+func moduleAllowed(allowed []string, code string) bool {
+	if allowed == nil {
+		return true
+	}
+	for _, c := range allowed {
+		if c == code {
+			return true
+		}
+	}
+	return false
+}
+
 // StartExam creates a new exam session and returns questions (without correct answers).
 func (h *Handler) StartExam(c *gin.Context) {
 	userID := c.GetString("user_id")
@@ -54,6 +93,22 @@ func (h *Handler) StartExam(c *gin.Context) {
 	var req startExamReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var moduleCode string
+	if err := h.db.QueryRowContext(c.Request.Context(),
+		`SELECT code FROM easa_modules WHERE id = $1`, req.ModuleID,
+	).Scan(&moduleCode); err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"error": "module not found"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if allowed := h.allowedModuleCodes(c.Request.Context(), userID); !moduleAllowed(allowed, moduleCode) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "upgrade your plan to access this module", "code": "plan_restricted"})
 		return
 	}
 

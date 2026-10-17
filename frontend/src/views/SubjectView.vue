@@ -143,6 +143,19 @@
       </div>
     </template>
 
+    <div v-else-if="locked" class="max-w-lg mx-auto text-center py-20 px-4">
+      <svg class="w-12 h-12 text-amber-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+      <p class="text-slate-900 font-medium">This lesson is part of a paid plan</p>
+      <p class="text-slate-500 text-sm mt-1">Upgrade to unlock this module's full content.</p>
+      <RouterLink to="/pricing"
+        class="inline-block mt-4 bg-aviation-500 hover:bg-aviation-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
+        View plans
+      </RouterLink>
+    </div>
+
     <div v-else class="text-center py-20 text-slate-400">Subject not found.</div>
   </div>
 </template>
@@ -177,11 +190,19 @@ interface Section {
 const route = useRoute()
 const loading = ref(true)
 const subject = ref<Subject | null>(null)
+const locked = ref(false)
 
 onMounted(async () => {
-  const res = await api.get(`/api/v1/content/subjects/${route.params.id}`)
-  subject.value = res.data
-  loading.value = false
+  try {
+    const res = await api.get(`/api/v1/content/subjects/${route.params.id}`)
+    subject.value = res.data
+  } catch (e: unknown) {
+    if ((e as { response?: { status?: number } })?.response?.status === 403) {
+      locked.value = true
+    }
+  } finally {
+    loading.value = false
+  }
 })
 
 // Full rendered content (fallback)
