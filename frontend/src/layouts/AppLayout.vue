@@ -80,7 +80,23 @@
 
     <main class="relative flex-1 overflow-y-auto">
       <svg class="fixed inset-0 w-full h-full pointer-events-none z-0" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1600 1000" aria-hidden="true">
-        <g stroke="#64748b" stroke-width="1" fill="none" opacity="0.45">
+        <defs>
+          <radialGradient id="bgGlowRight" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#3366ff" stop-opacity="0.16"/>
+            <stop offset="55%" stop-color="#3366ff" stop-opacity="0.05"/>
+            <stop offset="100%" stop-color="#3366ff" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="bgGlowLeft" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#3366ff" stop-opacity="0.1"/>
+            <stop offset="100%" stop-color="#3366ff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- soft engine-light glow, echoing the PDF's dramatic lit turbine photo -->
+        <circle cx="1500" cy="500" r="520" fill="url(#bgGlowRight)"/>
+        <circle cx="60" cy="500" r="300" fill="url(#bgGlowLeft)"/>
+
+        <g stroke="#475569" stroke-width="1.25" fill="none" opacity="0.5">
           <!-- turbofan cutaway, left edge -->
           <line x1="-40" y1="500" x2="420" y2="500" stroke-dasharray="2 6"/>
           <circle cx="60" cy="500" r="120"/>
@@ -91,27 +107,28 @@
           <circle cx="370" cy="500" r="45"/>
           <path d="M-40 430 L420 455 M-40 570 L420 545"/>
         </g>
-        <g fill="#64748b" opacity="0.6" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
+        <g fill="#475569" opacity="0.65" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
           <text x="20" y="335">FAN</text>
           <text x="20" y="378">COMPRESSOR</text>
           <text x="20" y="421">COMBUSTION</text>
           <text x="20" y="642">TURBINE</text>
           <text x="20" y="685">EXHAUST</text>
         </g>
-        <!-- turbine face, right edge — concentric rings cropped by the viewport,
-             echoing a turbine cross-section photograph without needing one -->
-        <g stroke="#64748b" stroke-width="1" fill="none">
-          <circle cx="1500" cy="500" r="70" opacity="0.5"/>
-          <circle cx="1500" cy="500" r="140" opacity="0.45"/>
-          <circle cx="1500" cy="500" r="220" opacity="0.38"/>
-          <circle cx="1500" cy="500" r="310" opacity="0.3"/>
-          <circle cx="1500" cy="500" r="410" opacity="0.2"/>
-          <g opacity="0.3" stroke-dasharray="2 8">
-            <line x1="1500" y1="60" x2="1500" y2="940"/>
-            <line x1="1070" y1="500" x2="1600" y2="500"/>
+        <!-- turbine face, right edge — large concentric rings cropped by the
+             viewport, echoing the PDF's full-bleed turbine photo + ring motif -->
+        <g stroke="#475569" stroke-width="1.25" fill="none">
+          <circle cx="1500" cy="500" r="70" opacity="0.6"/>
+          <circle cx="1500" cy="500" r="150" opacity="0.52"/>
+          <circle cx="1500" cy="500" r="240" opacity="0.44"/>
+          <circle cx="1500" cy="500" r="340" opacity="0.36"/>
+          <circle cx="1500" cy="500" r="450" opacity="0.26"/>
+          <circle cx="1500" cy="500" r="570" opacity="0.16"/>
+          <g opacity="0.35" stroke-dasharray="2 8">
+            <line x1="1500" y1="30" x2="1500" y2="970"/>
+            <line x1="930" y1="500" x2="1600" y2="500"/>
           </g>
         </g>
-        <g fill="#64748b" opacity="0.6" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
+        <g fill="#475569" opacity="0.65" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
           <text x="1580" y="470" transform="rotate(90 1580 470)">MAINTAIN</text>
           <text x="1580" y="600" transform="rotate(90 1580 600)">LEARN</text>
           <text x="1580" y="700" transform="rotate(90 1580 700)">CERTIFY</text>
