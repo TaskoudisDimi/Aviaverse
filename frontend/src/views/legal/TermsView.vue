@@ -1,11 +1,12 @@
 <template>
-  <LegalLayout title="Terms of Service" last-updated="October 26, 2026">
+  <LegalLayout title="Terms of Service" last-updated="October 28, 2026">
     <p>
       These Terms of Service ("Terms") govern your access to and use of VJet Academy, an EASA
       Part-66 study platform offering study material, an AI study assistant, an exam simulator and
       one-to-one training sessions (the "Service"). The Service is operated by Vyron Charalampidis,
-      a sole proprietorship registered in Greece ("VJet Academy", "we", "us"). By creating an
-      account or using the Service, you agree to these Terms.
+      a sole proprietorship registered in Greece, Μικράς Ασίας 79, Πτολεμαΐδα 50200
+      ("VJet Academy", "we", "us"). By creating an account or using the Service, you agree to these
+      Terms.
     </p>
 
     <h2>1. Who can use VJet Academy</h2>
@@ -58,14 +59,31 @@
       notice before a price change affects your subscription.
     </p>
 
-    <h2>5. Online Sessions</h2>
+    <h2>5. Right of withdrawal (EU consumers)</h2>
+    <p>
+      If you're a consumer located in the EU, you have the right to withdraw from your first
+      purchase of a new paid plan within <strong>14 calendar days</strong>, without giving a reason,
+      under Greek Law 2251/1994 (implementing EU Directive 2011/83/EU on consumer rights). This
+      applies even if you've already started using the plan — we don't currently ask you to waive
+      this right in exchange for immediate access, so it stands in full.
+    </p>
+    <p>
+      To withdraw, email <a href="mailto:vjetacademy@gmail.com">vjetacademy@gmail.com</a> within 14
+      days of your payment, stating you wish to withdraw. We'll refund the full amount within 14
+      days of receiving your request, using the same payment method you used to pay, and cancel the
+      plan. This right applies to your <em>first</em> payment on a new subscription; renewal
+      payments for a subscription you've already kept past its own 14-day window follow the
+      cancellation terms above instead.
+    </p>
+
+    <h2>6. Online Sessions</h2>
     <p>
       One-to-one sessions are booked through our scheduling tool and subject to instructor
       availability. Please reschedule or cancel a booked session at least 24 hours in advance where
       possible, as a courtesy to the instructor's schedule.
     </p>
 
-    <h2>6. Acceptable use</h2>
+    <h2>7. Acceptable use</h2>
     <p>You agree not to:</p>
     <ul>
       <li>Share your account credentials or resell access to the Service;</li>
@@ -74,7 +92,7 @@
       <li>Attempt to interfere with, reverse-engineer, or disrupt the Service.</li>
     </ul>
 
-    <h2>7. Intellectual property</h2>
+    <h2>8. Intellectual property</h2>
     <p>
       All study material, exam questions, and other content provided through the Service remain the
       property of VJet Academy (or its licensors). We grant you a personal, non-transferable,
@@ -82,14 +100,14 @@
       account is active.
     </p>
 
-    <h2>8. Termination</h2>
+    <h2>9. Termination</h2>
     <p>
       You may delete your account at any time from Settings, which also cancels any active
       subscription. We may suspend or terminate accounts that violate these Terms, including misuse
       of the AI Instructor or attempts to circumvent plan restrictions.
     </p>
 
-    <h2>9. Disclaimer and limitation of liability</h2>
+    <h2>10. Disclaimer and limitation of liability</h2>
     <p>
       The Service is provided "as is." We don't guarantee that using VJet Academy will result in
       passing any EASA Part-66 examination or obtaining any licence — exam outcomes and licensing
@@ -98,20 +116,20 @@
       consequential damages arising from your use of the Service.
     </p>
 
-    <h2>10. Changes to these Terms</h2>
+    <h2>11. Changes to these Terms</h2>
     <p>
       We may update these Terms from time to time. If we make material changes, we'll update the
       "Last updated" date above and, where appropriate, notify you by email.
     </p>
 
-    <h2>11. Governing law</h2>
+    <h2>12. Governing law</h2>
     <p>
       These Terms are governed by the laws of Greece. Any dispute arising from these Terms or the
       Service will be subject to the jurisdiction of the Greek courts, without prejudice to any
       mandatory consumer-protection rights you may have in your country of residence under EU law.
     </p>
 
-    <h2>12. Contact</h2>
+    <h2>13. Contact</h2>
     <p>
       Questions about these Terms? Reach us at
       <a href="mailto:vjetacademy@gmail.com">vjetacademy@gmail.com</a>.

@@ -55,8 +55,8 @@
           <!-- Page title -->
           <div>
             <div class="h-1 w-16 rounded-full bg-gradient-to-r from-aviation-500 to-aviation-400 mb-4" />
-            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">{{ subject.title }}</h1>
-            <p class="text-slate-500 text-sm mt-1">EASA Part-66 - {{ subject.code }}</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-white">{{ subject.title }}</h1>
+            <p class="text-slate-300 text-sm mt-1">EASA Part-66 - {{ subject.code }}</p>
           </div>
 
           <!-- Theory content -->

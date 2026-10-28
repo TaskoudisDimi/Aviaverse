@@ -1,5 +1,5 @@
 <template>
-  <LegalLayout title="Cookie Policy" last-updated="October 26, 2026">
+  <LegalLayout title="Cookie Policy" last-updated="October 28, 2026">
     <p>
       Short version: VJet Academy doesn't use cookies to track you, show you ads, or run analytics.
       Here's exactly what we do use.

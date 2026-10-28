@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-screen overflow-hidden bg-slate-50">
+  <div class="flex flex-col h-screen overflow-hidden bg-navy-900">
     <!-- Top navbar -->
     <header class="flex-shrink-0 bg-white border-b border-slate-200">
       <div class="flex items-center h-16 px-4 sm:px-6 gap-4">
@@ -81,22 +81,29 @@
     <main class="relative flex-1 overflow-y-auto">
       <svg class="fixed inset-0 w-full h-full pointer-events-none z-0" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1600 1000" aria-hidden="true">
         <defs>
+          <linearGradient id="bgBase" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0f172a"/>
+            <stop offset="100%" stop-color="#0a0e1a"/>
+          </linearGradient>
           <radialGradient id="bgGlowRight" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#3366ff" stop-opacity="0.16"/>
-            <stop offset="55%" stop-color="#3366ff" stop-opacity="0.05"/>
-            <stop offset="100%" stop-color="#3366ff" stop-opacity="0"/>
+            <stop offset="0%" stop-color="#598bff" stop-opacity="0.35"/>
+            <stop offset="55%" stop-color="#598bff" stop-opacity="0.1"/>
+            <stop offset="100%" stop-color="#598bff" stop-opacity="0"/>
           </radialGradient>
           <radialGradient id="bgGlowLeft" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#3366ff" stop-opacity="0.1"/>
-            <stop offset="100%" stop-color="#3366ff" stop-opacity="0"/>
+            <stop offset="0%" stop-color="#598bff" stop-opacity="0.22"/>
+            <stop offset="100%" stop-color="#598bff" stop-opacity="0"/>
           </radialGradient>
         </defs>
+
+        <!-- dark navy canvas, echoing the PDF's night-cockpit background -->
+        <rect x="0" y="0" width="1600" height="1000" fill="url(#bgBase)"/>
 
         <!-- soft engine-light glow, echoing the PDF's dramatic lit turbine photo -->
         <circle cx="1500" cy="500" r="520" fill="url(#bgGlowRight)"/>
         <circle cx="60" cy="500" r="300" fill="url(#bgGlowLeft)"/>
 
-        <g stroke="#475569" stroke-width="1.25" fill="none" opacity="0.5">
+        <g stroke="#8eb5ff" stroke-width="1.25" fill="none" opacity="0.4">
           <!-- turbofan cutaway, left edge -->
           <line x1="-40" y1="500" x2="420" y2="500" stroke-dasharray="2 6"/>
           <circle cx="60" cy="500" r="120"/>
@@ -107,7 +114,7 @@
           <circle cx="370" cy="500" r="45"/>
           <path d="M-40 430 L420 455 M-40 570 L420 545"/>
         </g>
-        <g fill="#475569" opacity="0.65" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
+        <g fill="#bcd3ff" opacity="0.55" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
           <text x="20" y="335">FAN</text>
           <text x="20" y="378">COMPRESSOR</text>
           <text x="20" y="421">COMBUSTION</text>
@@ -116,9 +123,9 @@
         </g>
         <!-- turbine face, right edge — large concentric rings cropped by the
              viewport, echoing the PDF's full-bleed turbine photo + ring motif -->
-        <g stroke="#475569" stroke-width="1.25" fill="none">
-          <circle cx="1500" cy="500" r="70" opacity="0.6"/>
-          <circle cx="1500" cy="500" r="150" opacity="0.52"/>
+        <g stroke="#8eb5ff" stroke-width="1.25" fill="none">
+          <circle cx="1500" cy="500" r="70" opacity="0.55"/>
+          <circle cx="1500" cy="500" r="150" opacity="0.48"/>
           <circle cx="1500" cy="500" r="240" opacity="0.44"/>
           <circle cx="1500" cy="500" r="340" opacity="0.36"/>
           <circle cx="1500" cy="500" r="450" opacity="0.26"/>
@@ -128,7 +135,7 @@
             <line x1="930" y1="500" x2="1600" y2="500"/>
           </g>
         </g>
-        <g fill="#475569" opacity="0.65" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
+        <g fill="#bcd3ff" opacity="0.55" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" letter-spacing="2">
           <text x="1580" y="470" transform="rotate(90 1580 470)">MAINTAIN</text>
           <text x="1580" y="600" transform="rotate(90 1580 600)">LEARN</text>
           <text x="1580" y="700" transform="rotate(90 1580 700)">CERTIFY</text>

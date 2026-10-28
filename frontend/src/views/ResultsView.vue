@@ -1,6 +1,6 @@
 <template>
   <div class="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
-    <RouterLink to="/exam" class="text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1">
+    <RouterLink to="/exam" class="text-sm text-slate-300 hover:text-white flex items-center gap-1">
       ‹ New exam
     </RouterLink>
 

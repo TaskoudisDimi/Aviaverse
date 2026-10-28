@@ -1,8 +1,8 @@
 <template>
   <div class="p-4 sm:p-6 max-w-4xl mx-auto space-y-8">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Settings</h1>
-      <p class="text-slate-500 text-sm mt-1">Your profile and subscription plan</p>
+      <h1 class="text-2xl font-bold text-white">Settings</h1>
+      <p class="text-slate-300 text-sm mt-1">Your profile and subscription plan</p>
     </div>
 
     <div v-if="notice" class="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-green-700 text-sm">

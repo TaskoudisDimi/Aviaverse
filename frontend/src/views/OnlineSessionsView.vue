@@ -2,8 +2,8 @@
   <div class="p-4 sm:p-6 max-w-5xl mx-auto space-y-8">
     <!-- Header -->
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Online Sessions & CV/LinkedIn Review</h1>
-      <p class="text-slate-500 text-sm mt-1">Book a one-on-one session or get your CV and LinkedIn profile reviewed by an EASA expert</p>
+      <h1 class="text-2xl font-bold text-white">Online Sessions & CV/LinkedIn Review</h1>
+      <p class="text-slate-300 text-sm mt-1">Book a one-on-one session or get your CV and LinkedIn profile reviewed by an EASA expert</p>
     </div>
 
     <!-- Services grid -->

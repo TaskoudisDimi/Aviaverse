@@ -1,8 +1,8 @@
 <template>
   <div class="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Admin</h1>
-      <p class="text-slate-500 text-sm mt-1">{{ users.length }} accounts</p>
+      <h1 class="text-2xl font-bold text-white">Admin</h1>
+      <p class="text-slate-300 text-sm mt-1">{{ users.length }} accounts</p>
     </div>
 
     <div v-if="notice" class="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-green-700 text-sm">
@@ -12,10 +12,10 @@
       {{ error }}
     </div>
 
-    <div class="flex gap-1 border-b border-slate-200">
+    <div class="flex gap-1 border-b border-white/15">
       <button v-for="t in ['users', 'transactions']" :key="t" @click="tab = t as typeof tab"
         class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors capitalize"
-        :class="tab === t ? 'border-aviation-500 text-aviation-700' : 'border-transparent text-slate-500 hover:text-slate-700'">
+        :class="tab === t ? 'border-aviation-400 text-aviation-300' : 'border-transparent text-slate-300 hover:text-white'">
         {{ t }}
       </button>
     </div>

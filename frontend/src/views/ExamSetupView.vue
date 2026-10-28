@@ -1,8 +1,8 @@
 <template>
   <div class="p-4 sm:p-6 max-w-2xl mx-auto space-y-6">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900">Exam Simulator</h1>
-      <p class="text-slate-500 text-sm mt-1">Configure and start a practice exam</p>
+      <h1 class="text-2xl font-bold text-white">Exam Simulator</h1>
+      <p class="text-slate-300 text-sm mt-1">Configure and start a practice exam</p>
     </div>
 
     <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-600 text-sm">
