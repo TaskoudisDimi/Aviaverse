@@ -45,6 +45,13 @@
       </div>
     </div>
 
+    <p class="text-xs text-slate-400 text-center leading-relaxed">
+      By creating an account, you agree to our
+      <RouterLink to="/terms" class="text-aviation-600 hover:text-aviation-700">Terms of Service</RouterLink>
+      and
+      <RouterLink to="/privacy" class="text-aviation-600 hover:text-aviation-700">Privacy Policy</RouterLink>.
+    </p>
+
     <button type="submit" :disabled="loading"
       class="w-full bg-aviation-500 hover:bg-aviation-600 disabled:opacity-50 disabled:cursor-not-allowed
              text-white font-medium py-2.5 rounded-xl transition-colors text-sm">

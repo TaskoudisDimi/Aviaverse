@@ -168,6 +168,7 @@ cp db/migrations/117_stripe_billing.sql "$STAGE/db/migrations/"
 cp db/migrations/118_payment_transactions.sql "$STAGE/db/migrations/"
 cp db/migrations/119_subscription_cancel_flag.sql "$STAGE/db/migrations/"
 cp db/migrations/120_free_plan_module_limit.sql "$STAGE/db/migrations/"
+cp db/migrations/121_fix_exam_question_bugs.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -309,6 +310,7 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/118_payment_transactions.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/119_subscription_cancel_flag.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/120_free_plan_module_limit.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/121_fix_exam_question_bugs.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────
