@@ -1,0 +1,15 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+await page.goto('http://localhost:3000/auth/login', { waitUntil: 'networkidle' });
+await page.fill('input[type="email"]', 'navpreview_1793216249192@example.com');
+await page.fill('input[type="password"]', 'TestPass123!');
+await page.click('button[type="submit"]');
+await page.waitForTimeout(1000);
+await page.goto('http://localhost:3000/admin', { waitUntil: 'networkidle' });
+await page.waitForTimeout(600);
+await page.screenshot({ path: 'sweep_admin_real.png' });
+await page.click('button:has-text("transactions")').catch(() => {});
+await page.waitForTimeout(500);
+await page.screenshot({ path: 'sweep_admin_tx.png' });
+await browser.close();

@@ -1,13 +1,13 @@
 <template>
-  <footer class="relative z-10 bg-white border-t border-slate-200 mt-12">
+  <footer class="relative z-10 bg-navy-800 border-t border-white/10 mt-12">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
       <p>&copy; {{ year }} VJet-Academy &middot; EASA Part-66 Training</p>
       <div class="flex items-center gap-4">
-        <RouterLink to="/terms" class="hover:text-aviation-600 transition-colors">Terms</RouterLink>
-        <RouterLink to="/privacy" class="hover:text-aviation-600 transition-colors">Privacy</RouterLink>
-        <RouterLink to="/cookies" class="hover:text-aviation-600 transition-colors">Cookies</RouterLink>
+        <RouterLink to="/terms" class="hover:text-aviation-300 transition-colors">Terms</RouterLink>
+        <RouterLink to="/privacy" class="hover:text-aviation-300 transition-colors">Privacy</RouterLink>
+        <RouterLink to="/cookies" class="hover:text-aviation-300 transition-colors">Cookies</RouterLink>
         <a href="mailto:vjetacademy@gmail.com" @click="copyEmail"
-          class="hover:text-aviation-600 transition-colors">
+          class="hover:text-aviation-300 transition-colors">
           {{ copied ? 'Copied to clipboard ✓' : 'Contact: vjetacademy@gmail.com' }}
         </a>
       </div>

@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col h-screen overflow-hidden bg-navy-900">
     <!-- Top navbar -->
-    <header class="flex-shrink-0 bg-white border-b border-slate-200">
+    <header class="relative z-20 flex-shrink-0 bg-navy-800 border-b border-white/10">
       <div class="flex items-center h-16 px-4 sm:px-6 gap-4">
         <RouterLink to="/" class="flex items-center gap-2 flex-shrink-0">
           <img src="/favicon.png" alt="" class="w-7 h-7 flex-shrink-0" />
-          <span class="font-bold text-lg tracking-tight text-slate-900 whitespace-nowrap">VJet-Academy</span>
+          <span class="font-bold text-lg tracking-tight text-white whitespace-nowrap">VJet-Academy</span>
         </RouterLink>
 
         <!-- Desktop nav -->
@@ -13,8 +13,8 @@
           <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to"
             class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shrink-0"
             :class="[$route.name === item.name
-              ? 'bg-aviation-50 text-aviation-700 border border-aviation-200'
-              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">
+              ? 'bg-aviation-500/15 text-aviation-300 border border-aviation-400/30'
+              : 'text-slate-300 hover:bg-white/10 hover:text-white']">
             <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
             {{ item.label }}
           </RouterLink>
@@ -25,7 +25,7 @@
         <!-- Guest actions (desktop) -->
         <div v-if="!auth.isAuthenticated" class="hidden lg:flex items-center gap-2 flex-shrink-0">
           <RouterLink to="/auth/login"
-            class="px-3.5 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
+            class="px-3.5 py-2 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
             Log in
           </RouterLink>
           <RouterLink to="/auth/register"
@@ -37,10 +37,10 @@
         <!-- User menu (desktop) -->
         <div v-else class="hidden lg:block relative flex-shrink-0">
           <button @click="userMenuOpen = !userMenuOpen"
-            class="flex items-center gap-2 py-1.5 pl-2 pr-1.5 rounded-xl hover:bg-slate-100 transition-colors">
+            class="flex items-center gap-2 py-1.5 pl-2 pr-1.5 rounded-xl hover:bg-white/10 transition-colors">
             <div class="text-right">
-              <p class="text-sm font-medium text-slate-900 leading-tight">{{ auth.user?.full_name }}</p>
-              <p class="text-xs text-slate-500 leading-tight">{{ auth.user?.plan?.name ?? auth.user?.licence_type }}</p>
+              <p class="text-sm font-medium text-white leading-tight">{{ auth.user?.full_name }}</p>
+              <p class="text-xs text-slate-400 leading-tight">{{ auth.user?.plan?.name ?? auth.user?.licence_type }}</p>
             </div>
             <div class="w-8 h-8 rounded-full bg-aviation-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
               {{ userInitial }}
@@ -51,19 +51,19 @@
           <div v-if="userMenuOpen" class="fixed inset-0 z-40" @click="userMenuOpen = false" />
           <Transition name="fade">
             <div v-if="userMenuOpen"
-              class="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-50">
+              class="absolute right-0 top-full mt-2 w-52 bg-navy-800 rounded-xl border border-white/10 shadow-lg py-1.5 z-50">
               <RouterLink to="/settings" @click="userMenuOpen = false"
-                class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+                class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-slate-200 hover:bg-white/10">
                 <CogIcon class="w-4 h-4 text-slate-400 flex-shrink-0" />
                 Settings &amp; Plan
               </RouterLink>
               <RouterLink v-if="auth.user?.is_admin" to="/admin" @click="userMenuOpen = false"
-                class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+                class="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-slate-200 hover:bg-white/10">
                 <ShieldIcon class="w-4 h-4 text-slate-400 flex-shrink-0" />
                 Admin
               </RouterLink>
               <button @click="auth.logout(); router.push('/')"
-                class="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+                class="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-slate-200 hover:bg-white/10">
                 <ArrowRightOnRectangleIcon class="w-4 h-4 text-slate-400 flex-shrink-0" />
                 Log out
               </button>
@@ -72,7 +72,7 @@
         </div>
 
         <!-- Mobile toggle -->
-        <button @click="mobileOpen = !mobileOpen" class="lg:hidden text-slate-500 flex-shrink-0">
+        <button @click="mobileOpen = !mobileOpen" class="lg:hidden text-slate-300 flex-shrink-0">
           <Bars3Icon class="w-6 h-6" />
         </button>
       </div>
@@ -160,13 +160,13 @@
     <Transition name="slide">
       <div v-if="mobileOpen" class="fixed inset-0 z-50 lg:hidden">
         <div class="absolute inset-0 bg-black/40" @click="mobileOpen = false" />
-        <aside class="absolute left-0 top-0 h-full w-64 bg-white flex flex-col">
-          <div class="flex items-center justify-between px-6 py-5 border-b border-slate-200">
+        <aside class="absolute left-0 top-0 h-full w-64 bg-navy-800 flex flex-col">
+          <div class="flex items-center justify-between px-6 py-5 border-b border-white/10">
             <RouterLink to="/" @click="mobileOpen = false" class="flex items-center gap-2">
               <img src="/favicon.png" alt="" class="w-6 h-6 flex-shrink-0" />
-              <span class="font-bold text-aviation-600">VJet-Academy</span>
+              <span class="font-bold text-white">VJet-Academy</span>
             </RouterLink>
-            <button @click="mobileOpen = false" class="text-slate-500">
+            <button @click="mobileOpen = false" class="text-slate-300">
               <XMarkIcon class="w-5 h-5" />
             </button>
           </div>
@@ -175,49 +175,49 @@
               @click="mobileOpen = false"
               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
               :class="[$route.name === item.name
-                ? 'bg-aviation-50 text-aviation-700'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">
+                ? 'bg-aviation-500/15 text-aviation-300'
+                : 'text-slate-300 hover:bg-white/10 hover:text-white']">
               <component :is="item.icon" class="w-5 h-5" />
               {{ item.label }}
             </RouterLink>
             <template v-if="auth.isAuthenticated">
-              <hr class="my-2 border-slate-200" />
+              <hr class="my-2 border-white/10" />
               <RouterLink to="/settings" @click="mobileOpen = false"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
                 :class="[$route.name === 'settings'
-                  ? 'bg-aviation-50 text-aviation-700'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">
+                  ? 'bg-aviation-500/15 text-aviation-300'
+                  : 'text-slate-300 hover:bg-white/10 hover:text-white']">
                 <CogIcon class="w-5 h-5" />
                 Settings &amp; Plan
               </RouterLink>
               <RouterLink v-if="auth.user?.is_admin" to="/admin" @click="mobileOpen = false"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
                 :class="[$route.name === 'admin'
-                  ? 'bg-aviation-50 text-aviation-700'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900']">
+                  ? 'bg-aviation-500/15 text-aviation-300'
+                  : 'text-slate-300 hover:bg-white/10 hover:text-white']">
                 <ShieldIcon class="w-5 h-5" />
                 Admin
               </RouterLink>
             </template>
           </nav>
-          <div class="px-3 py-4 border-t border-slate-200">
+          <div class="px-3 py-4 border-t border-white/10">
             <div v-if="auth.isAuthenticated" class="flex items-center gap-3 px-3 py-2">
               <RouterLink to="/settings" @click="mobileOpen = false" class="flex items-center gap-3 flex-1 min-w-0">
                 <div class="w-8 h-8 rounded-full bg-aviation-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
                   {{ userInitial }}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-slate-900 truncate">{{ auth.user?.full_name }}</p>
-                  <p class="text-xs text-slate-500 truncate">{{ auth.user?.plan?.name ?? auth.user?.licence_type }}</p>
+                  <p class="text-sm font-medium text-white truncate">{{ auth.user?.full_name }}</p>
+                  <p class="text-xs text-slate-400 truncate">{{ auth.user?.plan?.name ?? auth.user?.licence_type }}</p>
                 </div>
               </RouterLink>
-              <button @click="auth.logout(); router.push('/')" class="text-slate-400 hover:text-slate-600">
+              <button @click="auth.logout(); router.push('/')" class="text-slate-400 hover:text-slate-200">
                 <ArrowRightOnRectangleIcon class="w-4 h-4" />
               </button>
             </div>
             <div v-else class="flex items-center gap-2 px-1">
               <RouterLink to="/auth/login" @click="mobileOpen = false"
-                class="flex-1 text-center px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
+                class="flex-1 text-center px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/10 transition-colors">
                 Log in
               </RouterLink>
               <RouterLink to="/auth/register" @click="mobileOpen = false"

@@ -36,10 +36,10 @@
         <div class="w-16 h-16 rounded-full bg-aviation-50 border border-aviation-200 flex items-center justify-center mb-4">
           <img src="/favicon.png" alt="" class="w-9 h-9" />
         </div>
-        <p class="text-slate-700 font-medium">Your AI EASA Instructor</p>
+        <p class="text-slate-200 font-medium">Your AI EASA Instructor</p>
         <p class="text-slate-400 text-sm mt-1 max-w-xs">
           Select a mode, optionally specify a subject, then ask your question.<br/>
-          <span class="text-slate-400 text-xs mt-1 block">Your conversation is saved automatically.</span>
+          <span class="text-slate-500 text-xs mt-1 block">Your conversation is saved automatically.</span>
         </p>
       </div>
 
