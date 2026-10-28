@@ -8,7 +8,7 @@
     <h2>1. Who we are</h2>
     <p>
       VJet Academy is operated by Vyron Charalampidis, a sole proprietorship registered in Greece,
-      Μικράς Ασίας 79, Πτολεμαΐδα 50200. For the purposes of GDPR, Vyron Charalampidis is the data
+      Mikras Asias 79, 50200. For the purposes of GDPR, Vyron Charalampidis is the data
       controller for personal data processed through this Service. You can reach us at
       <a href="mailto:vjetacademy@gmail.com">vjetacademy@gmail.com</a>.
     </p>

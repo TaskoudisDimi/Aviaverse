@@ -4,7 +4,7 @@
       These Terms of Service ("Terms") govern your access to and use of VJet Academy, an EASA
       Part-66 study platform offering study material, an AI study assistant, an exam simulator and
       one-to-one training sessions (the "Service"). The Service is operated by Vyron Charalampidis,
-      a sole proprietorship registered in Greece, Μικράς Ασίας 79, Πτολεμαΐδα 50200
+      a sole proprietorship registered in Greece, Mikras Asias 79, 50200
       ("VJet Academy", "we", "us"). By creating an account or using the Service, you agree to these
       Terms.
     </p>
