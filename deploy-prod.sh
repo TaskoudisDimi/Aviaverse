@@ -169,6 +169,21 @@ cp db/migrations/118_payment_transactions.sql "$STAGE/db/migrations/"
 cp db/migrations/119_subscription_cancel_flag.sql "$STAGE/db/migrations/"
 cp db/migrations/120_free_plan_module_limit.sql "$STAGE/db/migrations/"
 cp db/migrations/121_fix_exam_question_bugs.sql "$STAGE/db/migrations/"
+cp db/migrations/122_m13_m14_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/123_module_active_flag.sql "$STAGE/db/migrations/"
+cp db/migrations/124_m01_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/125_m02_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/126_m03_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/127_m04_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/128_m05_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/129_m06_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/130_m07_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/131_m08_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/132_m09_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/133_m10_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/134_m11_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/135_m17_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/136_m15_exam_content.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -311,6 +326,21 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/119_subscription_cancel_flag.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/120_free_plan_module_limit.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/121_fix_exam_question_bugs.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/122_m13_m14_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/123_module_active_flag.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/124_m01_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/125_m02_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/126_m03_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/127_m04_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/128_m05_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/129_m06_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/130_m07_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/131_m08_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/132_m09_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/133_m10_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/134_m11_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/135_m17_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/136_m15_exam_content.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────

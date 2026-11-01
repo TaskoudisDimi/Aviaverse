@@ -28,6 +28,10 @@ type startExamReq struct {
 	LicenceType string `json:"licence_type" binding:"required"`
 	NumQuestions int   `json:"num_questions"`
 	TimeLimitMin int   `json:"time_limit_min"`
+	// Mode "quick" biases question selection toward the user's weak subjects
+	// in this module, for the short practice set. Anything else (including
+	// empty, the default) is the official-format random draw, unchanged.
+	Mode string `json:"mode"`
 }
 
 type questionOut struct {
@@ -86,6 +90,37 @@ func moduleAllowed(allowed []string, code string) bool {
 	return false
 }
 
+// weakSubjectIDs returns the subjects within this module where the user's
+// historical accuracy is below 60% (and they've actually attempted at least
+// one question there) — the same threshold the progress dashboard uses for
+// "Areas to Review". Used only to bias the quick-practice draw; an empty
+// result (new user, or nothing below threshold yet) just means no bias.
+func (h *Handler) weakSubjectIDs(ctx context.Context, userID string, moduleID int) []int {
+	rows, err := h.db.QueryContext(ctx, `
+		SELECT sp.subject_id
+		FROM user_subject_progress sp
+		JOIN easa_subjects s ON s.id = sp.subject_id
+		WHERE sp.user_id = $1 AND s.module_id = $2
+		  AND sp.total_answers > 0
+		  AND (sp.correct_answers::float / sp.total_answers) < 0.6`,
+		userID, moduleID,
+	)
+	if err != nil {
+		log.Printf("weakSubjectIDs lookup failed for user %s: %v", userID, err)
+		return nil
+	}
+	defer rows.Close()
+
+	ids := []int{}
+	for rows.Next() {
+		var id int
+		if rows.Scan(&id) == nil {
+			ids = append(ids, id)
+		}
+	}
+	return ids
+}
+
 // StartExam creates a new exam session and returns questions (without correct answers).
 func (h *Handler) StartExam(c *gin.Context) {
 	userID := c.GetString("user_id")
@@ -98,7 +133,7 @@ func (h *Handler) StartExam(c *gin.Context) {
 
 	var moduleCode string
 	if err := h.db.QueryRowContext(c.Request.Context(),
-		`SELECT code FROM easa_modules WHERE id = $1`, req.ModuleID,
+		`SELECT code FROM easa_modules WHERE id = $1 AND active = true`, req.ModuleID,
 	).Scan(&moduleCode); err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "module not found"})
 		return
@@ -121,14 +156,22 @@ func (h *Handler) StartExam(c *gin.Context) {
 		timeLimitMin = 30
 	}
 
+	// Quick-practice sets are biased toward the user's weak subjects in this
+	// module (falls back to plain random when there are none yet, e.g. a
+	// first attempt); the official format is always a plain random draw.
+	weakIDs := []int{}
+	if req.Mode == "quick" {
+		weakIDs = h.weakSubjectIDs(c.Request.Context(), userID, req.ModuleID)
+	}
+
 	rows, err := h.db.QueryContext(c.Request.Context(),
 		`SELECT q.id, q.text, q.options
 		 FROM questions q
 		 JOIN easa_subjects s ON s.id = q.subject_id
 		 WHERE s.module_id = $1 AND $2 = ANY(q.licence_types)
-		 ORDER BY RANDOM()
+		 ORDER BY (s.id = ANY($4)) DESC, RANDOM()
 		 LIMIT $3`,
-		req.ModuleID, req.LicenceType, limit,
+		req.ModuleID, req.LicenceType, limit, pq.Array(weakIDs),
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

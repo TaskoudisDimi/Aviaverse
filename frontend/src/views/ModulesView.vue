@@ -79,10 +79,13 @@
             <!-- Footer -->
             <div class="flex items-center justify-between pt-2 border-t border-slate-100">
               <span class="text-xs text-slate-400">{{ moduleCategory(m.code) }}</span>
-              <svg class="w-4 h-4 text-slate-400 group-hover:text-aviation-500 transition-colors"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400">{{ m.question_count }} questions</span>
+                <svg class="w-4 h-4 text-slate-400 group-hover:text-aviation-500 transition-colors"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
             </div>
           </div>
         </RouterLink>
@@ -105,6 +108,7 @@ interface Module {
   description: string
   licence_types: string[]
   sort_order: number
+  question_count: number
 }
 
 const authStore = useAuthStore()

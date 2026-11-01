@@ -17,18 +17,25 @@ func New(db *sql.DB) *Handler {
 	return &Handler{db: db}
 }
 
-// ListModules returns all EASA modules, optionally filtered by licence_type.
+// ListModules returns all EASA modules, optionally filtered by licence_type,
+// along with how many questions each module's bank holds (for that licence,
+// when filtered) so the UI can show pool size without a separate call.
 func (h *Handler) ListModules(c *gin.Context) {
 	licenceType := c.Query("licence_type")
 
-	query := `SELECT id, code, title, description, licence_types, sort_order
-	          FROM easa_modules`
+	query := `SELECT m.id, m.code, m.title, m.description, m.licence_types, m.sort_order,
+	                 count(q.id) AS question_count
+	          FROM easa_modules m
+	          LEFT JOIN easa_subjects s ON s.module_id = m.id
+	          LEFT JOIN questions q ON q.subject_id = s.id`
 	args := []interface{}{}
 	if licenceType != "" {
-		query += ` WHERE $1 = ANY(licence_types)`
 		args = append(args, licenceType)
+		query += ` AND $1 = ANY(q.licence_types) WHERE m.active = true AND $1 = ANY(m.licence_types)`
+	} else {
+		query += ` WHERE m.active = true`
 	}
-	query += ` ORDER BY sort_order`
+	query += ` GROUP BY m.id ORDER BY m.sort_order`
 
 	rows, err := h.db.QueryContext(c.Request.Context(), query, args...)
 	if err != nil {
@@ -38,19 +45,20 @@ func (h *Handler) ListModules(c *gin.Context) {
 	defer rows.Close()
 
 	type Module struct {
-		ID           int      `json:"id"`
-		Code         string   `json:"code"`
-		Title        string   `json:"title"`
-		Description  string   `json:"description"`
-		LicenceTypes []string `json:"licence_types"`
-		SortOrder    int      `json:"sort_order"`
+		ID            int      `json:"id"`
+		Code          string   `json:"code"`
+		Title         string   `json:"title"`
+		Description   string   `json:"description"`
+		LicenceTypes  []string `json:"licence_types"`
+		SortOrder     int      `json:"sort_order"`
+		QuestionCount int      `json:"question_count"`
 	}
 
 	modules := []Module{}
 	for rows.Next() {
 		var m Module
 		if err := rows.Scan(&m.ID, &m.Code, &m.Title, &m.Description,
-			(*stringArray)(&m.LicenceTypes), &m.SortOrder); err != nil {
+			(*stringArray)(&m.LicenceTypes), &m.SortOrder, &m.QuestionCount); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -80,7 +88,7 @@ func (h *Handler) GetModule(c *gin.Context) {
 
 	var m Module
 	err := h.db.QueryRowContext(c.Request.Context(),
-		`SELECT id, code, title, description, licence_types FROM easa_modules WHERE id=$1`, id,
+		`SELECT id, code, title, description, licence_types FROM easa_modules WHERE id=$1 AND active = true`, id,
 	).Scan(&m.ID, &m.Code, &m.Title, &m.Description, (*stringArray)(&m.LicenceTypes))
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "module not found"})

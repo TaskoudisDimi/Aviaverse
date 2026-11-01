@@ -147,7 +147,7 @@ async function startExam() {
   loading.value = true
   error.value = ''
   try {
-    const res = await api.post('/api/v1/exam/start', form.value)
+    const res = await api.post('/api/v1/exam/start', { ...form.value, mode: mode.value })
     examStore.setSession(res.data)
     router.push(`/exam/${res.data.exam_id}`)
   } catch (e: unknown) {

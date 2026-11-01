@@ -183,6 +183,20 @@ onMounted(() => {
   }
 
   scrollBottom()
+
+  // Handoff from the exam Results page's "Review with AI" button — a
+  // one-shot prompt summarizing what the student got wrong, auto-sent so
+  // they land straight in a focused review instead of a blank chat.
+  const AI_REVIEW_STORAGE_KEY = 'vjet-ai-exam-review'
+  try {
+    const reviewPrompt = sessionStorage.getItem(AI_REVIEW_STORAGE_KEY)
+    if (reviewPrompt) {
+      sessionStorage.removeItem(AI_REVIEW_STORAGE_KEY)
+      mode.value = 'explain_mistake'
+      input.value = reviewPrompt
+      send()
+    }
+  } catch {}
 })
 
 async function send() {

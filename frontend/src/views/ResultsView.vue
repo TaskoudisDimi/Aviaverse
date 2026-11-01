@@ -27,10 +27,10 @@
           class="flex-1 text-center bg-aviation-500 hover:bg-aviation-600 text-white text-sm font-medium py-2.5 rounded-xl transition-colors">
           Retake Exam
         </RouterLink>
-        <RouterLink to="/ai"
+        <button @click="reviewWithAI"
           class="flex-1 text-center bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium py-2.5 rounded-xl transition-colors">
           Review with AI
-        </RouterLink>
+        </button>
       </div>
 
       <!-- Answer breakdown -->
@@ -86,9 +86,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { api } from '@/lib/api'
 import Spinner from '@/components/Spinner.vue'
+
+// Picked up by AIInstructorView on mount to auto-start a focused review of
+// this exam's wrong answers — sessionStorage (not the route) because the
+// content can be long and shouldn't survive past that one handoff.
+const AI_REVIEW_STORAGE_KEY = 'vjet-ai-exam-review'
 
 interface AnswerOption {
   id: string
@@ -115,6 +120,7 @@ interface ExamResult {
 }
 
 const route = useRoute()
+const router = useRouter()
 const loading = ref(true)
 const result = ref<ExamResult | null>(null)
 const filter = ref<'all' | 'incorrect'>('all')
@@ -124,6 +130,35 @@ onMounted(async () => {
   result.value = res.data
   loading.value = false
 })
+
+// Cap how many wrong answers we hand to the AI in one go — a bad exam can
+// have dozens, and the point is a focused review, not a wall of text.
+const MAX_REVIEW_ITEMS = 15
+
+function reviewWithAI() {
+  const wrong = (result.value?.details ?? []).filter(d => !d.is_correct)
+  if (!wrong.length) {
+    router.push({ name: 'ai' })
+    return
+  }
+
+  const items = wrong.slice(0, MAX_REVIEW_ITEMS).map((d, i) => {
+    const correct = d.options.find(o => o.correct)
+    const chosen = d.options.find(o => o.id === d.selected_id)
+    return `${i + 1}. ${d.question_text}\n` +
+      `My answer: ${chosen?.text ?? '(no answer selected)'}\n` +
+      `Correct answer: ${correct?.text ?? '(unknown)'}`
+  }).join('\n\n')
+
+  const omitted = wrong.length - Math.min(wrong.length, MAX_REVIEW_ITEMS)
+  const prompt = `I just took a practice exam and got these questions wrong. Can you go through them with me, one at a time, and explain why the correct answer is right?\n\n${items}` +
+    (omitted > 0 ? `\n\n(${omitted} more incorrect answer${omitted > 1 ? 's' : ''} not shown here.)` : '')
+
+  try {
+    sessionStorage.setItem(AI_REVIEW_STORAGE_KEY, prompt)
+  } catch {}
+  router.push({ name: 'ai' })
+}
 
 const incorrectCount = computed(() =>
   result.value?.details.filter(d => !d.is_correct).length ?? 0
