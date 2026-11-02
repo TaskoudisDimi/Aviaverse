@@ -1,0 +1,115 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+env:
+  REMOTE_DIR: /opt/aviaverse
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache-dependency-path: services/*/go.sum
+
+      - name: Build Go services (linux/amd64)
+        run: |
+          mkdir -p dist/bin
+          for svc in auth content ai exam progress gateway; do
+            echo "Building $svc..."
+            (cd "services/$svc" && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o "../../dist/bin/$svc" .)
+          done
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Package deploy bundle
+        run: |
+          STAGE="$RUNNER_TEMP/deploy-stage"
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE/dist/bin" "$STAGE/nginx" "$STAGE/db/migrations" "$STAGE/frontend/dist"
+          for svc in auth content ai exam progress gateway; do
+            mkdir -p "$STAGE/services/$svc"
+            cp "services/$svc/Dockerfile" "$STAGE/services/$svc/"
+          done
+
+          cp dist/bin/* "$STAGE/dist/bin/"
+          cp -r frontend/dist/. "$STAGE/frontend/dist/"
+          cp frontend/Dockerfile "$STAGE/frontend/"
+          cp frontend/nginx.conf "$STAGE/frontend/"
+          cp docker-compose.prod.yml "$STAGE/"
+          cp nginx/nginx.prod.conf "$STAGE/nginx/"
+
+          # All migrations except the ones the server's schema predates (001/002,
+          # applied once by hand at initial setup, not idempotent) and ones for
+          # features not yet activated in production (112, pgvector RAG — WIP).
+          for f in db/migrations/*.sql; do
+            base=$(basename "$f")
+            case "$base" in
+              001_init.sql|002_module01_seed.sql|112_library_rag.sql) continue ;;
+            esac
+            cp "$f" "$STAGE/db/migrations/"
+          done
+
+          tar czf "$RUNNER_TEMP/deploy-bundle.tar.gz" -C "$STAGE" .
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Upload bundle
+        run: |
+          scp -i ~/.ssh/deploy_key "$RUNNER_TEMP/deploy-bundle.tar.gz" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ env.REMOTE_DIR }}/deploy-bundle.tar.gz"
+
+      - name: Build & start containers
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
+            set -e
+            cd '"${{ env.REMOTE_DIR }}"'
+            tar xzf deploy-bundle.tar.gz
+            rm -f deploy-bundle.tar.gz
+            docker compose -f docker-compose.prod.yml --env-file .env.prod build --no-cache frontend ai auth exam content
+            docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --force-recreate frontend ai auth exam content
+          '
+
+      - name: Run DB migrations
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
+            cd '"${{ env.REMOTE_DIR }}"'
+            for f in db/migrations/*.sql; do
+              echo "→ $(basename "$f")"
+              docker exec aviaverse-postgres-1 psql -U vyron vyron -f "/docker-entrypoint-initdb.d/$(basename "$f")" 2>&1 || true
+            done
+          '
+
+      - name: Reload nginx & show status
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
+            docker restart aviaverse-nginx-1 2>/dev/null || true
+            cd '"${{ env.REMOTE_DIR }}"'
+            docker compose -f docker-compose.prod.yml --env-file .env.prod ps
+          '

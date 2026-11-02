@@ -23,6 +23,7 @@ interface User {
   created_at: string
   is_admin: boolean
   plan?: Plan
+  locked_exam_module_code: string | null
 }
 
 export const useAuthStore = defineStore('auth', () => {

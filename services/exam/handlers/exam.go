@@ -121,6 +121,22 @@ func (h *Handler) weakSubjectIDs(ctx context.Context, userID string, moduleID in
 	return ids
 }
 
+// lockExamModule returns the module code this free-tier user's exam
+// simulator is locked to. The first module they ever request it for becomes
+// that lock, set atomically via COALESCE so two concurrent first attempts
+// can't race to different codes; later calls just report the existing lock.
+func (h *Handler) lockExamModule(ctx context.Context, userID, moduleCode string) (string, error) {
+	var locked string
+	err := h.db.QueryRowContext(ctx, `
+		UPDATE users
+		SET locked_exam_module_code = COALESCE(locked_exam_module_code, $2)
+		WHERE id = $1
+		RETURNING locked_exam_module_code`,
+		userID, moduleCode,
+	).Scan(&locked)
+	return locked, err
+}
+
 // StartExam creates a new exam session and returns questions (without correct answers).
 func (h *Handler) StartExam(c *gin.Context) {
 	userID := c.GetString("user_id")
@@ -142,9 +158,30 @@ func (h *Handler) StartExam(c *gin.Context) {
 		return
 	}
 
-	if allowed := h.allowedModuleCodes(c.Request.Context(), userID); !moduleAllowed(allowed, moduleCode) {
+	allowed := h.allowedModuleCodes(c.Request.Context(), userID)
+	if !moduleAllowed(allowed, moduleCode) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "upgrade your plan to access this module", "code": "plan_restricted"})
 		return
+	}
+
+	// Free-tier users can study any of their allowed modules, but the exam
+	// simulator itself is capped to a single module — whichever they start
+	// an exam on first gets permanently locked in until they upgrade (a plan
+	// with unrestricted access reports allowed == nil, so this is skipped
+	// entirely for paid users).
+	if allowed != nil {
+		lockedCode, err := h.lockExamModule(c.Request.Context(), userID, moduleCode)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if lockedCode != moduleCode {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "your free plan is locked to " + lockedCode + " for the exam simulator — upgrade to practice other modules",
+				"code":  "exam_module_locked",
+			})
+			return
+		}
 	}
 
 	limit := req.NumQuestions

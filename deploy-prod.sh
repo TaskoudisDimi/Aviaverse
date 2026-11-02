@@ -184,6 +184,7 @@ cp db/migrations/133_m10_exam_content.sql "$STAGE/db/migrations/"
 cp db/migrations/134_m11_exam_content.sql "$STAGE/db/migrations/"
 cp db/migrations/135_m17_exam_content.sql "$STAGE/db/migrations/"
 cp db/migrations/136_m15_exam_content.sql "$STAGE/db/migrations/"
+cp db/migrations/137_exam_module_lock.sql "$STAGE/db/migrations/"
 cp frontend/Dockerfile  "$STAGE/frontend/"
 cp frontend/nginx.conf  "$STAGE/frontend/"
 
@@ -341,6 +342,7 @@ docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initd
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/134_m11_exam_content.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/135_m17_exam_content.sql 2>&1 || true
 docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/136_m15_exam_content.sql 2>&1 || true
+docker exec aviaverse-postgres-1 psql -U vyron vyron -f /docker-entrypoint-initdb.d/137_exam_module_lock.sql 2>&1 || true
 "
 
 # ── Nginx reload ──────────────────────────────────────────────────────────────
