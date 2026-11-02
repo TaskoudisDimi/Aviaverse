@@ -78,16 +78,16 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          echo "SSH_OPTS=-i $HOME/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20" >> "$GITHUB_ENV"
 
       - name: Upload bundle
         run: |
-          scp -i ~/.ssh/deploy_key "$RUNNER_TEMP/deploy-bundle.tar.gz" \
+          scp $SSH_OPTS "$RUNNER_TEMP/deploy-bundle.tar.gz" \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ env.REMOTE_DIR }}/deploy-bundle.tar.gz"
 
       - name: Build & start containers
         run: |
-          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
+          ssh $SSH_OPTS "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
             set -e
             cd '"${{ env.REMOTE_DIR }}"'
             tar xzf deploy-bundle.tar.gz
@@ -98,7 +98,7 @@ jobs:
 
       - name: Run DB migrations
         run: |
-          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
+          ssh $SSH_OPTS "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
             cd '"${{ env.REMOTE_DIR }}"'
             for f in db/migrations/*.sql; do
               echo "→ $(basename "$f")"
@@ -108,7 +108,7 @@ jobs:
 
       - name: Reload nginx & show status
         run: |
-          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
+          ssh $SSH_OPTS "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
             docker restart aviaverse-nginx-1 2>/dev/null || true
             cd '"${{ env.REMOTE_DIR }}"'
             docker compose -f docker-compose.prod.yml --env-file .env.prod ps
