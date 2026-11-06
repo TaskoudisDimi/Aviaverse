@@ -38,7 +38,6 @@
                  focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent text-sm">
           <option value="" disabled>Select your licence…</option>
           <option value="B1.1">B1.1 – Turbine-powered aeroplanes</option>
-          <option value="B1.3">B1.3 – Piston-engine aeroplanes</option>
           <option value="B2">B2 – Avionics</option>
           <option value="all">All licences</option>
         </select>

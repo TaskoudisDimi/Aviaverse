@@ -57,7 +57,7 @@ type registerReq struct {
 	Email       string `json:"email" binding:"required,email"`
 	Password    string `json:"password" binding:"required,min=8"`
 	FullName    string `json:"full_name" binding:"required"`
-	LicenceType string `json:"licence_type" binding:"required,oneof=B1.1 B1.3 B2 all"`
+	LicenceType string `json:"licence_type" binding:"required,oneof=B1.1 B2 all"`
 }
 
 type loginReq struct {
@@ -372,7 +372,7 @@ func (h *Handler) Me(c *gin.Context) {
 
 type updateProfileReq struct {
 	FullName    string `json:"full_name" binding:"required"`
-	LicenceType string `json:"licence_type" binding:"required,oneof=B1.1 B1.3 B2 all"`
+	LicenceType string `json:"licence_type" binding:"required,oneof=B1.1 B2 all"`
 }
 
 // UpdateProfile lets a user change their own name and licence type.

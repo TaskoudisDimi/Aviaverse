@@ -51,7 +51,6 @@
                 <select v-if="editingId === u.id" v-model="editForm.licenceType"
                   class="bg-white border border-slate-300 rounded-lg pl-2 pr-7 py-1 text-sm text-slate-900 w-24">
                   <option value="B1.1">B1.1</option>
-                  <option value="B1.3">B1.3</option>
                   <option value="B2">B2</option>
                   <option value="all">all</option>
                 </select>

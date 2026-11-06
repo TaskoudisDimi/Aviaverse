@@ -51,7 +51,7 @@ func (h *Handler) ListUsers(c *gin.Context) {
 
 type adminUpdateUserReq struct {
 	FullName    string `json:"full_name" binding:"required"`
-	LicenceType string `json:"licence_type" binding:"required,oneof=B1.1 B1.3 B2 all"`
+	LicenceType string `json:"licence_type" binding:"required,oneof=B1.1 B2 all"`
 	IsAdmin     bool   `json:"is_admin"`
 }
 
