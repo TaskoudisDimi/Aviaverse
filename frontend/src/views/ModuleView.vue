@@ -97,6 +97,8 @@
           Ask AI
         </RouterLink>
       </div>
+
+      <ReviewSection :module-id="module.id" :title="`Reviews for ${module.code}`" />
     </template>
 
     <div v-else class="text-center py-12 text-slate-400">Module not found.</div>
@@ -109,6 +111,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 import Spinner from '@/components/Spinner.vue'
+import ReviewSection from '@/components/ReviewSection.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()

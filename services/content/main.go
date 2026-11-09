@@ -34,6 +34,7 @@ func main() {
 		public.GET("/modules", h.ListModules)
 		public.GET("/modules/:id", h.GetModule)
 		public.GET("/exam-formats", h.ListExamFormats)
+		public.GET("/reviews", h.ListReviews)
 	}
 
 	// Full lesson content is gated — this is the paid material itself.
@@ -41,6 +42,8 @@ func main() {
 	authed.Use(middleware.Auth())
 	{
 		authed.GET("/subjects/:id", h.GetSubject)
+		authed.POST("/reviews", h.UpsertReview)
+		authed.GET("/reviews/me", h.MyReview)
 	}
 
 	port := os.Getenv("PORT")

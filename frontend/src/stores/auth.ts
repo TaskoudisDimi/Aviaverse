@@ -49,6 +49,12 @@ export const useAuthStore = defineStore('auth', () => {
     await fetchMe()
   }
 
+  async function loginWithGoogle(idToken: string) {
+    const res = await api.post('/api/v1/auth/google', { id_token: idToken })
+    setToken(res.data.token)
+    await fetchMe()
+  }
+
   async function fetchMe() {
     const res = await api.get('/api/v1/auth/me')
     user.value = res.data
@@ -90,5 +96,5 @@ export const useAuthStore = defineStore('auth', () => {
       })
     : Promise.resolve()
 
-  return { token, user, isAuthenticated, login, register, logout, fetchMe, updateProfile, changePlan, startCheckout, cancelSubscription, ready }
+  return { token, user, isAuthenticated, login, register, loginWithGoogle, logout, fetchMe, updateProfile, changePlan, startCheckout, cancelSubscription, ready }
 })

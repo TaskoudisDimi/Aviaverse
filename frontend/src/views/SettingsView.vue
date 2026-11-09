@@ -166,6 +166,8 @@
         </div>
       </div>
     </div>
+
+    <ReviewSection title="Rate VJet-Academy" />
   </div>
 </template>
 
@@ -174,6 +176,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { api } from '@/lib/api'
+import ReviewSection from '@/components/ReviewSection.vue'
 
 const auth = useAuthStore()
 const route = useRoute()

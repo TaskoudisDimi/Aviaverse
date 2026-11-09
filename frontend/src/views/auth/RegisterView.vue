@@ -57,6 +57,8 @@
       {{ loading ? 'Creating account…' : 'Create account' }}
     </button>
 
+    <GoogleSignInButton @success="onGoogleSuccess" @error="(m) => (error = m)" />
+
     <p class="text-center text-sm text-slate-500">
       Already have an account?
       <RouterLink :to="{ path: '/auth/login', query: route.query }" class="text-aviation-600 hover:text-aviation-700 font-medium">Sign in</RouterLink>
@@ -68,6 +70,7 @@
 import { ref } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import GoogleSignInButton from '@/components/GoogleSignInButton.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -92,5 +95,10 @@ async function submit() {
   } finally {
     loading.value = false
   }
+}
+
+function onGoogleSuccess() {
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+  router.push(redirect)
 }
 </script>
