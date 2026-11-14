@@ -156,6 +156,24 @@ func moduleAllowed(allowed []string, code string) bool {
 	return false
 }
 
+// lockModule returns the single module code this free-tier user is locked
+// to — shared with the exam service's lock, since the client wants one
+// lock covering both study content and the exam simulator. The first
+// module they ever request (to study OR to test) becomes that lock, set
+// atomically via COALESCE so two concurrent first attempts can't race to
+// different codes; later calls just report the existing lock.
+func (h *Handler) lockModule(ctx context.Context, userID, moduleCode string) (string, error) {
+	var locked string
+	err := h.db.QueryRowContext(ctx, `
+		UPDATE users
+		SET locked_module_code = COALESCE(locked_module_code, $2)
+		WHERE id = $1
+		RETURNING locked_module_code`,
+		userID, moduleCode,
+	).Scan(&locked)
+	return locked, err
+}
+
 // GetSubject returns a subject with its full theory content.
 func (h *Handler) GetSubject(c *gin.Context) {
 	id := c.Param("id")
@@ -185,10 +203,29 @@ func (h *Handler) GetSubject(c *gin.Context) {
 		return
 	}
 
-	allowed := h.allowedModuleCodes(c.Request.Context(), c.GetString("user_id"))
+	userID := c.GetString("user_id")
+	allowed := h.allowedModuleCodes(c.Request.Context(), userID)
 	if !moduleAllowed(allowed, moduleCode) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "upgrade your plan to access this module", "code": "plan_restricted"})
 		return
+	}
+
+	// Free-tier users get one module, period — whichever they study or
+	// test on first gets permanently locked in across both study content
+	// and the exam simulator, until they upgrade.
+	if allowed != nil {
+		lockedCode, err := h.lockModule(c.Request.Context(), userID, moduleCode)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if lockedCode != moduleCode {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "your free plan is locked to module " + lockedCode + " — upgrade to access other modules",
+				"code":  "module_locked",
+			})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, s)

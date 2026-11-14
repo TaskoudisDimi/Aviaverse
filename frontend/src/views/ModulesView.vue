@@ -7,13 +7,19 @@
           <h1 class="text-2xl font-bold text-slate-900">Study Modules</h1>
           <p class="text-slate-500 text-sm mt-1">EASA Part-66 curriculum - 17 modules covering all aviation maintenance topics</p>
         </div>
-        <select v-model="licenceFilter"
-          class="bg-white border border-slate-300 rounded-xl px-4 py-2 text-sm text-slate-900
-                 focus:outline-none focus:ring-2 focus:ring-aviation-500 self-start sm:self-auto">
-          <option value="">All licences</option>
-          <option value="B1">B1</option>
-          <option value="B2">B2</option>
-        </select>
+        <div class="relative self-start sm:self-auto">
+          <select v-model="licenceFilter"
+            class="appearance-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2 text-sm text-slate-900
+                   focus:outline-none focus:ring-2 focus:ring-aviation-500">
+            <option value="">All licences</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+          </select>
+          <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </div>
     </div>
 
@@ -117,10 +123,16 @@ const modules = ref<Module[]>([])
 const licenceFilter = ref('')
 
 // null allowed_module_codes means unrestricted (paid plans); an array means
-// only those module codes are unlocked (the free plan).
+// only those module codes are in the plan's pool (the free plan). On top of
+// that, a free-tier user is locked to a single module total — whichever
+// they studied or tested on first — so every other module is locked too
+// once that's set, even ones within the plan's nominal pool.
 function isLocked(code: string): boolean {
   const allowed = authStore.user?.plan?.allowed_module_codes
-  return !!allowed && !allowed.includes(code)
+  if (!allowed) return false
+  if (!allowed.includes(code)) return true
+  const lockedCode = authStore.user?.locked_module_code
+  return !!lockedCode && lockedCode !== code
 }
 
 async function load() {

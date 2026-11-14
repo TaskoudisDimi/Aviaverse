@@ -48,19 +48,31 @@
                 <p class="text-slate-400 text-xs">{{ u.email }}</p>
               </td>
               <td class="px-4 py-3">
-                <select v-if="editingId === u.id" v-model="editForm.licenceType"
-                  class="bg-white border border-slate-300 rounded-lg pl-2 pr-7 py-1 text-sm text-slate-900 w-24">
-                  <option value="B1.1">B1.1</option>
-                  <option value="B2">B2</option>
-                  <option value="all">all</option>
-                </select>
+                <div v-if="editingId === u.id" class="relative w-24">
+                  <select v-model="editForm.licenceType"
+                    class="appearance-none bg-white border border-slate-300 rounded-lg pl-2 pr-6 py-1 text-sm text-slate-900 w-full">
+                    <option value="B1.1">B1.1</option>
+                    <option value="B2">B2</option>
+                    <option value="all">all</option>
+                  </select>
+                  <svg class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
                 <span v-else class="text-slate-700">{{ u.licence_type }}</span>
               </td>
               <td class="px-4 py-3">
-                <select v-if="editingId === u.id" v-model="editForm.planCode"
-                  class="bg-white border border-slate-300 rounded-lg pl-2 pr-7 py-1 text-sm text-slate-900 w-40">
-                  <option v-for="p in allPlans" :key="p.code" :value="p.code">{{ p.name }}</option>
-                </select>
+                <div v-if="editingId === u.id" class="relative w-40">
+                  <select v-model="editForm.planCode"
+                    class="appearance-none bg-white border border-slate-300 rounded-lg pl-2 pr-6 py-1 text-sm text-slate-900 w-full">
+                    <option v-for="p in allPlans" :key="p.code" :value="p.code">{{ p.name }}</option>
+                  </select>
+                  <svg class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
                 <span v-else class="text-slate-700">{{ u.plan_name ?? '—' }}</span>
               </td>
               <td class="px-4 py-3">

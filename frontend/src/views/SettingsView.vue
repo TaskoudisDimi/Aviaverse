@@ -36,13 +36,19 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1.5">Licence type</label>
-          <select v-model="form.licenceType" required
-            class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent">
-            <option value="B1.1">B1.1 – Turbine-powered aeroplanes</option>
-            <option value="B2">B2 – Avionics</option>
-            <option value="all">All licences</option>
-          </select>
+          <div class="relative">
+            <select v-model="form.licenceType" required
+              class="w-full appearance-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2.5 text-slate-900 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent">
+              <option value="B1.1">B1.1 – Turbine-powered aeroplanes</option>
+              <option value="B2">B2 – Avionics</option>
+              <option value="all">All licences</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
         <div v-if="profileError" class="text-sm text-red-600">{{ profileError }}</div>
         <div class="flex gap-3">
@@ -88,7 +94,7 @@
           <div>
             <p class="text-aviation-500 text-xs uppercase tracking-wide">Module access</p>
             <p class="font-semibold text-aviation-900">
-              {{ plan.allowed_module_codes?.length ? plan.allowed_module_codes.join(', ') : 'All modules' }}
+              {{ formatModuleAccess(plan.allowed_module_codes) }}
             </p>
           </div>
           <p v-if="plan.cancel_at_period_end" class="text-slate-400 font-medium text-xs self-start">
@@ -150,7 +156,7 @@
           </p>
           <ul class="text-sm text-slate-600 space-y-1 flex-1">
             <li>{{ p.ai_message_cap }} AI messages / month</li>
-            <li>{{ p.allowed_module_codes?.length ? `${p.allowed_module_codes.length} module(s)` : 'All modules' }}</li>
+            <li>{{ formatModuleAccess(p.allowed_module_codes) }}</li>
           </ul>
           <p v-if="p.code === plan?.code" class="text-xs font-medium text-aviation-600 mt-3">Current plan</p>
           <button v-else-if="p.billing_mode === 'free'" @click="switchPlan(p.code)" :disabled="switchingTo !== null"
@@ -287,6 +293,19 @@ function formatPrice(cents: number, currency: string) {
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+// Shows a compact "Modules 1-10" range when the allowed codes are a
+// contiguous run (the common case), falling back to a plain count or
+// listing them out if they're ever non-contiguous.
+function formatModuleAccess(codes: string[] | null | undefined) {
+  if (!codes?.length) return 'All modules'
+  const numbers = codes.map(c => parseInt(c.replace(/\D/g, ''), 10)).sort((a, b) => a - b)
+  const isContiguous = numbers.every((n, i) => i === 0 || n === numbers[i - 1] + 1)
+  if (isContiguous && numbers.length > 1) {
+    return `Modules ${numbers[0]}-${numbers[numbers.length - 1]}`
+  }
+  return codes.join(', ')
 }
 
 onMounted(async () => {

@@ -125,10 +125,16 @@ const module = ref<{
 } | null>(null)
 
 // null allowed_module_codes means unrestricted (paid plans); an array means
-// only those module codes are unlocked (the free plan).
+// only those module codes are in the plan's pool (the free plan). On top of
+// that, a free-tier user is locked to a single module total — whichever
+// they studied or tested on first — so every other module is locked too
+// once that's set, even ones within the plan's nominal pool.
 const locked = computed(() => {
   const allowed = authStore.user?.plan?.allowed_module_codes
-  return !!allowed && !!module.value && !allowed.includes(module.value.code)
+  if (!allowed || !module.value) return false
+  if (!allowed.includes(module.value.code)) return true
+  const lockedCode = authStore.user?.locked_module_code
+  return !!lockedCode && lockedCode !== module.value.code
 })
 
 onMounted(async () => {

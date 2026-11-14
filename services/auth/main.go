@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"os"
@@ -53,6 +54,9 @@ func main() {
 	}
 
 	h := handlers.New(db, jwtSecret, mail, rdb, bc)
+	if mail.Enabled() {
+		h.StartUpgradeNudgeScheduler(context.Background())
+	}
 
 	v1 := r.Group("/api/v1/auth")
 	{

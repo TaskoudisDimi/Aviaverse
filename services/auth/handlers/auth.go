@@ -71,7 +71,7 @@ type userResp struct {
 	FullName         string    `json:"full_name"`
 	LicenceType      string    `json:"licence_type"`
 	CreatedAt        time.Time `json:"created_at"`
-	LockedExamModule *string   `json:"locked_exam_module_code"`
+	LockedModule     *string   `json:"locked_module_code"`
 }
 
 func (h *Handler) Register(c *gin.Context) {
@@ -331,8 +331,8 @@ func (h *Handler) Me(c *gin.Context) {
 	var user userResp
 	var isAdmin bool
 	err := h.db.QueryRow(
-		`SELECT id, email, full_name, licence_type, created_at, is_admin, locked_exam_module_code FROM users WHERE id=$1`, userID,
-	).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt, &isAdmin, &user.LockedExamModule)
+		`SELECT id, email, full_name, licence_type, created_at, is_admin, locked_module_code FROM users WHERE id=$1`, userID,
+	).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt, &isAdmin, &user.LockedModule)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
@@ -359,7 +359,7 @@ func (h *Handler) Me(c *gin.Context) {
 		"licence_type":            user.LicenceType,
 		"created_at":              user.CreatedAt,
 		"is_admin":                isAdmin,
-		"locked_exam_module_code": user.LockedExamModule,
+		"locked_module_code": user.LockedModule,
 	}
 	if err == nil {
 		resp["plan"] = plan

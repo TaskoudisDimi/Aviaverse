@@ -165,6 +165,7 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { marked } from 'marked'
 import { api } from '@/lib/api'
+import { useAuthStore } from '@/stores/auth'
 import Spinner from '@/components/Spinner.vue'
 
 interface Subject {
@@ -188,6 +189,7 @@ interface Section {
 }
 
 const route = useRoute()
+const authStore = useAuthStore()
 const loading = ref(true)
 const subject = ref<Subject | null>(null)
 const locked = ref(false)
@@ -196,6 +198,12 @@ onMounted(async () => {
   try {
     const res = await api.get(`/api/v1/content/subjects/${route.params.id}`)
     subject.value = res.data
+    // The free plan's module lock may have just been set for the first
+    // time by this call — refresh so the rest of the UI (module list,
+    // exam setup) reflects it immediately instead of after a reload.
+    if (authStore.user?.plan?.allowed_module_codes && !authStore.user?.locked_module_code) {
+      authStore.fetchMe().catch(() => {})
+    }
   } catch (e: unknown) {
     if ((e as { response?: { status?: number } })?.response?.status === 403) {
       locked.value = true

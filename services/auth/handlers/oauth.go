@@ -80,9 +80,9 @@ func (h *Handler) GoogleLogin(c *gin.Context) {
 
 	var user userResp
 	err = h.db.QueryRow(
-		`SELECT id, email, full_name, licence_type, created_at, locked_exam_module_code
+		`SELECT id, email, full_name, licence_type, created_at, locked_module_code
 		 FROM users WHERE google_id=$1`, info.Sub,
-	).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt, &user.LockedExamModule)
+	).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt, &user.LockedModule)
 
 	if err != nil {
 		// Not linked yet — if an account with this email already exists
@@ -90,9 +90,9 @@ func (h *Handler) GoogleLogin(c *gin.Context) {
 		// account to it rather than creating a duplicate.
 		err = h.db.QueryRow(
 			`UPDATE users SET google_id=$1 WHERE email=$2 AND google_id IS NULL
-			 RETURNING id, email, full_name, licence_type, created_at, locked_exam_module_code`,
+			 RETURNING id, email, full_name, licence_type, created_at, locked_module_code`,
 			info.Sub, info.Email,
-		).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt, &user.LockedExamModule)
+		).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt, &user.LockedModule)
 	}
 
 	isNewUser := false
@@ -116,9 +116,9 @@ func (h *Handler) GoogleLogin(c *gin.Context) {
 		err = h.db.QueryRow(
 			`INSERT INTO users (id, email, password_hash, full_name, licence_type, google_id)
 			 VALUES ($1,$2,$3,$4,'B1.1',$5)
-			 RETURNING id, email, full_name, licence_type, created_at, locked_exam_module_code`,
+			 RETURNING id, email, full_name, licence_type, created_at, locked_module_code`,
 			uuid.New().String(), info.Email, string(hash), fullName, info.Sub,
-		).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt, &user.LockedExamModule)
+		).Scan(&user.ID, &user.Email, &user.FullName, &user.LicenceType, &user.CreatedAt, &user.LockedModule)
 		if err != nil {
 			c.JSON(http.StatusConflict, gin.H{"error": "could not create account"})
 			return

@@ -12,35 +12,46 @@
     <form @submit.prevent="startExam" class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 space-y-5">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Licence type</label>
-        <select v-model="form.licence_type" required
-          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
-                 focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
-          <option value="" disabled>Select licence…</option>
-          <option value="B1">B1</option>
-          <option value="B2">B2</option>
-        </select>
+        <div class="relative">
+          <select v-model="form.licence_type" required
+            class="w-full appearance-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2.5 text-slate-900
+                   focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
+            <option value="" disabled>Select licence…</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+          </select>
+          <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Module</label>
-        <select v-model="form.module_id" required :disabled="!form.licence_type"
-          class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900
-                 focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm disabled:opacity-50">
-          <option value="" disabled>{{ form.licence_type ? 'Select a module…' : 'Select a licence first…' }}</option>
-          <option v-for="m in availableModules" :key="m.id" :value="m.id">{{ m.code }} – {{ m.title }}</option>
-        </select>
+        <div class="relative">
+          <select v-model="form.module_id" required :disabled="!form.licence_type"
+            class="w-full appearance-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2.5 text-slate-900
+                   focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm disabled:opacity-50">
+            <option value="" disabled>{{ form.licence_type ? 'Select a module…' : 'Select a licence first…' }}</option>
+            <option v-for="m in availableModules" :key="m.id" :value="m.id">{{ m.code }} – {{ m.title }}</option>
+          </select>
+          <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
         <p v-if="form.licence_type && !availableModules.length" class="text-xs text-slate-500 mt-1.5">
           No modules available for {{ form.licence_type }}.
         </p>
-        <p v-else-if="lockedExamModuleCode" class="text-xs text-slate-500 mt-1.5">
-          Your free plan's exam simulator is locked to {{ lockedExamModuleCode }}.
+        <p v-else-if="lockedModuleCode" class="text-xs text-slate-500 mt-1.5">
+          Your free plan is locked to module {{ lockedModuleCode }}.
           <RouterLink to="/pricing" class="text-aviation-600 hover:text-aviation-700 font-medium">Upgrade</RouterLink>
-          to practice other modules.
+          to access other modules.
         </p>
         <p v-else-if="allowedModuleCodes" class="text-xs text-slate-500 mt-1.5">
-          Your free plan can study all {{ allowedModuleCodes.length }} of these modules, but the exam
-          simulator only lets you practice <strong>one</strong> — whichever you pick below is permanent
-          unless you
+          Your free plan can study from modules 1-10, but gives you <strong>one</strong> module
+          total - whichever you pick below (to study or to test) is permanent unless you
           <RouterLink to="/pricing" class="text-aviation-600 hover:text-aviation-700 font-medium">upgrade</RouterLink>.
         </p>
       </div>
@@ -106,19 +117,18 @@ const form = ref({
 // only those module codes are selectable (the free plan).
 const allowedModuleCodes = computed(() => authStore.user?.plan?.allowed_module_codes ?? null)
 
-// Free-tier users can study any of their allowed modules, but the exam
-// simulator caps them to a single module — whichever they started an exam
-// on first (set server-side on their first StartExam call, surfaced here
-// via /auth/me). Unset until they've actually started one.
-const lockedExamModuleCode = computed(() =>
-  allowedModuleCodes.value ? authStore.user?.locked_exam_module_code ?? null : null
+// Free-tier users get a single module total — whichever they studied or
+// tested on first (set server-side on first access, surfaced here via
+// /auth/me). Unset until they've actually opened one.
+const lockedModuleCode = computed(() =>
+  allowedModuleCodes.value ? authStore.user?.locked_module_code ?? null : null
 )
 
 const availableModules = computed(() =>
   modules.value
     .filter(m => m.licence_types.includes(form.value.licence_type))
     .filter(m => !allowedModuleCodes.value || allowedModuleCodes.value.includes(m.code))
-    .filter(m => !lockedExamModuleCode.value || m.code === lockedExamModuleCode.value)
+    .filter(m => !lockedModuleCode.value || m.code === lockedModuleCode.value)
 )
 
 // Falls back to a sensible default if a module+licence pairing has no
@@ -164,9 +174,9 @@ async function startExam() {
   try {
     const res = await api.post('/api/v1/exam/start', { ...form.value, mode: mode.value })
     examStore.setSession(res.data)
-    // The free plan's exam-module lock may have just been set for the
-    // first time by this call — refresh so the UI reflects it immediately.
-    if (allowedModuleCodes.value && !lockedExamModuleCode.value) {
+    // The free plan's module lock may have just been set for the first
+    // time by this call — refresh so the UI reflects it immediately.
+    if (allowedModuleCodes.value && !lockedModuleCode.value) {
       authStore.fetchMe().catch(() => {})
     }
     router.push(`/exam/${res.data.exam_id}`)
