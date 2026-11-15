@@ -135,11 +135,42 @@ const messages = ref<Message[]>([])
 const streaming = ref(false)
 const messagesEl = ref<HTMLDivElement | null>(null)
 
+const SUBSCRIPT_DIGITS: Record<string, string> = {
+  '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+}
+const LATEX_SYMBOLS: [RegExp, string][] = [
+  [/\\times/g, '×'], [/\\cdot/g, '·'], [/\\div/g, '÷'], [/\\pm/g, '±'],
+  [/\\pi/g, 'π'], [/\\Omega/g, 'Ω'], [/\\omega/g, 'ω'], [/\\Delta/g, 'Δ'], [/\\delta/g, 'δ'],
+  [/\\theta/g, 'θ'], [/\\phi/g, 'φ'], [/\\mu/g, 'μ'], [/\\rho/g, 'ρ'], [/\\lambda/g, 'λ'],
+  [/\\alpha/g, 'α'], [/\\beta/g, 'β'], [/\\gamma/g, 'γ'], [/\\sigma/g, 'σ'], [/\\infty/g, '∞'],
+  [/\\leq/g, '≤'], [/\\geq/g, '≥'], [/\\neq/g, '≠'], [/\\approx/g, '≈'],
+]
+
+// The system prompt tells the model never to use LaTeX, but it slips
+// through occasionally anyway — this is a defensive net that converts the
+// common cases ($...$ math, \frac, \sqrt, Greek-letter commands,
+// subscripts/superscripts) into plain text/Unicode before rendering,
+// rather than relying solely on the model following that instruction.
+function stripLatex(text: string): string {
+  let out = text
+  out = out.replace(/\$\$([^$]+)\$\$/g, (_, inner: string) => inner.trim())
+  out = out.replace(/\$([^$\n]+)\$/g, (_, inner: string) => inner.trim())
+  out = out.replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '($1)/($2)')
+  out = out.replace(/\\sqrt\{([^}]*)\}/g, '√($1)')
+  out = out.replace(/\\sqrt/g, '√')
+  for (const [re, sym] of LATEX_SYMBOLS) out = out.replace(re, sym)
+  out = out.replace(/_\{?([0-9]+)\}?/g, (_, digits: string) =>
+    digits.split('').map(d => SUBSCRIPT_DIGITS[d] ?? d).join(''))
+  out = out.replace(/\^\{?2\}?/g, '²').replace(/\^\{?3\}?/g, '³')
+  out = out.replace(/\\([%&#])/g, '$1')
+  return out
+}
+
 function renderMd(text: string): string {
   // The AI's own output is rendered as HTML here, so it's sanitized before
   // going into v-html — a prompt-injected or jailbroken response could
   // otherwise land raw <script>/onerror= markup straight in the DOM.
-  try { return DOMPurify.sanitize(marked.parse(text) as string) } catch { return text }
+  try { return DOMPurify.sanitize(marked.parse(stripLatex(text)) as string) } catch { return text }
 }
 
 function saveHistory() {
