@@ -6,13 +6,14 @@
 # Pre-built Linux binaries (built locally with build-prod.sh)
 dist/
 
-# Go build artifacts
-services/*/auth-service
-services/*/content-service
-services/*/ai-service
-services/*/exam-service
-services/*/progress-service
-services/*/gateway-service
+# Go build artifacts — `go build .` with no -o names the binary after the
+# package dir, e.g. `services/auth/auth`, not `auth-service`.
+services/auth/auth
+services/content/content
+services/ai/ai
+services/exam/exam
+services/progress/progress
+services/gateway/gateway
 services/ai/ingest
 services/ai/query
 
