@@ -1,14 +1,42 @@
---model claude-3-5-sonnet-20241022 
+# VJet-Academy
 
-Λογαριασμοί / credentials που πρέπει να μεταφερθούν ή να ξαναδημιουργηθούν στο δικό του όνομα:
+EASA Part-66 aviation maintenance training platform: study modules, an exam
+simulator, and an AI Instructor chat, for B1.1 and B2 licence candidates.
 
-Cal.com — είτε του δίνεις πρόσβαση στον δικό σου λογαριασμό, είτε φτιάχνει δικό του και αλλάζει το VITE_CAL_USERNAME.
-Gemini API key (GEMINI_API_KEY) — δικό του Google AI Studio key (θυμήσου το ανοιχτό ζήτημα με το ACCESS_TOKEN_TYPE_UNSUPPORTED).
-Server access — SSH στο 188.245.64.189 (root), ή migration σε server δικό του.
-.env.prod πάνω στον server — JWT_SECRET, POSTGRES_PASSWORD, GEMINI_API_KEY κ.λπ.
-Domain / DNS αν θέλετε δικό σας domain αντί για IP.
-Τεχνικά items:
+Live at [vjet-academy.academy](https://vjet-academy.academy).
 
-Docs για το πώς τρέχει το deploy (build-prod.sh → deploy-prod.sh) — ήδη υπάρχουν σαν scripts.
-Του δείχνεις πού είναι το docker-compose.prod.yml και τι κάνει κάθε service.
-Πρόσβαση στη βάση (psql credentials) αν χρειαστεί να διαχειρίζεται περιεχόμενο απευθείας.
+## Stack
+
+- **Frontend** — Vue 3, Vite, Pinia, Vue Router, Tailwind. Built as a PWA.
+- **Backend** — six small Go (Gin) services behind a reverse-proxy gateway:
+  `auth`, `content`, `ai`, `exam`, `progress`, `gateway`.
+- **Data** — Postgres (`pgvector/pgvector:pg16`), Redis.
+
+See [docs/architecture.md](./docs/architecture.md) for how the pieces fit
+together, and each `services/*/README.md` for what that service owns.
+
+## Local development
+
+```bash
+bash scripts/run-local.sh      # Postgres + Redis via Docker, Go services natively
+cd frontend && npm run dev     # frontend, separately
+```
+
+Or the full stack via Docker Compose: `docker compose up`.
+
+## Deploying
+
+Every push to `main` deploys to production automatically. See
+[docs/deploy.md](./docs/deploy.md) for the pipeline, required secrets, and
+the manual fallback scripts.
+
+## Docs
+
+- [docs/architecture.md](./docs/architecture.md) — services, data flow, the
+  content-grounding rule.
+- [docs/deploy.md](./docs/deploy.md) — CI/CD pipeline, server layout,
+  manual deploy scripts.
+- [docs/mobile-app-proposal.md](./docs/mobile-app-proposal.md) — draft plan
+  for wrapping the PWA into an App Store/Google Play app.
+- [docs/handoff.md](./docs/handoff.md) — what transfers if this project
+  changes hands.

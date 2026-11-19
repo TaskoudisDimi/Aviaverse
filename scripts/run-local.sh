@@ -4,7 +4,7 @@
 # Run frontend separately: cd frontend && npm run dev
 
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 # Load .env
 if [ -f .env ]; then source .env; fi

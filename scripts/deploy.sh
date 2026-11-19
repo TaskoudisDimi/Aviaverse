@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # ─── Aviaverse Academy — First Deploy ─────────────────────────────────────────
+# ⚠ HISTORICAL: this was the one-time bootstrap for the current production
+# server and has already run. Kept only as a reference for standing up a
+# brand-new server from scratch — ongoing deploys go through
+# .github/workflows/deploy.yml (push to main), not this script.
 # Run this script ONCE on the server to deploy the application from scratch.
 # Usage: bash deploy.sh
 

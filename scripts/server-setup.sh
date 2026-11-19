@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # ─── Aviaverse Academy — Server Setup ─────────────────────────────────────────
+# ⚠ HISTORICAL: already run on the current production server. Kept as a
+# reference for provisioning a brand-new VPS from scratch — see
+# docs/deploy.md for how the current server/CI pipeline is actually set up.
 # Run this ONCE on a fresh Ubuntu 22.04 / Debian 12 VPS as root.
 # Usage: bash server-setup.sh
 

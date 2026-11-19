@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # ─── Aviaverse Academy — Update (zero downtime) ───────────────────────────────
+# ⚠ SUPERSEDED: deploys now happen automatically on every push to main via
+# .github/workflows/deploy.yml. Kept only for reference — do not run this
+# against production, it predates that pipeline and will conflict with it.
 # Run this every time you push code changes and want to update the server.
 # Usage: bash update.sh
 

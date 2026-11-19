@@ -11,7 +11,7 @@ SSH="ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ConnectTimeout=3
          -o ControlMaster=auto -o ControlPath=$SOCKET -o ControlPersist=120 $SERVER"
 
 if [ ! -d "dist/bin" ]; then
-    echo "ERROR: Run 'bash build-prod.sh' first."
+    echo "ERROR: Run 'bash scripts/build-prod.sh' first."
     exit 1
 fi
 
@@ -194,7 +194,7 @@ cp frontend/nginx.conf  "$STAGE/frontend/"
 DIST_COUNT=$(find "$STAGE/frontend/dist" -type f | wc -l | tr -d ' ')
 echo "  frontend/dist: $DIST_COUNT files"
 if [ "$DIST_COUNT" -eq 0 ]; then
-    echo "ERROR: frontend/dist is empty — run 'bash build-prod.sh' first."
+    echo "ERROR: frontend/dist is empty — run 'bash scripts/build-prod.sh' first."
     exit 1
 fi
 
