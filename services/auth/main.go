@@ -82,6 +82,12 @@ func main() {
 			admin.PATCH("/users/:id", h.AdminUpdateUser)
 			admin.POST("/users/:id/plan", h.AdminChangePlan)
 			admin.DELETE("/users/:id", h.AdminDeleteUser)
+
+			admin.GET("/organisations", h.ListOrganisations)
+			admin.POST("/organisations", h.CreateOrganisation)
+			admin.GET("/organisations/:id", h.GetOrganisation)
+			admin.POST("/organisations/:id/invites", h.InviteToOrganisation)
+			admin.DELETE("/organisations/:id/invites/:inviteId", h.RevokeInvite)
 		}
 	}
 

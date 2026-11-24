@@ -136,6 +136,8 @@ func (h *Handler) GoogleLogin(c *gin.Context) {
 		}
 	}
 
+	h.grantPendingOrgInvite(c.Request.Context(), user.ID, user.Email)
+
 	token, err := h.generateToken(user.ID, user.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "token error"})

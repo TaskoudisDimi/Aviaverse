@@ -13,7 +13,7 @@
     </div>
 
     <div class="flex gap-1 border-b border-white/15">
-      <button v-for="t in ['users', 'transactions']" :key="t" @click="tab = t as typeof tab"
+      <button v-for="t in ['users', 'transactions', 'organisations']" :key="t" @click="tab = t as typeof tab"
         class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors capitalize"
         :class="tab === t ? 'border-aviation-400 text-aviation-300' : 'border-transparent text-slate-300 hover:text-white'">
         {{ t }}
@@ -101,7 +101,7 @@
     </div>
 
     <!-- Transactions tab -->
-    <template v-else>
+    <template v-else-if="tab === 'transactions'">
       <div class="flex flex-col sm:flex-row sm:items-end gap-3 sm:justify-between">
         <div class="flex gap-3">
           <div>
@@ -166,6 +166,120 @@
         <p v-if="!txLoading && !transactions.length" class="text-center text-slate-400 text-sm py-10">No transactions in this period.</p>
       </div>
     </template>
+
+    <!-- Organisations tab -->
+    <template v-else>
+      <form @submit.prevent="createOrg" class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 sm:items-end">
+        <div class="flex-1 min-w-[10rem]">
+          <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">School / organisation name</label>
+          <input v-model="newOrg.name" required type="text" placeholder="e.g. Hellenic Wings Flight School"
+            class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-aviation-500" />
+        </div>
+        <div class="flex-1 min-w-[10rem]">
+          <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">Contact email</label>
+          <input v-model="newOrg.contact_email" type="email" placeholder="contact@school.com"
+            class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-aviation-500" />
+        </div>
+        <div class="w-24">
+          <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">Trial days</label>
+          <input v-model.number="newOrg.trial_days" type="number" min="1" placeholder="14"
+            class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-aviation-500" />
+        </div>
+        <button type="submit" :disabled="orgCreating"
+          class="bg-aviation-500 hover:bg-aviation-600 disabled:opacity-40 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
+          {{ orgCreating ? 'Adding…' : 'Add organisation' }}
+        </button>
+      </form>
+
+      <div v-if="orgsLoading" class="flex justify-center py-12"><Spinner /></div>
+
+      <div v-else class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-200 text-left text-xs text-slate-400 uppercase tracking-wide">
+                <th class="px-4 py-3 font-medium">Organisation</th>
+                <th class="px-4 py-3 font-medium">Contact</th>
+                <th class="px-4 py-3 font-medium">Trial</th>
+                <th class="px-4 py-3 font-medium">Invited</th>
+                <th class="px-4 py-3 font-medium">Accepted</th>
+                <th class="px-4 py-3 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="o in organisations" :key="o.id" class="border-b border-slate-100 last:border-0">
+                <td class="px-4 py-3 font-medium text-slate-900">{{ o.name }}</td>
+                <td class="px-4 py-3 text-slate-500 text-xs">
+                  <p v-if="o.contact_name">{{ o.contact_name }}</p>
+                  <p>{{ o.contact_email ?? '—' }}</p>
+                </td>
+                <td class="px-4 py-3 text-slate-700">{{ o.trial_days }} days</td>
+                <td class="px-4 py-3 text-slate-700">{{ o.invited_count }}</td>
+                <td class="px-4 py-3 text-slate-700">{{ o.accepted_count }}</td>
+                <td class="px-4 py-3 text-right">
+                  <button @click="openOrg(o)" class="text-aviation-600 hover:text-aviation-700 font-medium text-xs">Manage invites</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p v-if="!orgsLoading && !organisations.length" class="text-center text-slate-400 text-sm py-10">No organisations yet — add one above.</p>
+      </div>
+    </template>
+
+    <!-- Organisation detail / invites modal -->
+    <Transition name="fade">
+      <div v-if="orgDetail" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40" @click="orgDetail = null" />
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
+          <h3 class="text-base font-semibold text-slate-900 mb-1">{{ orgDetail.organisation.name }}</h3>
+          <p class="text-sm text-slate-500 mb-4">{{ orgDetail.organisation.trial_days }}-day trial on sign-up or login.</p>
+
+          <form @submit.prevent="sendInvites" class="mb-5">
+            <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">Invite emails (up to 10, one per line or comma-separated)</label>
+            <textarea v-model="inviteEmailsText" rows="3" placeholder="student1@school.com, student2@school.com"
+              class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-aviation-500"></textarea>
+            <div class="flex justify-end mt-2">
+              <button type="submit" :disabled="orgInviting"
+                class="bg-aviation-500 hover:bg-aviation-600 disabled:opacity-40 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+                {{ orgInviting ? 'Sending…' : 'Send invites' }}
+              </button>
+            </div>
+          </form>
+
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-200 text-left text-xs text-slate-400 uppercase tracking-wide">
+                <th class="py-2 font-medium">Email</th>
+                <th class="py-2 font-medium">Status</th>
+                <th class="py-2 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="inv in orgDetail.invites" :key="inv.id" class="border-b border-slate-100 last:border-0 align-top">
+                <td class="py-2">
+                  <p class="text-slate-900">{{ inv.email }}</p>
+                  <p v-if="inv.user_name" class="text-slate-400 text-xs">{{ inv.user_name }}</p>
+                </td>
+                <td class="py-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                    :class="statusBadge(inv.status)">{{ inv.status }}</span>
+                  <p v-if="inv.trial_expires_at" class="text-slate-400 text-xs mt-1">until {{ formatDate(inv.trial_expires_at) }}</p>
+                </td>
+                <td class="py-2 text-right">
+                  <button v-if="inv.status === 'pending'" @click="revokeInvite(inv)" class="text-red-500 hover:text-red-600 text-xs font-medium">Revoke</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-if="!orgDetail.invites.length" class="text-center text-slate-400 text-sm py-6">No invites sent yet.</p>
+
+          <div class="flex justify-end mt-4">
+            <button @click="orgDetail = null" class="text-sm font-medium text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl">Close</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Delete confirmation modal -->
     <Transition name="fade">
@@ -251,7 +365,30 @@ interface Transaction {
   created_at: string
 }
 
-const tab = ref<'users' | 'transactions'>('users')
+interface Organisation {
+  id: number
+  name: string
+  contact_name: string | null
+  contact_email: string | null
+  trial_days: number
+  notes: string | null
+  created_at: string
+  invited_count: number
+  accepted_count: number
+}
+
+interface OrgInvite {
+  id: number
+  email: string
+  status: 'pending' | 'accepted' | 'revoked'
+  invited_at: string
+  accepted_at: string | null
+  user_id: string | null
+  user_name: string | null
+  trial_expires_at: string | null
+}
+
+const tab = ref<'users' | 'transactions' | 'organisations'>('users')
 
 const users = ref<AdminUser[]>([])
 const allPlans = ref<PlanListItem[]>([])
@@ -393,8 +530,94 @@ async function loadTransactions() {
   }
 }
 
-watch(tab, (t) => { if (t === 'transactions' && !transactions.value.length) loadTransactions() })
+watch(tab, (t) => {
+  if (t === 'transactions' && !transactions.value.length) loadTransactions()
+  if (t === 'organisations' && !organisations.value.length) loadOrganisations()
+})
 watch([txFrom, txTo], () => { if (tab.value === 'transactions') loadTransactions() })
+
+// Organisations tab — Part-147 school trials.
+const organisations = ref<Organisation[]>([])
+const orgsLoading = ref(false)
+const orgCreating = ref(false)
+const newOrg = reactive({ name: '', contact_email: '', trial_days: 14 })
+
+async function loadOrganisations() {
+  orgsLoading.value = true
+  try {
+    const res = await api.get('/api/v1/auth/admin/organisations')
+    organisations.value = res.data
+  } finally {
+    orgsLoading.value = false
+  }
+}
+
+async function createOrg() {
+  orgCreating.value = true
+  error.value = ''
+  try {
+    await api.post('/api/v1/auth/admin/organisations', {
+      name: newOrg.name,
+      contact_email: newOrg.contact_email,
+      trial_days: newOrg.trial_days || 14,
+    })
+    newOrg.name = ''
+    newOrg.contact_email = ''
+    newOrg.trial_days = 14
+    flashNotice('Organisation added.')
+    await loadOrganisations()
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not add organisation.'
+  } finally {
+    orgCreating.value = false
+  }
+}
+
+const orgDetail = ref<{ organisation: Organisation; invites: OrgInvite[] } | null>(null)
+const inviteEmailsText = ref('')
+const orgInviting = ref(false)
+
+async function openOrg(o: Organisation) {
+  const res = await api.get(`/api/v1/auth/admin/organisations/${o.id}`)
+  orgDetail.value = res.data
+  inviteEmailsText.value = ''
+}
+
+async function sendInvites() {
+  if (!orgDetail.value) return
+  const emails = inviteEmailsText.value.split(/[\n,]/).map(e => e.trim()).filter(Boolean)
+  if (!emails.length) return
+  orgInviting.value = true
+  error.value = ''
+  try {
+    await api.post(`/api/v1/auth/admin/organisations/${orgDetail.value.organisation.id}/invites`, { emails })
+    inviteEmailsText.value = ''
+    flashNotice(`Invited ${emails.length} email(s).`)
+    await openOrg(orgDetail.value.organisation)
+    await loadOrganisations()
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not send invites.'
+  } finally {
+    orgInviting.value = false
+  }
+}
+
+async function revokeInvite(inv: OrgInvite) {
+  if (!orgDetail.value) return
+  try {
+    await api.delete(`/api/v1/auth/admin/organisations/${orgDetail.value.organisation.id}/invites/${inv.id}`)
+    await openOrg(orgDetail.value.organisation)
+    await loadOrganisations()
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not revoke invite.'
+  }
+}
+
+function statusBadge(status: OrgInvite['status']) {
+  if (status === 'accepted') return 'bg-green-50 text-green-700 border border-green-200'
+  if (status === 'revoked') return 'bg-slate-100 text-slate-500 border border-slate-200'
+  return 'bg-amber-50 text-amber-700 border border-amber-200'
+}
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })

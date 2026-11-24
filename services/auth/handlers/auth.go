@@ -110,6 +110,8 @@ func (h *Handler) Register(c *gin.Context) {
 		log.Printf("failed to assign free plan to new user %s: %v", user.ID, err)
 	}
 
+	h.grantPendingOrgInvite(c.Request.Context(), user.ID, user.Email)
+
 	token, err := h.generateToken(user.ID, user.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "token error"})
@@ -170,6 +172,8 @@ func (h *Handler) Login(c *gin.Context) {
 		fail()
 		return
 	}
+
+	h.grantPendingOrgInvite(ctx, user.ID, user.Email)
 
 	token, err := h.generateToken(user.ID, user.Email)
 	if err != nil {

@@ -156,6 +156,27 @@ func moduleAllowed(allowed []string, code string) bool {
 	return false
 }
 
+// shouldLockModule reports whether this user's current plan locks them to
+// the first module they touch, as opposed to merely restricting which
+// modules are allowed. Both look like a restricted (non-nil)
+// allowed_module_codes array, so this needs its own flag — e.g. the free
+// plan locks to 1 of its 10 eligible modules, while a fixed-set trial
+// plan (like a B2-avionics preview covering exactly M13+M14) allows both
+// at once with no further locking.
+func (h *Handler) shouldLockModule(ctx context.Context, userID string) bool {
+	var lock bool
+	err := h.db.QueryRowContext(ctx, `
+		SELECT sp.lock_to_first_module
+		FROM user_subscriptions us
+		JOIN subscription_plans sp ON sp.id = us.plan_id
+		WHERE us.user_id = $1
+		  AND us.status = 'active'
+		  AND (us.expires_at IS NULL OR us.expires_at > now())
+		ORDER BY us.started_at DESC
+		LIMIT 1`, userID).Scan(&lock)
+	return err == nil && lock
+}
+
 // lockModule returns the single module code this free-tier user is locked
 // to — shared with the exam service's lock, since the client wants one
 // lock covering both study content and the exam simulator. The first
@@ -213,7 +234,7 @@ func (h *Handler) GetSubject(c *gin.Context) {
 	// Free-tier users get one module, period — whichever they study or
 	// test on first gets permanently locked in across both study content
 	// and the exam simulator, until they upgrade.
-	if allowed != nil {
+	if h.shouldLockModule(c.Request.Context(), userID) {
 		lockedCode, err := h.lockModule(c.Request.Context(), userID, moduleCode)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
