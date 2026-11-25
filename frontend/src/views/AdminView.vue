@@ -270,12 +270,19 @@
         <div class="absolute inset-0 bg-slate-900/40" @click="customAccessTarget = null" />
         <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto">
           <h3 class="text-base font-semibold text-slate-900 mb-1">Custom module access</h3>
-          <p class="text-sm text-slate-500 mb-4">
+          <p class="text-sm text-slate-500 mb-1">
             {{ customAccessTarget.full_name }} ({{ customAccessTarget.email }}) — grants exactly the modules
             checked below, for the given number of days, overriding their current plan's module access.
           </p>
+          <p class="text-xs mb-4">
+            <span class="text-slate-400">Currently enabled:</span>
+            <span v-if="customAccessTarget.custom_module_codes?.length" class="text-aviation-700 font-medium">
+              {{ customAccessTarget.custom_module_codes.join(', ') }}
+            </span>
+            <span v-else class="text-slate-400">none (plan default — {{ customAccessTarget.plan_name ?? 'no plan' }})</span>
+          </p>
 
-          <div class="grid grid-cols-2 gap-2 mb-4 max-h-56 overflow-y-auto">
+          <div class="grid grid-cols-2 gap-2 mb-4 max-h-72 overflow-y-auto">
             <label v-for="m in allModules" :key="m.code" class="flex items-center gap-2 text-sm text-slate-700">
               <input type="checkbox" v-model="customAccessForm.moduleCodes" :value="m.code" class="w-4 h-4" />
               {{ m.code }} — {{ m.title }}
@@ -579,7 +586,7 @@ const customAccessSaving = ref(false)
 
 function openCustomAccess(u: AdminUser) {
   customAccessTarget.value = u
-  customAccessForm.moduleCodes = []
+  customAccessForm.moduleCodes = [...(u.custom_module_codes ?? [])]
   customAccessForm.days = 30
   error.value = ''
 }
