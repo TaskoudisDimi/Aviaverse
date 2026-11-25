@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 type adminUserResp struct {
@@ -123,6 +124,7 @@ func (h *Handler) AdminChangePlan(c *gin.Context) {
 		    expires_at = CASE WHEN $2::int IS NULL THEN NULL ELSE now() + ($2::int || ' days')::interval END,
 		    payment_provider = 'manual',
 		    status = 'active',
+		    custom_allowed_module_codes = NULL,
 		    updated_at = now()
 		WHERE user_id = $3 AND status = 'active'`,
 		planID, periodDays, targetID,
@@ -140,6 +142,65 @@ func (h *Handler) AdminChangePlan(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 			return
 		}
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+type adminGrantCustomAccessReq struct {
+	ModuleCodes []string `json:"module_codes" binding:"required"`
+	Days        int      `json:"days" binding:"required"`
+}
+
+// AdminGrantCustomAccess gives one user time-boxed access to an exact set
+// of modules — e.g. "M13 and M14 for 30 days" — without needing a
+// dedicated subscription_plans row for every one-off request like this.
+// Baselines onto pro_monthly (so ai_message_cap/billing_mode behave like a
+// normal paid plan) and overrides just the module list via
+// custom_allowed_module_codes, which the content/exam services prefer over
+// the plan's own list when set.
+func (h *Handler) AdminGrantCustomAccess(c *gin.Context) {
+	targetID := c.Param("id")
+	var req adminGrantCustomAccessReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if len(req.ModuleCodes) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "at least one module code required"})
+		return
+	}
+	if req.Days <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "days must be positive"})
+		return
+	}
+
+	var planID int
+	if err := h.db.QueryRow(
+		`SELECT id FROM subscription_plans WHERE code = 'pro_monthly' AND active = true`,
+	).Scan(&planID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	res, err := h.db.Exec(`
+		UPDATE user_subscriptions
+		SET plan_id = $1,
+		    started_at = now(),
+		    expires_at = now() + ($2::int || ' days')::interval,
+		    payment_provider = 'manual_custom',
+		    custom_allowed_module_codes = $3,
+		    status = 'active',
+		    updated_at = now()
+		WHERE user_id = $4 AND status = 'active'`,
+		planID, req.Days, pq.Array(req.ModuleCodes), targetID,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user has no active subscription"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }

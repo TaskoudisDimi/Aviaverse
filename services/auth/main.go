@@ -81,6 +81,7 @@ func main() {
 			admin.DELETE("/transactions/:id", h.DeleteTransaction)
 			admin.PATCH("/users/:id", h.AdminUpdateUser)
 			admin.POST("/users/:id/plan", h.AdminChangePlan)
+			admin.POST("/users/:id/custom-access", h.AdminGrantCustomAccess)
 			admin.DELETE("/users/:id", h.AdminDeleteUser)
 
 			admin.GET("/organisations", h.ListOrganisations)

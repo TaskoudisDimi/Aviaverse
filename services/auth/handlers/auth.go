@@ -328,6 +328,7 @@ type planResp struct {
 	BillingMode       string     `json:"billing_mode"`
 	PaymentProvider   *string    `json:"payment_provider"`
 	CancelAtPeriodEnd bool       `json:"cancel_at_period_end"`
+	locksToFirst      bool
 }
 
 func (h *Handler) Me(c *gin.Context) {
@@ -344,8 +345,10 @@ func (h *Handler) Me(c *gin.Context) {
 
 	var plan planResp
 	err = h.db.QueryRow(`
-		SELECT sp.code, sp.name, sp.price_cents, sp.currency, sp.ai_message_cap, sp.allowed_module_codes,
-		       us.expires_at, sp.billing_mode, us.payment_provider, us.cancel_at_period_end
+		SELECT sp.code, sp.name, sp.price_cents, sp.currency, sp.ai_message_cap,
+		       COALESCE(us.custom_allowed_module_codes, sp.allowed_module_codes),
+		       us.expires_at, sp.billing_mode, us.payment_provider, us.cancel_at_period_end,
+		       sp.lock_to_first_module AND us.custom_allowed_module_codes IS NULL
 		FROM user_subscriptions us
 		JOIN subscription_plans sp ON sp.id = us.plan_id
 		WHERE us.user_id = $1
@@ -354,16 +357,26 @@ func (h *Handler) Me(c *gin.Context) {
 		ORDER BY us.started_at DESC
 		LIMIT 1`, userID,
 	).Scan(&plan.Code, &plan.Name, &plan.PriceCents, &plan.Currency, &plan.AIMessageCap, pq.Array(&plan.AllowedModules),
-		&plan.ExpiresAt, &plan.BillingMode, &plan.PaymentProvider, &plan.CancelAtPeriodEnd)
+		&plan.ExpiresAt, &plan.BillingMode, &plan.PaymentProvider, &plan.CancelAtPeriodEnd, &plan.locksToFirst)
+
+	// The single-module lock only means anything for a plan that actually
+	// locks to the first module touched (see shouldLockModule in the
+	// content/exam services) — otherwise it's leftover state from a past
+	// plan and must not be surfaced, or the UI will show modules as locked
+	// that the backend will happily serve.
+	lockedModuleCode := user.LockedModule
+	if !plan.locksToFirst {
+		lockedModuleCode = nil
+	}
 
 	resp := gin.H{
-		"id":                      user.ID,
-		"email":                   user.Email,
-		"full_name":               user.FullName,
-		"licence_type":            user.LicenceType,
-		"created_at":              user.CreatedAt,
-		"is_admin":                isAdmin,
-		"locked_module_code": user.LockedModule,
+		"id":                 user.ID,
+		"email":              user.Email,
+		"full_name":          user.FullName,
+		"licence_type":       user.LicenceType,
+		"created_at":         user.CreatedAt,
+		"is_admin":           isAdmin,
+		"locked_module_code": lockedModuleCode,
 	}
 	if err == nil {
 		resp["plan"] = plan

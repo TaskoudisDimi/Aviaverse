@@ -90,6 +90,7 @@
                 </template>
                 <template v-else>
                   <button @click="startEdit(u)" class="text-aviation-600 hover:text-aviation-700 font-medium text-xs mr-3">Edit</button>
+                  <button @click="openCustomAccess(u)" class="text-aviation-600 hover:text-aviation-700 font-medium text-xs mr-3">Custom access</button>
                   <button @click="confirmDelete(u)" class="text-red-500 hover:text-red-600 text-xs">Delete</button>
                 </template>
               </td>
@@ -226,6 +227,41 @@
         <p v-if="!orgsLoading && !organisations.length" class="text-center text-slate-400 text-sm py-10">No organisations yet — add one above.</p>
       </div>
     </template>
+
+    <!-- Custom module access modal -->
+    <Transition name="fade">
+      <div v-if="customAccessTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40" @click="customAccessTarget = null" />
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto">
+          <h3 class="text-base font-semibold text-slate-900 mb-1">Custom module access</h3>
+          <p class="text-sm text-slate-500 mb-4">
+            {{ customAccessTarget.full_name }} ({{ customAccessTarget.email }}) — grants exactly the modules
+            checked below, for the given number of days, overriding their current plan's module access.
+          </p>
+
+          <div class="grid grid-cols-2 gap-2 mb-4 max-h-56 overflow-y-auto">
+            <label v-for="m in allModules" :key="m.code" class="flex items-center gap-2 text-sm text-slate-700">
+              <input type="checkbox" v-model="customAccessForm.moduleCodes" :value="m.code" class="w-4 h-4" />
+              {{ m.code }} — {{ m.title }}
+            </label>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">Days of access</label>
+            <input v-model.number="customAccessForm.days" type="number" min="1"
+              class="w-28 bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-aviation-500" />
+          </div>
+
+          <div class="flex justify-end gap-3">
+            <button @click="customAccessTarget = null" class="text-sm font-medium text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl">Cancel</button>
+            <button @click="grantCustomAccess" :disabled="customAccessSaving || !customAccessForm.moduleCodes.length"
+              class="bg-aviation-500 hover:bg-aviation-600 disabled:opacity-40 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+              {{ customAccessSaving ? 'Granting…' : 'Grant access' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Organisation detail / invites modal -->
     <Transition name="fade">
@@ -470,15 +506,53 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+interface ModuleListItem {
+  code: string
+  title: string
+}
+
+const allModules = ref<ModuleListItem[]>([])
+const customAccessTarget = ref<AdminUser | null>(null)
+const customAccessForm = reactive({ moduleCodes: [] as string[], days: 30 })
+const customAccessSaving = ref(false)
+
+function openCustomAccess(u: AdminUser) {
+  customAccessTarget.value = u
+  customAccessForm.moduleCodes = []
+  customAccessForm.days = 30
+  error.value = ''
+}
+
+async function grantCustomAccess() {
+  if (!customAccessTarget.value) return
+  customAccessSaving.value = true
+  error.value = ''
+  try {
+    await api.post(`/api/v1/auth/admin/users/${customAccessTarget.value.id}/custom-access`, {
+      module_codes: customAccessForm.moduleCodes,
+      days: customAccessForm.days,
+    })
+    flashNotice(`Granted ${customAccessTarget.value.full_name} access to ${customAccessForm.moduleCodes.join(', ')} for ${customAccessForm.days} days.`)
+    customAccessTarget.value = null
+    await load()
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not grant access.'
+  } finally {
+    customAccessSaving.value = false
+  }
+}
+
 async function load() {
   loading.value = true
   try {
-    const [usersRes, plansRes] = await Promise.all([
+    const [usersRes, plansRes, modulesRes] = await Promise.all([
       api.get('/api/v1/auth/admin/users'),
       api.get('/api/v1/auth/plans'),
+      api.get('/api/v1/content/modules'),
     ])
     users.value = usersRes.data
     allPlans.value = plansRes.data
+    allModules.value = modulesRes.data
   } finally {
     loading.value = false
   }

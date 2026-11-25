@@ -127,7 +127,7 @@ func (h *Handler) GetModule(c *gin.Context) {
 func (h *Handler) allowedModuleCodes(ctx context.Context, userID string) []string {
 	var codes stringArray
 	err := h.db.QueryRowContext(ctx, `
-		SELECT sp.allowed_module_codes
+		SELECT COALESCE(us.custom_allowed_module_codes, sp.allowed_module_codes)
 		FROM user_subscriptions us
 		JOIN subscription_plans sp ON sp.id = us.plan_id
 		WHERE us.user_id = $1
@@ -166,7 +166,7 @@ func moduleAllowed(allowed []string, code string) bool {
 func (h *Handler) shouldLockModule(ctx context.Context, userID string) bool {
 	var lock bool
 	err := h.db.QueryRowContext(ctx, `
-		SELECT sp.lock_to_first_module
+		SELECT sp.lock_to_first_module AND us.custom_allowed_module_codes IS NULL
 		FROM user_subscriptions us
 		JOIN subscription_plans sp ON sp.id = us.plan_id
 		WHERE us.user_id = $1
