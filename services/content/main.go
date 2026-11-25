@@ -46,6 +46,18 @@ func main() {
 		authed.GET("/reviews/me", h.MyReview)
 	}
 
+	admin := r.Group("/api/v1/content/admin")
+	admin.Use(middleware.Auth(), middleware.AdminOnly(db))
+	{
+		admin.GET("/questions/search", h.AdminSearchQuestions)
+		admin.GET("/questions/export", h.AdminExportQuestions)
+		admin.POST("/questions/import", h.AdminImportQuestions)
+		admin.GET("/subjects/:id/questions", h.AdminListQuestions)
+		admin.POST("/subjects/:id/questions", h.AdminCreateQuestion)
+		admin.PATCH("/questions/:id", h.AdminUpdateQuestion)
+		admin.DELETE("/questions/:id", h.AdminDeleteQuestion)
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8082"

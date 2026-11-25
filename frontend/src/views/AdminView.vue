@@ -13,7 +13,7 @@
     </div>
 
     <div class="flex gap-1 border-b border-white/15">
-      <button v-for="t in ['users', 'transactions', 'organisations']" :key="t" @click="tab = t as typeof tab"
+      <button v-for="t in ['users', 'transactions', 'organisations', 'questions']" :key="t" @click="tab = t as typeof tab"
         class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors capitalize"
         :class="tab === t ? 'border-aviation-400 text-aviation-300' : 'border-transparent text-slate-300 hover:text-white'">
         {{ t }}
@@ -177,7 +177,7 @@
     </template>
 
     <!-- Organisations tab -->
-    <template v-else>
+    <template v-else-if="tab === 'organisations'">
       <form @submit.prevent="createOrg" class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 sm:items-end">
         <div class="flex-1 min-w-[10rem]">
           <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">School / organisation name</label>
@@ -261,6 +261,112 @@
           </table>
         </div>
         <p v-if="!orgsLoading && !organisations.length" class="text-center text-slate-400 text-sm py-10">No organisations yet — add one above.</p>
+      </div>
+    </template>
+
+    <!-- Questions tab -->
+    <template v-else>
+      <div class="bg-white border border-slate-200 rounded-2xl p-4">
+        <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">Find a question</label>
+        <div class="flex gap-3">
+          <input v-model="questionSearch" @keyup.enter="searchQuestions" type="text"
+            placeholder="Paste a phrase from the question (at least 3 characters)…"
+            class="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-aviation-500" />
+          <button @click="searchQuestions" :disabled="questionSearching || questionSearch.trim().length < 3"
+            class="bg-aviation-500 hover:bg-aviation-600 disabled:opacity-40 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
+            {{ questionSearching ? 'Searching…' : 'Search' }}
+          </button>
+        </div>
+      </div>
+
+      <div v-if="questionResults.length" class="space-y-3">
+        <div v-for="q in questionResults" :key="q.id" class="bg-white border border-slate-200 rounded-2xl p-4">
+          <template v-if="editingQuestionId === q.id">
+            <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">Question</label>
+            <textarea v-model="questionEditForm.text" rows="2"
+              class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 mb-3 focus:outline-none focus:ring-2 focus:ring-aviation-500"></textarea>
+
+            <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">Options (mark the correct one)</label>
+            <div class="space-y-2 mb-3">
+              <div v-for="(opt, i) in questionEditForm.options" :key="i" class="flex items-center gap-2">
+                <input type="radio" :name="`correct-${q.id}`" :checked="opt.correct"
+                  @change="questionEditForm.options.forEach((o, j) => o.correct = j === i)" class="w-4 h-4 flex-shrink-0" />
+                <input v-model="opt.text" type="text"
+                  class="flex-1 bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-slate-900" />
+                <button v-if="questionEditForm.options.length > 2" @click="questionEditForm.options.splice(i, 1)"
+                  class="text-red-400 hover:text-red-600 text-xs flex-shrink-0">Remove</button>
+              </div>
+              <button v-if="questionEditForm.options.length < 4" @click="questionEditForm.options.push({ text: '', correct: false })"
+                class="text-aviation-600 hover:text-aviation-700 text-xs font-medium">+ Add option</button>
+            </div>
+
+            <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">Explanation (shown to you here, not yet to students)</label>
+            <textarea v-model="questionEditForm.explanation" rows="3" placeholder="Why is the correct answer correct?"
+              class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 mb-3 focus:outline-none focus:ring-2 focus:ring-aviation-500"></textarea>
+
+            <div class="flex justify-end gap-3">
+              <button @click="editingQuestionId = null" class="text-sm font-medium text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl">Cancel</button>
+              <button @click="saveQuestion(q)" :disabled="questionSaving"
+                class="bg-aviation-500 hover:bg-aviation-600 disabled:opacity-40 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+                {{ questionSaving ? 'Saving…' : 'Save' }}
+              </button>
+            </div>
+          </template>
+          <template v-else>
+            <div class="flex items-start justify-between gap-3 mb-2">
+              <p class="text-sm font-medium text-slate-900">{{ q.text }}</p>
+              <span class="text-xs text-slate-400 whitespace-nowrap">{{ q.module_code }} · {{ q.subject_code }}</span>
+            </div>
+            <ul class="text-sm text-slate-600 mb-2 space-y-0.5">
+              <li v-for="o in q.options" :key="o.id" :class="{ 'text-green-700 font-medium': o.correct }">
+                {{ o.correct ? '✓' : '—' }} {{ o.text }}
+              </li>
+            </ul>
+            <p v-if="q.explanation" class="text-xs text-aviation-700 bg-aviation-50 border border-aviation-100 rounded-lg px-3 py-2 mb-2">
+              {{ q.explanation }}
+            </p>
+            <p v-else class="text-xs text-slate-400 italic mb-2">No explanation written yet.</p>
+            <button @click="startEditQuestion(q)" class="text-aviation-600 hover:text-aviation-700 font-medium text-xs">Edit</button>
+          </template>
+        </div>
+      </div>
+      <p v-else-if="questionSearched" class="text-center text-slate-400 text-sm py-6">No questions matched that text.</p>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-4">
+        <h3 class="text-sm font-semibold text-slate-900 mb-1">Bulk upload / download</h3>
+        <p class="text-xs text-slate-500 mb-3">
+          Download a module's questions as a spreadsheet, edit it, then upload it again — rows with an id update
+          that question, rows without one add a new question (needs module_code + subject_code filled in).
+        </p>
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="min-w-[12rem]">
+            <label class="block text-xs text-slate-400 uppercase tracking-wide mb-1">Module</label>
+            <div class="relative">
+              <select v-model="bulkModuleId" class="appearance-none bg-none w-full bg-white border border-slate-300 rounded-xl pl-3 pr-8 py-2 text-sm text-slate-900">
+                <option value="">All modules</option>
+                <option v-for="m in allModules" :key="m.code" :value="m.id">{{ m.code }} — {{ m.title }}</option>
+              </select>
+              <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+          <button @click="downloadQuestionsCsv" :disabled="csvDownloading"
+            class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+            {{ csvDownloading ? 'Downloading…' : 'Download CSV' }}
+          </button>
+          <label class="bg-aviation-500 hover:bg-aviation-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors cursor-pointer">
+            {{ csvUploading ? 'Uploading…' : 'Upload CSV' }}
+            <input type="file" accept=".csv" class="hidden" @change="uploadQuestionsCsv" :disabled="csvUploading" />
+          </label>
+        </div>
+        <div v-if="csvImportResult" class="mt-3 text-sm">
+          <p class="text-slate-700">Created {{ csvImportResult.created }}, updated {{ csvImportResult.updated }}.</p>
+          <ul v-if="csvImportResult.errors.length" class="text-red-600 text-xs mt-1 list-disc list-inside">
+            <li v-for="(e, i) in csvImportResult.errors" :key="i">{{ e }}</li>
+          </ul>
+        </div>
       </div>
     </template>
 
@@ -575,6 +681,7 @@ function formatDate(iso: string) {
 }
 
 interface ModuleListItem {
+  id: number
   code: string
   title: string
 }
@@ -847,6 +954,124 @@ function exportCsv() {
   a.download = `vjet-academy-transactions_${txFrom.value}_${txTo.value}.csv`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+// Questions tab — question bank search/edit + bulk CSV import/export.
+interface QuestionOption {
+  id: string
+  text: string
+  correct: boolean
+}
+
+interface AdminQuestion {
+  id: string
+  subject_id: number
+  subject_code: string
+  module_code: string
+  text: string
+  options: QuestionOption[]
+  explanation: string | null
+  licence_types: string[]
+}
+
+const questionSearch = ref('')
+const questionResults = ref<AdminQuestion[]>([])
+const questionSearching = ref(false)
+const questionSearched = ref(false)
+
+async function searchQuestions() {
+  if (questionSearch.value.trim().length < 3) return
+  questionSearching.value = true
+  error.value = ''
+  try {
+    const res = await api.get('/api/v1/content/admin/questions/search', { params: { q: questionSearch.value.trim() } })
+    questionResults.value = res.data
+    questionSearched.value = true
+    editingQuestionId.value = null
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Search failed.'
+  } finally {
+    questionSearching.value = false
+  }
+}
+
+const editingQuestionId = ref<string | null>(null)
+const questionEditForm = reactive<{ text: string; options: { text: string; correct: boolean }[]; explanation: string }>({
+  text: '', options: [], explanation: '',
+})
+const questionSaving = ref(false)
+
+function startEditQuestion(q: AdminQuestion) {
+  editingQuestionId.value = q.id
+  questionEditForm.text = q.text
+  questionEditForm.options = q.options.map(o => ({ text: o.text, correct: o.correct }))
+  questionEditForm.explanation = q.explanation ?? ''
+  error.value = ''
+}
+
+async function saveQuestion(q: AdminQuestion) {
+  questionSaving.value = true
+  error.value = ''
+  try {
+    await api.patch(`/api/v1/content/admin/questions/${q.id}`, {
+      text: questionEditForm.text,
+      options: questionEditForm.options,
+      explanation: questionEditForm.explanation,
+      licence_types: q.licence_types,
+    })
+    flashNotice('Question updated.')
+    editingQuestionId.value = null
+    await searchQuestions()
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not save question.'
+  } finally {
+    questionSaving.value = false
+  }
+}
+
+const bulkModuleId = ref<number | ''>('')
+const csvDownloading = ref(false)
+const csvUploading = ref(false)
+const csvImportResult = ref<{ created: number; updated: number; errors: string[] } | null>(null)
+
+async function downloadQuestionsCsv() {
+  csvDownloading.value = true
+  error.value = ''
+  try {
+    const params = bulkModuleId.value ? { module_id: bulkModuleId.value } : {}
+    const res = await api.get('/api/v1/content/admin/questions/export', { params, responseType: 'blob' })
+    const url = URL.createObjectURL(res.data as Blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'questions.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not download CSV.'
+  } finally {
+    csvDownloading.value = false
+  }
+}
+
+async function uploadQuestionsCsv(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  csvUploading.value = true
+  error.value = ''
+  csvImportResult.value = null
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await api.post('/api/v1/content/admin/questions/import', formData)
+    csvImportResult.value = res.data
+    flashNotice(`Imported: ${res.data.created} created, ${res.data.updated} updated.`)
+  } catch (e2: unknown) {
+    error.value = (e2 as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Import failed.'
+  } finally {
+    csvUploading.value = false
+    input.value = ''
+  }
 }
 </script>
 
