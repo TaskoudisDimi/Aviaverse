@@ -50,7 +50,7 @@
               <td class="px-4 py-3">
                 <div v-if="editingId === u.id" class="relative w-24">
                   <select v-model="editForm.licenceType"
-                    class="appearance-none bg-white border border-slate-300 rounded-lg pl-2 pr-6 py-1 text-sm text-slate-900 w-full">
+                    class="appearance-none bg-none bg-white border border-slate-300 rounded-lg pl-2 pr-6 py-1 text-sm text-slate-900 w-full">
                     <option value="B1.1">B1.1</option>
                     <option value="B2">B2</option>
                     <option value="all">all</option>
@@ -65,7 +65,7 @@
               <td class="px-4 py-3">
                 <div v-if="editingId === u.id" class="relative w-40">
                   <select v-model="editForm.planCode"
-                    class="appearance-none bg-white border border-slate-300 rounded-lg pl-2 pr-6 py-1 text-sm text-slate-900 w-full">
+                    class="appearance-none bg-none bg-white border border-slate-300 rounded-lg pl-2 pr-6 py-1 text-sm text-slate-900 w-full">
                     <option v-for="p in allPlans" :key="p.code" :value="p.code">{{ p.name }}</option>
                   </select>
                   <svg class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"
@@ -73,7 +73,15 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
-                <span v-else class="text-slate-700">{{ u.plan_name ?? '—' }}</span>
+                <span v-else class="text-slate-700">
+                  <template v-if="u.custom_module_codes?.length">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-aviation-50 text-aviation-700 border border-aviation-200">
+                      Custom access
+                    </span>
+                    <span class="block text-xs text-slate-400 mt-0.5">{{ u.custom_module_codes.join(', ') }}</span>
+                  </template>
+                  <template v-else>{{ u.plan_name ?? '—' }}</template>
+                </span>
               </td>
               <td class="px-4 py-3">
                 <input v-if="editingId === u.id" type="checkbox" v-model="editForm.isAdmin" class="w-4 h-4" />
@@ -208,18 +216,46 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="o in organisations" :key="o.id" class="border-b border-slate-100 last:border-0">
-                <td class="px-4 py-3 font-medium text-slate-900">{{ o.name }}</td>
-                <td class="px-4 py-3 text-slate-500 text-xs">
-                  <p v-if="o.contact_name">{{ o.contact_name }}</p>
-                  <p>{{ o.contact_email ?? '—' }}</p>
-                </td>
-                <td class="px-4 py-3 text-slate-700">{{ o.trial_days }} days</td>
-                <td class="px-4 py-3 text-slate-700">{{ o.invited_count }}</td>
-                <td class="px-4 py-3 text-slate-700">{{ o.accepted_count }}</td>
-                <td class="px-4 py-3 text-right">
-                  <button @click="openOrg(o)" class="text-aviation-600 hover:text-aviation-700 font-medium text-xs">Manage invites</button>
-                </td>
+              <tr v-for="o in organisations" :key="o.id" class="border-b border-slate-100 last:border-0 align-top">
+                <template v-if="editingOrgId === o.id">
+                  <td class="px-4 py-3">
+                    <input v-model="orgEditForm.name" type="text"
+                      class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-slate-900" />
+                  </td>
+                  <td class="px-4 py-3">
+                    <input v-model="orgEditForm.contact_name" type="text" placeholder="Contact name"
+                      class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs text-slate-900 mb-1" />
+                    <input v-model="orgEditForm.contact_email" type="email" placeholder="Contact email"
+                      class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs text-slate-900" />
+                  </td>
+                  <td class="px-4 py-3">
+                    <input v-model.number="orgEditForm.trial_days" type="number" min="1"
+                      class="w-20 bg-white border border-slate-300 rounded-lg px-2 py-1 text-sm text-slate-900" />
+                  </td>
+                  <td class="px-4 py-3 text-slate-700">{{ o.invited_count }}</td>
+                  <td class="px-4 py-3 text-slate-700">{{ o.accepted_count }}</td>
+                  <td class="px-4 py-3 text-right whitespace-nowrap">
+                    <button @click="saveOrgEdit(o)" :disabled="orgEditSaving" class="text-aviation-600 hover:text-aviation-700 font-medium text-xs mr-3 disabled:opacity-50">
+                      {{ orgEditSaving ? 'Saving…' : 'Save' }}
+                    </button>
+                    <button @click="editingOrgId = null" class="text-slate-400 hover:text-slate-600 text-xs">Cancel</button>
+                  </td>
+                </template>
+                <template v-else>
+                  <td class="px-4 py-3 font-medium text-slate-900">{{ o.name }}</td>
+                  <td class="px-4 py-3 text-slate-500 text-xs">
+                    <p v-if="o.contact_name">{{ o.contact_name }}</p>
+                    <p>{{ o.contact_email ?? '—' }}</p>
+                  </td>
+                  <td class="px-4 py-3 text-slate-700">{{ o.trial_days }} days</td>
+                  <td class="px-4 py-3 text-slate-700">{{ o.invited_count }}</td>
+                  <td class="px-4 py-3 text-slate-700">{{ o.accepted_count }}</td>
+                  <td class="px-4 py-3 text-right whitespace-nowrap">
+                    <button @click="openOrg(o)" class="text-aviation-600 hover:text-aviation-700 font-medium text-xs mr-3">Manage invites</button>
+                    <button @click="startEditOrg(o)" class="text-aviation-600 hover:text-aviation-700 font-medium text-xs mr-3">Edit</button>
+                    <button @click="orgDeleteTarget = o" class="text-red-500 hover:text-red-600 text-xs">Delete</button>
+                  </td>
+                </template>
               </tr>
             </tbody>
           </table>
@@ -365,6 +401,30 @@
         </div>
       </div>
     </Transition>
+
+    <!-- Delete organisation confirmation modal -->
+    <Transition name="fade">
+      <div v-if="orgDeleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40" @click="orgDeleteTarget = null" />
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+          <h3 class="text-base font-semibold text-slate-900 mb-2">Delete this organisation?</h3>
+          <p class="text-sm text-slate-500 mb-6">
+            <span class="font-medium text-slate-700">{{ orgDeleteTarget.name }}</span> and its invite list will be
+            removed. Students who already accepted keep their access — only the school record is deleted.
+          </p>
+          <div class="flex justify-end gap-3">
+            <button @click="orgDeleteTarget = null"
+              class="text-sm font-medium text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl">
+              Cancel
+            </button>
+            <button @click="performDeleteOrg" :disabled="orgDeleting"
+              class="text-sm font-medium bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl transition-colors">
+              {{ orgDeleting ? 'Deleting…' : 'Delete organisation' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -383,6 +443,7 @@ interface AdminUser {
   plan_code: string | null
   plan_name: string | null
   plan_expires_at: string | null
+  custom_module_codes: string[] | null
 }
 
 interface PlanListItem {
@@ -644,6 +705,57 @@ async function createOrg() {
     error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not add organisation.'
   } finally {
     orgCreating.value = false
+  }
+}
+
+const editingOrgId = ref<number | null>(null)
+const orgEditForm = reactive({ name: '', contact_name: '', contact_email: '', trial_days: 14 })
+const orgEditSaving = ref(false)
+
+function startEditOrg(o: Organisation) {
+  editingOrgId.value = o.id
+  orgEditForm.name = o.name
+  orgEditForm.contact_name = o.contact_name ?? ''
+  orgEditForm.contact_email = o.contact_email ?? ''
+  orgEditForm.trial_days = o.trial_days
+  error.value = ''
+}
+
+async function saveOrgEdit(o: Organisation) {
+  orgEditSaving.value = true
+  error.value = ''
+  try {
+    await api.patch(`/api/v1/auth/admin/organisations/${o.id}`, {
+      name: orgEditForm.name,
+      contact_name: orgEditForm.contact_name,
+      contact_email: orgEditForm.contact_email,
+      trial_days: orgEditForm.trial_days || 14,
+    })
+    editingOrgId.value = null
+    flashNotice(`Updated ${orgEditForm.name}.`)
+    await loadOrganisations()
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not save changes.'
+  } finally {
+    orgEditSaving.value = false
+  }
+}
+
+const orgDeleteTarget = ref<Organisation | null>(null)
+const orgDeleting = ref(false)
+
+async function performDeleteOrg() {
+  if (!orgDeleteTarget.value) return
+  orgDeleting.value = true
+  try {
+    await api.delete(`/api/v1/auth/admin/organisations/${orgDeleteTarget.value.id}`)
+    flashNotice(`Deleted ${orgDeleteTarget.value.name}.`)
+    orgDeleteTarget.value = null
+    await loadOrganisations()
+  } catch (e: unknown) {
+    error.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not delete organisation.'
+  } finally {
+    orgDeleting.value = false
   }
 }
 

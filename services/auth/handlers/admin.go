@@ -17,16 +17,17 @@ type adminUserResp struct {
 	LicenceType   string     `json:"licence_type"`
 	IsAdmin       bool       `json:"is_admin"`
 	CreatedAt     time.Time  `json:"created_at"`
-	PlanCode      *string    `json:"plan_code"`
-	PlanName      *string    `json:"plan_name"`
-	PlanExpiresAt *time.Time `json:"plan_expires_at"`
+	PlanCode            *string    `json:"plan_code"`
+	PlanName            *string    `json:"plan_name"`
+	PlanExpiresAt       *time.Time `json:"plan_expires_at"`
+	CustomModuleCodes   []string   `json:"custom_module_codes"`
 }
 
 // ListUsers returns every account with its current plan, for the admin page.
 func (h *Handler) ListUsers(c *gin.Context) {
 	rows, err := h.db.Query(`
 		SELECT u.id, u.email, u.full_name, u.licence_type, u.is_admin, u.created_at,
-		       sp.code, sp.name, us.expires_at
+		       sp.code, sp.name, us.expires_at, us.custom_allowed_module_codes
 		FROM users u
 		LEFT JOIN user_subscriptions us ON us.user_id = u.id AND us.status = 'active'
 		LEFT JOIN subscription_plans sp ON sp.id = us.plan_id
@@ -41,7 +42,7 @@ func (h *Handler) ListUsers(c *gin.Context) {
 	for rows.Next() {
 		var u adminUserResp
 		if err := rows.Scan(&u.ID, &u.Email, &u.FullName, &u.LicenceType, &u.IsAdmin, &u.CreatedAt,
-			&u.PlanCode, &u.PlanName, &u.PlanExpiresAt); err != nil {
+			&u.PlanCode, &u.PlanName, &u.PlanExpiresAt, pq.Array(&u.CustomModuleCodes)); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 			return
 		}

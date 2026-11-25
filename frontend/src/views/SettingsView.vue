@@ -38,7 +38,7 @@
           <label class="block text-sm font-medium text-slate-700 mb-1.5">Licence type</label>
           <div class="relative">
             <select v-model="form.licenceType" required
-              class="w-full appearance-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2.5 text-slate-900 text-sm
+              class="w-full appearance-none bg-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2.5 text-slate-900 text-sm
                      focus:outline-none focus:ring-2 focus:ring-aviation-500 focus:border-transparent">
               <option value="B1.1">B1.1 – Turbine-powered aeroplanes</option>
               <option value="B2">B2 – Avionics</option>

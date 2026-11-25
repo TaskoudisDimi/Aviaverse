@@ -14,7 +14,7 @@
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Licence type</label>
         <div class="relative">
           <select v-model="form.licence_type" required
-            class="w-full appearance-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2.5 text-slate-900
+            class="w-full appearance-none bg-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2.5 text-slate-900
                    focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm">
             <option value="" disabled>Select licence…</option>
             <option value="B1">B1</option>
@@ -31,7 +31,7 @@
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Module</label>
         <div class="relative">
           <select v-model="form.module_id" required :disabled="!form.licence_type"
-            class="w-full appearance-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2.5 text-slate-900
+            class="w-full appearance-none bg-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2.5 text-slate-900
                    focus:outline-none focus:ring-2 focus:ring-aviation-500 text-sm disabled:opacity-50">
             <option value="" disabled>{{ form.licence_type ? 'Select a module…' : 'Select a licence first…' }}</option>
             <option v-for="m in availableModules" :key="m.id" :value="m.id">{{ m.code }} – {{ m.title }}</option>

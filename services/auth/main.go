@@ -87,6 +87,8 @@ func main() {
 			admin.GET("/organisations", h.ListOrganisations)
 			admin.POST("/organisations", h.CreateOrganisation)
 			admin.GET("/organisations/:id", h.GetOrganisation)
+			admin.PATCH("/organisations/:id", h.AdminUpdateOrganisation)
+			admin.DELETE("/organisations/:id", h.AdminDeleteOrganisation)
 			admin.POST("/organisations/:id/invites", h.InviteToOrganisation)
 			admin.DELETE("/organisations/:id/invites/:inviteId", h.RevokeInvite)
 		}

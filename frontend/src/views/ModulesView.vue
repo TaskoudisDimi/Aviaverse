@@ -9,7 +9,7 @@
         </div>
         <div class="relative self-start sm:self-auto">
           <select v-model="licenceFilter"
-            class="appearance-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2 text-sm text-slate-900
+            class="appearance-none bg-none bg-white border border-slate-300 rounded-xl pl-4 pr-9 py-2 text-sm text-slate-900
                    focus:outline-none focus:ring-2 focus:ring-aviation-500">
             <option value="">All licences</option>
             <option value="B1">B1</option>

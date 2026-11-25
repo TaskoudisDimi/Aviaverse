@@ -90,6 +90,63 @@ func (h *Handler) CreateOrganisation(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"id": id})
 }
 
+type updateOrganisationReq struct {
+	Name         string `json:"name" binding:"required"`
+	ContactName  string `json:"contact_name"`
+	ContactEmail string `json:"contact_email"`
+	TrialDays    int    `json:"trial_days"`
+	Notes        string `json:"notes"`
+}
+
+// AdminUpdateOrganisation edits a school's details. Only affects future
+// invites' trial length — invites already accepted keep the expires_at
+// they were granted with.
+func (h *Handler) AdminUpdateOrganisation(c *gin.Context) {
+	id := c.Param("id")
+	var req updateOrganisationReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if req.TrialDays <= 0 {
+		req.TrialDays = 14
+	}
+
+	res, err := h.db.Exec(
+		`UPDATE organisations SET name = $1, contact_name = $2, contact_email = $3, trial_days = $4, notes = $5
+		 WHERE id = $6`,
+		req.Name, nullIfEmpty(req.ContactName), nullIfEmpty(req.ContactEmail), req.TrialDays, nullIfEmpty(req.Notes), id,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "organisation not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// AdminDeleteOrganisation removes a school and its invite list. Students
+// who already accepted keep whatever access/expiry they were granted —
+// their user_subscriptions row just loses the organisation tag
+// (ON DELETE SET NULL), since deleting the school record shouldn't revoke
+// access already given to a real person.
+func (h *Handler) AdminDeleteOrganisation(c *gin.Context) {
+	id := c.Param("id")
+	res, err := h.db.Exec(`DELETE FROM organisations WHERE id = $1`, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "organisation not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
 type inviteResp struct {
 	ID         int        `json:"id"`
 	Email      string     `json:"email"`
