@@ -1115,9 +1115,10 @@ async function downloadQuestionsCsv() {
     const params = bulkModuleId.value ? { module_id: bulkModuleId.value } : {}
     const res = await api.get('/api/v1/content/admin/questions/export', { params, responseType: 'blob' })
     const url = URL.createObjectURL(res.data as Blob)
+    const selectedModule = allModules.value.find(m => m.id === bulkModuleId.value)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'questions.csv'
+    a.download = selectedModule ? `${selectedModule.code}.csv` : 'questions-all-modules.csv'
     a.click()
     URL.revokeObjectURL(url)
   } catch (e: unknown) {
