@@ -322,10 +322,27 @@ func questionToCSVRecord(q adminQuestionResp) []string {
 	}
 }
 
+type importPreviewRow struct {
+	Row    int    `json:"row"`
+	ID     string `json:"id,omitempty"`
+	Action string `json:"action"` // "create" or "update"
+	Text   string `json:"text"`
+}
+
 type importResult struct {
-	Created int      `json:"created"`
-	Updated int      `json:"updated"`
-	Errors  []string `json:"errors"`
+	DryRun  bool               `json:"dry_run"`
+	Created int                `json:"created"`
+	Updated int                `json:"updated"`
+	Errors  []string           `json:"errors"`
+	Preview []importPreviewRow `json:"preview"`
+}
+
+func truncate(s string, n int) string {
+	r := []rune(s)
+	if len(r) <= n {
+		return s
+	}
+	return string(r[:n]) + "…"
 }
 
 // AdminImportQuestions bulk-upserts questions from a CSV in the exact
@@ -334,7 +351,14 @@ type importResult struct {
 // new one under the given module_code/subject_code. Every row is
 // validated independently — one bad row is reported and skipped rather
 // than failing the whole upload.
+//
+// With ?dry_run=true, every row is validated (including checking the id
+// or module_code/subject_code actually resolves) but nothing is written —
+// used by the admin UI to show "this will create N, update M, and here's
+// what's wrong with the rest" before the admin confirms the real upload.
 func (h *Handler) AdminImportQuestions(c *gin.Context) {
+	dryRun := c.Query("dry_run") == "true"
+
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no file uploaded (expected multipart field \"file\")"})
@@ -368,7 +392,7 @@ func (h *Handler) AdminImportQuestions(c *gin.Context) {
 		return strings.TrimSpace(record[i])
 	}
 
-	result := importResult{Errors: []string{}}
+	result := importResult{DryRun: dryRun, Errors: []string{}, Preview: []importPreviewRow{}}
 	rowNum := 1
 	for {
 		record, err := r.Read()
@@ -415,19 +439,30 @@ func (h *Handler) AdminImportQuestions(c *gin.Context) {
 		optionsJSON, _ := json.Marshal(opts)
 
 		if id != "" {
-			res, err := h.db.ExecContext(c.Request.Context(),
-				`UPDATE questions SET text=$1, options=$2, explanation=$3, licence_types=$4 WHERE id=$5`,
-				questionText, optionsJSON, nullIfEmptyStr(explanation), stringArray(licenceTypes), id,
-			)
-			if err != nil {
-				result.Errors = append(result.Errors, rowRef(rowNum, id)+": "+err.Error())
-				continue
-			}
-			if n, _ := res.RowsAffected(); n == 0 {
-				result.Errors = append(result.Errors, rowRef(rowNum, id)+": no question with this id")
-				continue
+			if dryRun {
+				var exists bool
+				if err := h.db.QueryRowContext(c.Request.Context(),
+					`SELECT true FROM questions WHERE id=$1`, id,
+				).Scan(&exists); err != nil {
+					result.Errors = append(result.Errors, rowRef(rowNum, id)+": no question with this id")
+					continue
+				}
+			} else {
+				res, err := h.db.ExecContext(c.Request.Context(),
+					`UPDATE questions SET text=$1, options=$2, explanation=$3, licence_types=$4 WHERE id=$5`,
+					questionText, optionsJSON, nullIfEmptyStr(explanation), stringArray(licenceTypes), id,
+				)
+				if err != nil {
+					result.Errors = append(result.Errors, rowRef(rowNum, id)+": "+err.Error())
+					continue
+				}
+				if n, _ := res.RowsAffected(); n == 0 {
+					result.Errors = append(result.Errors, rowRef(rowNum, id)+": no question with this id")
+					continue
+				}
 			}
 			result.Updated++
+			result.Preview = append(result.Preview, importPreviewRow{Row: rowNum, ID: id, Action: "update", Text: truncate(questionText, 90)})
 			continue
 		}
 
@@ -444,15 +479,18 @@ func (h *Handler) AdminImportQuestions(c *gin.Context) {
 			result.Errors = append(result.Errors, rowRef(rowNum, id)+": unknown module_code/subject_code combination")
 			continue
 		}
-		if _, err := h.db.ExecContext(c.Request.Context(), `
-			INSERT INTO questions (subject_id, text, options, explanation, licence_types)
-			VALUES ($1, $2, $3, $4, $5)`,
-			subjectID, questionText, optionsJSON, nullIfEmptyStr(explanation), stringArray(licenceTypes),
-		); err != nil {
-			result.Errors = append(result.Errors, rowRef(rowNum, id)+": "+err.Error())
-			continue
+		if !dryRun {
+			if _, err := h.db.ExecContext(c.Request.Context(), `
+				INSERT INTO questions (subject_id, text, options, explanation, licence_types)
+				VALUES ($1, $2, $3, $4, $5)`,
+				subjectID, questionText, optionsJSON, nullIfEmptyStr(explanation), stringArray(licenceTypes),
+			); err != nil {
+				result.Errors = append(result.Errors, rowRef(rowNum, id)+": "+err.Error())
+				continue
+			}
 		}
 		result.Created++
+		result.Preview = append(result.Preview, importPreviewRow{Row: rowNum, Action: "create", Text: truncate(questionText, 90)})
 	}
 
 	c.JSON(http.StatusOK, result)

@@ -357,18 +357,73 @@
             {{ csvDownloading ? 'Downloading…' : 'Download CSV' }}
           </button>
           <label class="bg-aviation-500 hover:bg-aviation-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors cursor-pointer">
-            {{ csvUploading ? 'Uploading…' : 'Upload CSV' }}
-            <input type="file" accept=".csv" class="hidden" @change="uploadQuestionsCsv" :disabled="csvUploading" />
+            {{ csvPreviewLoading ? 'Checking file…' : 'Upload CSV' }}
+            <input type="file" accept=".csv" class="hidden" @change="uploadQuestionsCsv" :disabled="csvPreviewLoading" />
           </label>
         </div>
         <div v-if="csvImportResult" class="mt-3 text-sm">
-          <p class="text-slate-700">Created {{ csvImportResult.created }}, updated {{ csvImportResult.updated }}.</p>
+          <p class="text-slate-700">Imported: {{ csvImportResult.created }} created, {{ csvImportResult.updated }} updated.</p>
           <ul v-if="csvImportResult.errors.length" class="text-red-600 text-xs mt-1 list-disc list-inside">
             <li v-for="(e, i) in csvImportResult.errors" :key="i">{{ e }}</li>
           </ul>
         </div>
       </div>
     </template>
+
+    <!-- CSV import preview / confirm modal -->
+    <Transition name="fade">
+      <div v-if="csvPendingFile" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40" @click="!csvConfirming && cancelImport()" />
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
+          <h3 class="text-base font-semibold text-slate-900 mb-1">Confirm import — {{ csvPendingFile.name }}</h3>
+
+          <div v-if="csvPreviewLoading" class="flex justify-center py-8"><Spinner /></div>
+
+          <template v-else-if="csvPreview">
+            <p class="text-sm text-slate-600 mb-3">
+              This will <span class="font-medium text-aviation-700">create {{ csvPreview.created }}</span> and
+              <span class="font-medium text-aviation-700">update {{ csvPreview.updated }}</span> question(s).
+              Nothing has been saved yet.
+            </p>
+
+            <div v-if="csvPreview.errors.length" class="mb-3">
+              <p class="text-xs font-medium text-red-600 uppercase tracking-wide mb-1">
+                {{ csvPreview.errors.length }} row(s) will be skipped
+              </p>
+              <ul class="text-red-600 text-xs list-disc list-inside max-h-28 overflow-y-auto">
+                <li v-for="(e, i) in csvPreview.errors" :key="i">{{ e }}</li>
+              </ul>
+            </div>
+
+            <div v-if="csvPreview.preview.length" class="mb-3">
+              <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Preview</p>
+              <ul class="text-xs text-slate-600 max-h-40 overflow-y-auto space-y-1">
+                <li v-for="p in csvPreview.preview.slice(0, 20)" :key="p.row">
+                  <span class="font-medium" :class="p.action === 'create' ? 'text-green-700' : 'text-aviation-700'">
+                    {{ p.action === 'create' ? 'New' : 'Update' }}
+                  </span> — {{ p.text }}
+                </li>
+              </ul>
+              <p v-if="csvPreview.preview.length > 20" class="text-xs text-slate-400 mt-1">
+                …and {{ csvPreview.preview.length - 20 }} more.
+              </p>
+            </div>
+
+            <p v-if="!csvPreview.created && !csvPreview.updated" class="text-sm text-red-600 mb-3">
+              Nothing in this file could be imported — check the errors above. This is probably the wrong file or format.
+            </p>
+          </template>
+
+          <div class="flex justify-end gap-3 mt-2">
+            <button @click="cancelImport" :disabled="csvConfirming" class="text-sm font-medium text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl">Cancel</button>
+            <button @click="confirmImport" :disabled="csvConfirming || csvPreviewLoading || !csvPreview?.created && !csvPreview?.updated"
+              class="bg-aviation-500 hover:bg-aviation-600 disabled:opacity-40 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+              {{ csvConfirming ? 'Importing…' : 'Confirm import' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Custom module access modal -->
     <Transition name="fade">
@@ -1029,10 +1084,29 @@ async function saveQuestion(q: AdminQuestion) {
   }
 }
 
+interface ImportPreviewRow {
+  row: number
+  id?: string
+  action: 'create' | 'update'
+  text: string
+}
+
+interface ImportResult {
+  dry_run: boolean
+  created: number
+  updated: number
+  errors: string[]
+  preview: ImportPreviewRow[]
+}
+
 const bulkModuleId = ref<number | ''>('')
 const csvDownloading = ref(false)
-const csvUploading = ref(false)
-const csvImportResult = ref<{ created: number; updated: number; errors: string[] } | null>(null)
+const csvPendingFile = ref<File | null>(null)
+const csvPreview = ref<ImportResult | null>(null)
+const csvPreviewLoading = ref(false)
+const csvConfirming = ref(false)
+const csvImportResult = ref<ImportResult | null>(null)
+const csvFileInput = ref<HTMLInputElement | null>(null)
 
 async function downloadQuestionsCsv() {
   csvDownloading.value = true
@@ -1053,24 +1127,54 @@ async function downloadQuestionsCsv() {
   }
 }
 
+// Upload is two steps: a dry run first (validates every row — wrong
+// headers, missing options, an unknown module/subject code — without
+// writing anything), then an explicit confirm that re-sends the same file
+// for real. This is the safety net against uploading the wrong file.
 async function uploadQuestionsCsv(e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
-  csvUploading.value = true
-  error.value = ''
+  csvFileInput.value = input
+  csvPendingFile.value = file
+  csvPreview.value = null
   csvImportResult.value = null
+  csvPreviewLoading.value = true
+  error.value = ''
   try {
     const formData = new FormData()
     formData.append('file', file)
+    const res = await api.post('/api/v1/content/admin/questions/import?dry_run=true', formData)
+    csvPreview.value = res.data
+  } catch (e2: unknown) {
+    error.value = (e2 as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Could not read this file.'
+    cancelImport()
+  } finally {
+    csvPreviewLoading.value = false
+  }
+}
+
+function cancelImport() {
+  csvPendingFile.value = null
+  csvPreview.value = null
+  if (csvFileInput.value) csvFileInput.value.value = ''
+}
+
+async function confirmImport() {
+  if (!csvPendingFile.value) return
+  csvConfirming.value = true
+  error.value = ''
+  try {
+    const formData = new FormData()
+    formData.append('file', csvPendingFile.value)
     const res = await api.post('/api/v1/content/admin/questions/import', formData)
     csvImportResult.value = res.data
     flashNotice(`Imported: ${res.data.created} created, ${res.data.updated} updated.`)
+    cancelImport()
   } catch (e2: unknown) {
     error.value = (e2 as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Import failed.'
   } finally {
-    csvUploading.value = false
-    input.value = ''
+    csvConfirming.value = false
   }
 }
 </script>

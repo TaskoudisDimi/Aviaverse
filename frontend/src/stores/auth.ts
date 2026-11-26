@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { api } from '@/lib/api'
 
 interface Plan {
@@ -95,6 +95,28 @@ export const useAuthStore = defineStore('auth', () => {
         if (err?.response?.status === 401) logout()
       })
     : Promise.resolve()
+
+  // Picks up plan/access changes an admin makes elsewhere (e.g. granting
+  // custom module access) without the user having to refresh — not
+  // instant, but within POLL_INTERVAL_MS of the change. A 401 here is
+  // already handled by the global axios interceptor (api.ts), so failures
+  // are otherwise just swallowed and retried next tick.
+  const POLL_INTERVAL_MS = 30_000
+  let pollTimer: ReturnType<typeof setInterval> | null = null
+
+  function startPolling() {
+    if (pollTimer) return
+    pollTimer = setInterval(() => { fetchMe().catch(() => {}) }, POLL_INTERVAL_MS)
+  }
+
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer)
+      pollTimer = null
+    }
+  }
+
+  watch(isAuthenticated, (authed) => { authed ? startPolling() : stopPolling() }, { immediate: true })
 
   return { token, user, isAuthenticated, login, register, loginWithGoogle, logout, fetchMe, updateProfile, changePlan, startCheckout, cancelSubscription, ready }
 })
